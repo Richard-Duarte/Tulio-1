@@ -1,0 +1,231 @@
+@import "tailwindcss" source(none);
+@source "../src";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+/*
+ * Design system definition.
+ *
+ * The @theme inline block maps CSS custom properties to Tailwind utility
+ * classes (e.g. --color-primary -> bg-primary, text-primary).
+ *
+ * The :root and .dark blocks define the actual color values using oklch.
+ * All colors MUST use oklch format.
+ *
+ * To add a new semantic color:
+ * 1. Add the variable to :root (light value) and .dark (dark value)
+ * 2. Register it in @theme inline as --color-<name>: var(--<name>)
+ */
+
+@theme inline {
+  --font-sans: "Inter", "Work Sans", sans-serif;
+  --font-display: "Syne", "Archivo Black", sans-serif;
+  --font-mono: "IBM Plex Mono", "Space Mono", monospace;
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --radius-2xl: calc(var(--radius) + 8px);
+  --radius-3xl: calc(var(--radius) + 12px);
+  --radius-4xl: calc(var(--radius) + 16px);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-ring-offset-background: var(--background);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+}
+
+:root {
+  --radius: 0.125rem;
+  --background: oklch(0.075 0.025 266);
+  --foreground: oklch(0.97 0.01 250);
+  --card: oklch(0.11 0.027 265);
+  --card-foreground: oklch(0.97 0.01 250);
+  --popover: oklch(0.11 0.027 265);
+  --popover-foreground: oklch(0.97 0.01 250);
+  --primary: oklch(0.7 0.21 258);
+  --primary-foreground: oklch(0.99 0 0);
+  --secondary: oklch(0.17 0.04 264);
+  --secondary-foreground: oklch(0.97 0.01 250);
+  --muted: oklch(0.15 0.025 264);
+  --muted-foreground: oklch(0.68 0.025 258);
+  --accent: oklch(0.24 0.09 258);
+  --accent-foreground: oklch(0.99 0 0);
+  --destructive: oklch(0.577 0.245 27.325);
+  --destructive-foreground: oklch(0.984 0.003 247.858);
+  --border: oklch(0.38 0.035 260 / 45%);
+  --input: oklch(0.38 0.035 260 / 65%);
+  --ring: oklch(0.82 0.19 195);
+  --glow: oklch(0.62 0.28 330 / 40%);
+  --chart-1: oklch(0.646 0.222 41.116);
+  --chart-2: oklch(0.6 0.118 184.704);
+  --chart-3: oklch(0.398 0.07 227.392);
+  --chart-4: oklch(0.828 0.189 84.429);
+  --chart-5: oklch(0.769 0.188 70.08);
+  --sidebar: oklch(0.984 0.003 247.858);
+  --sidebar-foreground: oklch(0.129 0.042 264.695);
+  --sidebar-primary: oklch(0.208 0.042 265.755);
+  --sidebar-primary-foreground: oklch(0.984 0.003 247.858);
+  --sidebar-accent: oklch(0.968 0.007 247.896);
+  --sidebar-accent-foreground: oklch(0.208 0.042 265.755);
+  --sidebar-border: oklch(0.929 0.013 255.508);
+  --sidebar-ring: oklch(0.704 0.04 256.788);
+}
+
+.dark {
+  --background: oklch(0.129 0.042 264.695);
+  --foreground: oklch(0.984 0.003 247.858);
+  --card: oklch(0.208 0.042 265.755);
+  --card-foreground: oklch(0.984 0.003 247.858);
+  --popover: oklch(0.208 0.042 265.755);
+  --popover-foreground: oklch(0.984 0.003 247.858);
+  --primary: oklch(0.929 0.013 255.508);
+  --primary-foreground: oklch(0.208 0.042 265.755);
+  --secondary: oklch(0.279 0.041 260.031);
+  --secondary-foreground: oklch(0.984 0.003 247.858);
+  --muted: oklch(0.279 0.041 260.031);
+  --muted-foreground: oklch(0.704 0.04 256.788);
+  --accent: oklch(0.279 0.041 260.031);
+  --accent-foreground: oklch(0.984 0.003 247.858);
+  --destructive: oklch(0.704 0.191 22.216);
+  --destructive-foreground: oklch(0.984 0.003 247.858);
+  --border: oklch(1 0 0 / 10%);
+  --input: oklch(1 0 0 / 15%);
+  --ring: oklch(0.551 0.027 264.364);
+  --chart-1: oklch(0.488 0.243 264.376);
+  --chart-2: oklch(0.696 0.17 162.48);
+  --chart-3: oklch(0.769 0.188 70.08);
+  --chart-4: oklch(0.627 0.265 303.9);
+  --chart-5: oklch(0.645 0.246 16.439);
+  --sidebar: oklch(0.208 0.042 265.755);
+  --sidebar-foreground: oklch(0.984 0.003 247.858);
+  --sidebar-primary: oklch(0.488 0.243 264.376);
+  --sidebar-primary-foreground: oklch(0.984 0.003 247.858);
+  --sidebar-accent: oklch(0.279 0.041 260.031);
+  --sidebar-accent-foreground: oklch(0.984 0.003 247.858);
+  --sidebar-border: oklch(1 0 0 / 10%);
+  --sidebar-ring: oklch(0.551 0.027 264.364);
+}
+
+.dark {
+  --background: oklch(0.075 0.025 266);
+  --foreground: oklch(0.97 0.01 250);
+  --card: oklch(0.11 0.027 265);
+  --card-foreground: oklch(0.97 0.01 250);
+  --popover: oklch(0.11 0.027 265);
+  --popover-foreground: oklch(0.97 0.01 250);
+  --primary: oklch(0.7 0.21 258);
+  --primary-foreground: oklch(0.99 0 0);
+  --secondary: oklch(0.17 0.04 264);
+  --secondary-foreground: oklch(0.97 0.01 250);
+  --muted: oklch(0.15 0.025 264);
+  --muted-foreground: oklch(0.68 0.025 258);
+  --accent: oklch(0.24 0.09 258);
+  --accent-foreground: oklch(0.99 0 0);
+  --destructive: oklch(0.92 0 0);
+  --destructive-foreground: oklch(0.1 0 0);
+  --border: oklch(0.38 0.035 260 / 45%);
+  --input: oklch(0.38 0.035 260 / 65%);
+  --ring: oklch(0.7 0.21 258);
+}
+
+@layer base {
+  * {
+    border-color: var(--color-border);
+  }
+
+  body {
+    background-color: var(--color-background);
+    color: var(--color-foreground);
+    font-family: var(--font-sans);
+    letter-spacing: 0;
+    overflow-x: hidden;
+    text-rendering: geometricPrecision;
+  }
+  h1, h2, h3 { font-family: var(--font-display); letter-spacing: 0; }
+  button, a, input, textarea { letter-spacing: 0; }
+  ::selection { background: var(--color-primary); color: var(--color-primary-foreground); }
+}
+
+.release-copy { max-width: 46ch; font-family: var(--font-display); font-size: clamp(1.05rem, 1.55vw, 1.6rem); line-height: 1.32; text-transform: uppercase; }
+/* First-load page reveal (plays under the intro curtain). Fill `backwards` only: once finished no
+   transform is left on the wrapper, so it never becomes a containing block for `position: fixed`. */
+.page-enter { animation: page-enter .62s cubic-bezier(.22,1,.36,1) backwards; }
+@keyframes page-enter { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: none; } }
+.marquee-track { animation: marquee 52s linear infinite; }
+@keyframes marquee { to { transform: translateX(-50%); } }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; } }
+.swap-text { position: relative; display: inline-block; overflow: hidden; vertical-align: bottom; }
+.swap-text::after { content: attr(data-text); position: absolute; inset: 0; transform: translateY(105%); transition: transform .55s cubic-bezier(.76,0,.24,1); color: var(--color-foreground); pointer-events: none; }
+.swap-text-inner { display: inline-block; transition: transform .55s cubic-bezier(.76,0,.24,1); }
+.swap-text:hover::after, a:hover > .swap-text::after, button:hover > .swap-text::after, h1:hover > .swap-text::after, h2:hover > .swap-text::after { transform: translateY(0); }
+.swap-text:hover .swap-text-inner, a:hover > .swap-text .swap-text-inner, button:hover > .swap-text .swap-text-inner, h1:hover > .swap-text .swap-text-inner, h2:hover > .swap-text .swap-text-inner { transform: translateY(-105%); }
+
+.glitch-text { text-shadow: 1px 0 rgba(255, 0, 150, 0.55), -1px 0 rgba(0, 255, 220, 0.55); }
+a, button { transition: color 0.35s ease, box-shadow 0.35s ease, transform 0.35s cubic-bezier(0.22, 1, 0.36, 1); }
+a:hover, button:hover { transform: translateY(-1px); }
+a:focus-visible, button:focus-visible { outline: 1px solid var(--color-primary); outline-offset: 3px; box-shadow: 0 0 18px var(--glow); }
+
+/* Intro loader (LoadingExperience). Present in the SSR HTML; hidden pre-paint on repeat visits. */
+html[data-intro="active"], html[data-intro="reveal"] { overflow: hidden; }
+html[data-intro="active"] { animation: intro-unlock .01s linear 9s forwards; }
+html[data-intro="active"] .page-enter { animation-play-state: paused; }
+html[data-intro="skip"] .intro-loader { display: none; }
+.intro-loader { position: fixed; inset: 0; z-index: 100; animation: intro-failsafe .01s linear 9s forwards; }
+.intro-curtain { position: absolute; inset: 0; background: var(--color-background); clip-path: inset(0 0 0 0); }
+/* Same box as the home ScrollLogo's start position, so the logo hands off seamlessly. */
+.intro-stage { position: absolute; left: 50%; top: calc((94vh - min(76vw, 640px) * .24) / 2); width: min(76vw, 640px); transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; gap: clamp(2.5rem, 7vh, 4.5rem); }
+.intro-bar { transform: scaleX(0); animation: intro-bar-boot 7s cubic-bezier(.1,.7,.2,1) forwards; }
+/* The glowing line rides the bottom edge of a full-size box that is moved with transforms only
+   (animating `bottom` was a layout shift on every frame: CLS ~0.12–0.16 on first load). */
+.intro-edge, .page-curtain-edge { position: absolute; inset: 0; opacity: 0; pointer-events: none; }
+.intro-edge::after, .page-curtain-edge::after { content: ""; position: absolute; inset-inline: 0; bottom: 0; height: 1px; background: var(--color-primary); box-shadow: 0 0 22px 2px var(--glow); }
+.intro-meta { transition: opacity .3s ease, transform .3s ease; }
+.intro-loader[data-phase="exit"] { pointer-events: none; animation: none; }
+.intro-loader[data-phase="exit"] .intro-meta { opacity: 0; transform: translateY(10px); }
+.intro-loader[data-phase="exit"] .intro-curtain { animation: intro-curtain .95s cubic-bezier(.76,0,.24,1) .25s forwards; }
+.intro-loader[data-phase="exit"] .intro-edge { animation: intro-edge .95s cubic-bezier(.76,0,.24,1) .25s forwards; }
+.intro-loader[data-phase="exit"]:not([data-home]) .intro-logo { animation: intro-logo-out .8s cubic-bezier(.76,0,.24,1) forwards; }
+.intro-loader[data-phase="exit"][data-reduced] .intro-curtain { animation: none; opacity: 0; transition: opacity .3s ease; }
+.intro-loader[data-phase="exit"][data-reduced] .intro-edge, .intro-loader[data-phase="exit"][data-reduced] .intro-logo { animation: none; }
+@keyframes intro-bar-boot { to { transform: scaleX(.55); } }
+@keyframes intro-curtain { to { clip-path: inset(0 0 100% 0); } }
+@keyframes intro-edge { 0% { transform: translate3d(0, 0, 0); opacity: 0; } 12%, 85% { opacity: 1; } 100% { transform: translate3d(0, -100%, 0); opacity: 0; } }
+@keyframes intro-logo-out { to { opacity: 0; transform: scale(1.06); filter: blur(6px); } }
+@keyframes intro-failsafe { to { opacity: 0; visibility: hidden; } }
+@keyframes intro-unlock { to { overflow: visible; } }
+
+/* Route transitions (lib/page-transition.ts + PageCurtain): the intro curtain, driven with WAAPI.
+   Only this fixed overlay animates; the page itself is never transformed. */
+.page-curtain { position: fixed; inset: 0; z-index: 95; pointer-events: none; visibility: hidden; }
+.page-curtain[data-active] { visibility: visible; pointer-events: auto; cursor: progress; }
+.page-curtain-panel { position: absolute; inset: 0; background: var(--color-background); transform: translate3d(0, -100%, 0); }

@@ -1,0 +1,4 @@
+import { Link } from "@tanstack/react-router";
+import logo from "@/assets/jula-logo.png.asset.json";
+import { useI18n } from "@/lib/i18n";
+export function Footer(){const {t}=useI18n();return <footer className="mt-28 border-t border-border px-5 py-8 md:px-10"><div className="flex flex-col gap-7 md:flex-row md:items-end md:justify-between"><img src={logo.url} alt="Jula" className="h-10 w-40 object-contain object-left invert"/><div className="flex flex-wrap gap-5 font-mono text-[10px] uppercase tracking-[.15em] text-muted-foreground"><Link to="/galeria">{t("gallery")}</Link><Link to="/sets">{t("sets")}</Link><Link to="/live-sets">{t("liveSets")}</Link><Link to="/releases">{t("releases")}</Link><Link to="/presskit">{t("presskit")}</Link><Link to="/auth">{t("admin")}</Link></div></div></footer>}

@@ -1,0 +1,33 @@
+---
+description: Keep remote Supabase in sync when code or schema changes need it
+alwaysApply: true
+---
+
+# Supabase remoto durante ajustes
+
+Este projeto usa Supabase em produção (`SUPABASE_PROJECT_ID` no `.env`). Sempre que uma alteração local exigir mudança no banco, **aplique no Supabase remoto na mesma sessão** — não deixe só o arquivo SQL no repo.
+
+## Quando sincronizar
+
+- Novo arquivo em `drizzle/migrations/*.sql` ou mudança de schema em `src/integrations/supabase/types.ts`
+- Código que lê/escreve colunas, tabelas, RLS ou storage buckets que ainda não existem no remoto
+- Novos campos em `site_settings`, `sets`, `tracks`, `upcoming_dates`, etc.
+
+## Fluxo do agente
+
+1. **Identificar** se o diff exige DDL (coluna, tabela, índice, policy, bucket).
+2. **Reutilizar** a migração em `drizzle/migrations/` (mesmo SQL) ou criar migração nova com `supabase migration new` quando usar CLI local.
+3. **Aplicar no remoto** via Supabase MCP (`apply_migration` para DDL; `execute_sql` só para checagens/dados pontuais).
+4. **Atualizar tipos** (`src/integrations/supabase/types.ts`) se o schema mudou.
+5. **Verificar** com SQL simples (ex.: `SELECT column_name FROM information_schema.columns WHERE ...`) ou `get_advisors` se tocou em RLS/segurança.
+6. **Informar** o usuário o que foi aplicado no remoto.
+
+## Projeto
+
+- ID do projeto: valor de `SUPABASE_PROJECT_ID` / `VITE_SUPABASE_PROJECT_ID` no `.env` (não commitar segredos).
+- Não usar `service_role` em código cliente; migrações via MCP/CLI com credenciais de admin.
+
+## Exceções
+
+- Dados de seed ou conteúdo editorial: só migrar schema; conteúdo via painel admin ou SQL explícito se o usuário pedir.
+- Se MCP Supabase não estiver autenticado, pedir auth e retentar; não assumir que “basta push no Git” atualiza o Postgres.
