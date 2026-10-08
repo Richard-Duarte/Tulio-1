@@ -63,9 +63,10 @@ export const BOOTH = {
     position: [0, 0.6, -17.76], rotY: 0,
     scale: 1,            // real-world size already; `height` (m) would normalize instead
     keepOrigin: true,    // don't recentre on the bounding box (the arms reach forward)
-    // Look from the reference photo: black tee, no chain. Material name → colour multiplier; mesh names hidden.
-    materialTint: { DJ_Clothes: 0x202020 },
-    hideMeshes: ['Chain1'],
+    // Tulio (modelled from his reference photo): black tee, dark pants, cord necklace with a silver bar, black smartwatch.
+    // Colours are baked into the model. Optional: material name → colour multiplier; mesh names hidden.
+    materialTint: {},
+    hideMeshes: [],
     // Baked clip (DJ_Dance_128BPM, 16 beats) is locked to the scene beat clock (MUSIC.bpm):
     // jog/EQ/fader moves, bounce + head nod on every kick, right-fist pump to the crowd on clip beats 11-15.
     clipName: 'DJ_Dance_128BPM', clipBpm: 128, clipBeats: 16,
@@ -111,6 +112,23 @@ export const SUB_LAYOUTS = {
       { x: STACK_X, z: STACK_Z, rotY: -TOE_IN, standHeight: 1.4 },
     ],
   },
+};
+
+// Flown line arrays (procedural, lineArray.js): one hang per side, just outboard of the sub stacks,
+// hung from the ceiling on two chain hoists. Cabinet = wedge box (front height h, back height backH, depth d).
+// splayDeg = inter-cabinet angles from the top down (J-curve aimed at the dance floor); rotY toes each hang in.
+export const LINE_ARRAY = {
+  enabled: true,
+  count: 6,
+  box: { w: 0.92, h: 0.27, d: 0.56, backH: 0.2 },
+  gap: 0.008,
+  splayDeg: [1.5, 3, 4.5, 6, 7],
+  topY: 4.3,         // fly bar height (inner ceiling ≈ 4.85 m)
+  ceilingY: 4.85,    // hoist chains run up to here
+  hangs: [
+    { x: -4.75, z: -16.75, rotY: 0.2, tilt: 1 },
+    { x: 4.75, z: -16.75, rotY: -0.2, tilt: 1 },
+  ],
 };
 
 // Lighting truss hanging over the dance floor (rectangle, box-truss section).

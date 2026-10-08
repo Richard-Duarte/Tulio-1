@@ -13,6 +13,7 @@ import { buildProceduralWarehouse, loadWarehouseGLB } from './warehouse.js';
 import { loadModel, buildRig } from './rig.js';
 import { buildShow, embedCameraPos } from './lights.js';
 import { buildDJ } from './dj.js';
+import { buildLineArrays } from './lineArray.js';
 import { setModelsBase } from './assets.js';
 
 export const CREDITS = [
@@ -174,6 +175,7 @@ export async function createScene(target, o = {}) {
   api.credits = credits;
   if (o.creditsEl) o.creditsEl.innerHTML = credits.join('<br>');
   const rig = buildRig({ top, sub, djSetup }); scene.add(rig);
+  scene.add(buildLineArrays()); // flown line-array hangs next to the sub stacks (procedural)
   const rigMixers = rig.userData.mixers ?? [];
   if (!shadows) scene.traverse((m) => { if (m.isMesh) m.castShadow = false; });
   const show = buildShow(scene, { strobe: o.strobe !== false, shadows, maxMovers: Q.maxMovers, crowdCount: Q.crowd, hazeCount: Q.haze });
