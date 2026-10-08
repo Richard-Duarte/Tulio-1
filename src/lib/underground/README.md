@@ -12,8 +12,8 @@ full-viewport background of `/sets` through its embed API (`embed.js` → `mount
     (`rig.userData.mixers`, stepped in `app.js`).
   - `app.js`: venue GLB also in embed mode, `MODELS.sub` optional, roof light shafts hidden with a GLB venue.
   - `lights.js`: sodium lamp height follows `WAREHOUSE.eaveHeight`.
-  - Stage PA (Tulio only, no tops): `layout.js` → `SUB_LAYOUT 'front'` = 8 Cerwin-Vega subs laid on their side
-    (`lay: true`, handled in `rig.js`), 4 per side along the front of the riser with the centre left clear.
+  - Stage PA (Tulio only, no tops): `layout.js` → `SUB_LAYOUT 'front'` = 10 Cerwin-Vega subs laid on their side
+    (`lay: true`, handled in `rig.js`) in one continuous row along the front of the riser.
   - `lineArray.js` (Tulio only): two flown line-array hangs (procedural three.js geometry: fly bar on chain hoists,
     6 wedge cabinets in a J-curve) above the outer subs; config in `layout.js` → `LINE_ARRAY`.
     `createCabinetBuilder()` builds one wedge cabinet of any size (reused by the monitors).

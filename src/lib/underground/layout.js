@@ -84,18 +84,18 @@ export const BOOTH = {
   deskLamp: { position: [0, 1.9, -17.0], intensity: 0.25 }, // soft warm light so the gear reads
 };
 
-// Sub layouts. 'front': 8 subs laid on their side (wide), a row of 4 per side along the front of the riser,
-// leaving the centre clear so the riser LED + booth read from the dance floor. 'row' = the old straight row of 6 upright.
+// Sub layouts. 'front': 10 subs laid on their side (wide), one continuous row along the front of the riser
+// (5 per side of the centre line). 'row' = the old straight row of 6 upright.
 // Sub fields: x/z = centre of the footprint, rotY, level (0 = floor, 1 = stacked), lay: true = on its side.
 export const SUB_LAYOUT = 'front';
 
 const SUB_W = 0.97; // sub width when laid on its side (model is 0.95 m tall upright) + a small gap
-const FRONT_X = 0.8; // half of the clear gap in front of the booth
+const FRONT_COUNT = 10; // subs in the front row
 export const SUB_LAYOUTS = {
   front: {
-    subs: [0, 1, 2, 3].flatMap((i) => [-1, 1].map((sx) => ({
-      x: sx * (FRONT_X + SUB_W / 2 + i * SUB_W), z: -16.16, rotY: 0, level: 0, lay: true,
-    }))),
+    subs: Array.from({ length: FRONT_COUNT }, (_, i) => ({
+      x: (i - (FRONT_COUNT - 1) / 2) * SUB_W, z: -16.16, rotY: 0, level: 0, lay: true,
+    })),
     tops: [],
   },
   row: {
