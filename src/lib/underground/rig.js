@@ -1,4 +1,4 @@
-// DJ booth, speaker stacks, subs — built from the layout config.
+// DJ booth, subs (+ optional tops) — built from the layout config. Monitors: monitors.js, flown hangs: lineArray.js.
 import * as THREE from 'three';
 import { MODELS, BOOTH, SUB_LAYOUT, SUB_LAYOUTS } from './layout.js';
 import { radialTexture } from './textures.js';
@@ -109,17 +109,23 @@ export function buildRig(models) {
   const lamp = new THREE.PointLight(0xffd2a0, BOOTH.deskLamp.intensity, 2.5, 1.5);
   lamp.position.fromArray(BOOTH.deskLamp.position); rig.add(lamp);
 
-  // subs + tops
+  // subs (optionally laid on their side) + tops (none in the current layouts)
   const L = SUB_LAYOUTS[SUB_LAYOUT];
-  const subH = models.sub?.userData.size.y ?? 0.95, subD = models.sub?.userData.size.z ?? 1.0;
+  const sz = models.sub?.userData.size ?? new THREE.Vector3(0.8, 0.95, 1.0);
+  const subH = sz.y, subD = sz.z;
   for (const s of L.subs) {
-    const g = new THREE.Group(); g.position.set(s.x, s.level * subH, s.z); g.rotation.y = s.rotY;
-    if (models.sub) g.add(models.sub.clone());
-    else g.add(new THREE.Mesh(new THREE.BoxGeometry(0.8, subH, subD), blackPaint));
+    const lay = !!s.lay, h = lay ? sz.x : sz.y, w = lay ? sz.y : sz.x;
+    const g = new THREE.Group(); g.position.set(s.x, s.level * h, s.z); g.rotation.y = s.rotY;
+    const m = models.sub ? models.sub.clone() : new THREE.Mesh(new THREE.BoxGeometry(sz.x, sz.y, sz.z), blackPaint);
+    if (!models.sub) m.position.y = sz.y / 2;
+    if (lay) { // roll 90° about the front axis around the cabinet centre, then sit it back on the floor
+      const pivot = new THREE.Group(); pivot.position.y = h / 2; pivot.rotation.z = Math.PI / 2;
+      m.position.y -= sz.y / 2; pivot.add(m); g.add(pivot);
+    } else g.add(m);
     g.name = 'sub'; rig.add(g);
-    if (s.level === 0) { const b = blobShadow(1.3, 1.5); b.position.set(s.x, 0.004, s.z); b.rotation.z = s.rotY; rig.add(b); }
+    if (s.level === 0) { const b = blobShadow(w * 1.4, subD * 1.45); b.position.set(s.x, 0.004, s.z); b.rotation.z = s.rotY; rig.add(b); }
   }
-  for (const t of L.tops) {
+  for (const t of L.tops ?? []) {
     const g = new THREE.Group(); g.position.set(t.x, 0, t.z); g.rotation.y = t.rotY; g.name = 'top';
     let elev = 0;
     if (t.onSubs) elev = t.onSubs * subH;

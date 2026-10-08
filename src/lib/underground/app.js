@@ -14,10 +14,10 @@ import { loadModel, buildRig } from './rig.js';
 import { buildShow, embedCameraPos } from './lights.js';
 import { buildDJ } from './dj.js';
 import { buildLineArrays } from './lineArray.js';
+import { buildMonitors } from './monitors.js';
 import { setModelsBase } from './assets.js';
 
 export const CREDITS = [
-  '“Funktion One RES 2” by Javier (sketchfab.com/Javier.Santander) — CC BY 4.0',
   '“Pioneer CDJ 3000 / DJM A9” by MaxTht (sketchfab.com/thetiot.maxime) — CC BY 4.0',
   '“Cerwin Vega Speaker” by sonidero (sketchfab.com/londoncar12345) — Sketchfab Standard',
   'DJ: MakeHuman / MPFB base mesh, rig & clothes (makehumancommunity.org) — CC0',
@@ -175,7 +175,8 @@ export async function createScene(target, o = {}) {
   api.credits = credits;
   if (o.creditsEl) o.creditsEl.innerHTML = credits.join('<br>');
   const rig = buildRig({ top, sub, djSetup }); scene.add(rig);
-  scene.add(buildLineArrays()); // flown line-array hangs next to the sub stacks (procedural)
+  scene.add(buildLineArrays()); // flown line-array hangs above the outer subs (procedural)
+  scene.add(buildMonitors());   // DJ monitor stacks on the riser (procedural)
   const rigMixers = rig.userData.mixers ?? [];
   if (!shadows) scene.traverse((m) => { if (m.isMesh) m.castShadow = false; });
   const show = buildShow(scene, { strobe: o.strobe !== false, shadows, maxMovers: Q.maxMovers, crowdCount: Q.crowd, hazeCount: Q.haze });

@@ -2,7 +2,6 @@
 // rendering the credits on /sets doesn't pull the three.js scene bundle into the route chunk.
 // Re-check after `scripts/sync-underground.sh`.
 export const SCENE_CREDITS = [
-  "“Funktion One RES 2” by Javier (sketchfab.com/Javier.Santander) — CC BY 4.0",
   "“Pioneer CDJ 3000 / DJM A9” by MaxTht (sketchfab.com/thetiot.maxime) — CC BY 4.0",
   "“Cerwin Vega Speaker” by sonidero (sketchfab.com/londoncar12345) — Sketchfab Standard",
   "DJ: MakeHuman / MPFB base mesh, rig & clothes (makehumancommunity.org) — CC0",

@@ -10,7 +10,7 @@ ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 for f in app assets dj djRig embed layout lights optional rig textures warehouse; do
   cp "$SRC/src/$f.js" "$ROOT/src/lib/underground/$f.js"
 done
-for m in dj funktion-one-res2 cerwin-vega-speaker pioneer-cdj3000-djm-a9; do
+for m in dj cerwin-vega-speaker pioneer-cdj3000-djm-a9; do
   cp "$SRC/public/models/$m.glb" "$ROOT/public/3d/models/$m.glb"
 done
 ls -la "$ROOT/public/3d/models"

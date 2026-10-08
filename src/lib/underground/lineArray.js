@@ -1,7 +1,8 @@
-// Flown line-array hangs (one per side of the booth, next to the sub stacks), built procedurally:
+// Flown line-array hangs (one per side of the stage, above the outer subs), built procedurally:
 // a fly bar on two chain hoists from the ceiling and a J-curve of wedge-shaped cabinets
 // (perforated front grille, side waveguide cheeks, front rigging links, small white status LED).
-// Everything is configured in layout.js → LINE_ARRAY.
+// Everything is configured in layout.js → LINE_ARRAY. createCabinetBuilder() is also used by the
+// DJ monitors (monitors.js).
 import * as THREE from 'three';
 import { LINE_ARRAY, WAREHOUSE } from './layout.js';
 
@@ -16,8 +17,8 @@ function canvasTex(w, h, draw, { srgb = true, repeat = false } = {}) {
 }
 
 // perforated steel grille (hex hole pattern) with a thin frame
-function grilleTexture() {
-  return canvasTex(512, 160, (ctx, w, h) => {
+function grilleTexture(cw = 512, ch = 160) {
+  return canvasTex(cw, ch, (ctx, w, h) => {
     ctx.fillStyle = '#202124'; ctx.fillRect(0, 0, w, h);
     ctx.fillStyle = '#050506';
     const s = 5;
@@ -46,25 +47,40 @@ function cheekTexture() {
   });
 }
 
-export function buildLineArrays() {
-  const cfg = LINE_ARRAY;
-  const root = new THREE.Group(); root.name = 'lineArrays';
-  if (!cfg?.enabled) return root;
-  const { w, h, d, backH } = cfg.box;
-  const ceilingY = cfg.ceilingY ?? WAREHOUSE.eaveHeight;
+// small red logo badge (no brand name), for the monitor cabinets' grilles
+function badgeTexture() {
+  return canvasTex(64, 64, (ctx, w, h) => {
+    ctx.fillStyle = '#d0121b'; ctx.fillRect(0, 0, w, h);
+    ctx.strokeStyle = '#ff5a5f'; ctx.lineWidth = 4; ctx.strokeRect(2, 2, w - 4, h - 4);
+    ctx.fillStyle = '#ffffff'; ctx.beginPath(); ctx.arc(w / 2, h / 2, w * 0.16, 0, Math.PI * 2); ctx.fill();
+  });
+}
 
-  // shared geometry / materials
-  const shellMat = new THREE.MeshStandardMaterial({ color: 0x141416, roughness: 0.55, metalness: 0.15 });
-  const grilleMat = new THREE.MeshStandardMaterial({ map: grilleTexture(), roughness: 0.55, metalness: 0.35 });
-  const cheekMat = new THREE.MeshStandardMaterial({ map: cheekTexture(), roughness: 0.6, metalness: 0.3 });
-  const steelMat = new THREE.MeshStandardMaterial({ color: 0x3c3e42, roughness: 0.45, metalness: 0.6 });
-  const darkSteel = new THREE.MeshStandardMaterial({ color: 0x1d1e21, roughness: 0.5, metalness: 0.6 });
-  const ledMat = new THREE.MeshBasicMaterial({ color: 0xeef4ff });
+let shared = null; // materials + textures shared by every cabinet (hangs and monitors)
+export function speakerMaterials() {
+  if (shared) return shared;
+  shared = {
+    shell: new THREE.MeshStandardMaterial({ color: 0x141416, roughness: 0.55, metalness: 0.15 }),
+    grille: new THREE.MeshStandardMaterial({ map: grilleTexture(), roughness: 0.55, metalness: 0.35 }),
+    subGrille: new THREE.MeshStandardMaterial({ map: grilleTexture(300, 300), roughness: 0.6, metalness: 0.3 }), // monitor subs
+    cheek: new THREE.MeshStandardMaterial({ map: cheekTexture(), roughness: 0.6, metalness: 0.3 }),
+    steel: new THREE.MeshStandardMaterial({ color: 0x3c3e42, roughness: 0.45, metalness: 0.6 }),
+    darkSteel: new THREE.MeshStandardMaterial({ color: 0x1d1e21, roughness: 0.5, metalness: 0.6 }),
+    led: new THREE.MeshBasicMaterial({ color: 0xeef4ff }),
+    badge: new THREE.MeshStandardMaterial({ map: badgeTexture(), roughness: 0.4, emissive: 0x400000 }),
+  };
+  return shared;
+}
 
-  // wedge cabinet: side profile in (z, y), front at +z, origin = front-top edge; top flat, bottom rising to the back
+// Returns a factory for one wedge cabinet of the given size ({ w, h, d, backH }).
+// Cabinet origin = front-top edge, front faces +Z, body hangs down (-Y) and back (-Z).
+// opts.badge: size (m) of a red logo badge centred on the grille (0 = none); opts.links: rigging links.
+export function createCabinetBuilder({ w, h, d, backH }, { badge = 0, links = true, led = true } = {}) {
+  const M = speakerMaterials();
   const prof = new THREE.Shape();
   prof.moveTo(0, 0); prof.lineTo(-d, 0); prof.lineTo(-d, -backH); prof.lineTo(0, -h); prof.closePath();
-  const cab = new THREE.ExtrudeGeometry(prof, { depth: w * 0.94, bevelEnabled: true, bevelThickness: 0.006, bevelSize: 0.006, bevelSegments: 1 });
+  const bev = Math.min(0.006, h * 0.03);
+  const cab = new THREE.ExtrudeGeometry(prof, { depth: w * 0.94, bevelEnabled: true, bevelThickness: bev, bevelSize: bev, bevelSegments: 1 });
   cab.rotateY(-Math.PI / 2); cab.translate(w * 0.47, 0, 0); // extrude axis → X, centred
   const cheekGeo = new THREE.ShapeGeometry(prof);
   { // normalise the cheek UVs to the profile bounds
@@ -72,25 +88,39 @@ export function buildLineArrays() {
     for (let i = 0; i < uv.count; i++) uv.setXY(i, (p.getX(i) + d) / d, (p.getY(i) + h) / h);
   }
   const grilleGeo = new THREE.PlaneGeometry(w * 0.9, h * 0.84);
-  const linkGeo = new THREE.BoxGeometry(0.025, 0.09, 0.03);
+  const linkGeo = new THREE.BoxGeometry(0.025, h * 0.33, 0.03);
   const ledGeo = new THREE.PlaneGeometry(0.018, 0.018);
+  const badgeGeo = badge ? new THREE.PlaneGeometry(badge, badge) : null;
 
-  function cabinet() {
+  return function cabinet() {
     const g = new THREE.Group();
-    const body = new THREE.Mesh(cab, shellMat); g.add(body);
+    g.add(new THREE.Mesh(cab, M.shell));
     for (const sx of [-1, 1]) {
-      const ch = new THREE.Mesh(cheekGeo, cheekMat);
-      ch.rotation.y = sx * Math.PI / 2; ch.position.x = sx * (w * 0.47 + 0.0075);
+      const ch = new THREE.Mesh(cheekGeo, M.cheek);
+      ch.rotation.y = sx * Math.PI / 2; ch.position.x = sx * (w * 0.47 + bev + 0.0015);
       if (sx < 0) { ch.scale.x = -1; } // keep the waveguide towards the front on both sides
       g.add(ch);
-      const link = new THREE.Mesh(linkGeo, steelMat); link.position.set(sx * (w * 0.47 + 0.02), -h + 0.01, -0.03); g.add(link);
-      const linkB = new THREE.Mesh(linkGeo, steelMat); linkB.position.set(sx * (w * 0.47 + 0.02), -backH + 0.01, -d + 0.04); g.add(linkB);
+      if (links) {
+        const link = new THREE.Mesh(linkGeo, M.steel); link.position.set(sx * (w * 0.47 + 0.02), -h + 0.01, -0.03); g.add(link);
+        const linkB = new THREE.Mesh(linkGeo, M.steel); linkB.position.set(sx * (w * 0.47 + 0.02), -backH + 0.01, -d + 0.04); g.add(linkB);
+      }
     }
-    const gr = new THREE.Mesh(grilleGeo, grilleMat); gr.position.set(0, -h / 2, 0.0075); g.add(gr);
-    const led = new THREE.Mesh(ledGeo, ledMat); led.position.set(-w * 0.39, -h * 0.78, 0.009); g.add(led);
+    const gr = new THREE.Mesh(grilleGeo, M.grille); gr.position.set(0, -h / 2, bev + 0.0015); g.add(gr);
+    if (led) { const l = new THREE.Mesh(ledGeo, M.led); l.position.set(-w * 0.39, -h * 0.78, bev + 0.003); g.add(l); }
+    if (badgeGeo) { const b = new THREE.Mesh(badgeGeo, M.badge); b.position.set(0, -h / 2, bev + 0.003); g.add(b); }
     g.traverse((o) => { if (o.isMesh) { o.castShadow = true; o.receiveShadow = true; } });
     return g;
-  }
+  };
+}
+
+export function buildLineArrays() {
+  const cfg = LINE_ARRAY;
+  const root = new THREE.Group(); root.name = 'lineArrays';
+  if (!cfg?.enabled) return root;
+  const { w, h, d } = cfg.box;
+  const ceilingY = cfg.ceilingY ?? WAREHOUSE.eaveHeight;
+  const { steel: steelMat, darkSteel } = speakerMaterials();
+  const cabinet = createCabinetBuilder(cfg.box);
 
   for (const hang of cfg.hangs) {
     const g = new THREE.Group(); g.name = 'lineArrayHang';
