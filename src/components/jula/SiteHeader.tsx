@@ -1,110 +1,46 @@
 import { Link, useRouterState } from "@tanstack/react-router";
-import { Menu, X } from "lucide-react";
-import { useEffect, useRef, useState, type CSSProperties } from "react";
-import { Button } from "@/components/ui/button";
+import { AnimatePresence, motion, useReducedMotion } from "motion/react";
+import { useEffect, useRef, useState } from "react";
 import { LanguageSelector } from "@/components/jula/LanguageSelector";
-import { SwapText } from "@/components/jula/SwapText";
 import { UpcomingDatesDialog, UpcomingDatesNavItem } from "@/components/jula/UpcomingDates";
+import { TulioWordmark } from "@/components/tulio/TulioWordmark";
 import { useI18n } from "@/lib/i18n";
+import { setMenuOpen } from "@/lib/menu-open";
+
+const EASE_OUT = [0.22, 1, 0.36, 1] as const;
+
+type MenuMode = "closed" | "overlay" | "bar";
+
+function pad(n: number) {
+  return String(n).padStart(2, "0");
+}
+
+/** Opening section still covers the top of the viewport. */
+function isOnOpeningSection() {
+  const section = document.querySelector<HTMLElement>('section[aria-label="Abertura"]');
+  if (!section) return false;
+  const rect = section.getBoundingClientRect();
+  // Top of the opening section is still at the top of the screen (small offset from the fixed bar).
+  return rect.top <= 48 && rect.bottom > Math.min(160, window.innerHeight * 0.35);
+}
+
+const OVERLAY_LABEL =
+  "nc-display text-[clamp(3.35rem,13vw,4.75rem)] leading-[0.9] md:text-[clamp(2.4rem,7vw,5.5rem)] md:leading-[0.95]";
+const BAR_LABEL = "nc-display text-[clamp(1.35rem,4.2vw,2rem)] leading-none";
 
 export function SiteHeader() {
-  const [open, setOpen] = useState(false);
+  const [mode, setMode] = useState<MenuMode>("closed");
+  const [hovered, setHovered] = useState<number | null>(null);
+  const [buttonHover, setButtonHover] = useState(false);
   const { t } = useI18n();
-  const isHome = useRouterState({ select: (s) => s.location.pathname === "/" });
-
-  useEffect(() => {
-    if (!open) return;
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setOpen(false);
-    };
-    window.addEventListener("keydown", onKey);
-    document.body.style.overflow = "hidden";
-    return () => {
-      window.removeEventListener("keydown", onKey);
-      document.body.style.overflow = "";
-    };
-  }, [open]);
-
-  const headerRef = useRef<HTMLElement>(null);
+  const reduced = useReducedMotion();
+  const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const toggleRef = useRef<HTMLButtonElement>(null);
   const overlayRef = useRef<HTMLDivElement>(null);
-
-  // Scroll-linked slide. `--nav-p` goes 0 -> 1 linearly while the home hero scrolls out from under
-  // the bar (0 = items centered / mobile icon centered, 1 = flush right). Transforms are pure CSS
-  // percentages driven by that one variable (see `slide` below), so nothing is measured per frame,
-  // React never re-renders on scroll, and the travel distance adapts by itself to label length,
-  // language, fonts and extra nav items. Inner pages are always docked (p = 1); the inline default
-  // below matches on server and client, so hydration is safe.
-  useEffect(() => {
-    const header = headerRef.current;
-    if (!header) return;
-    const targets = [header, overlayRef.current].filter(Boolean) as HTMLElement[];
-    const set = (name: string, value: string) =>
-      targets.forEach((el) => el.style.setProperty(name, value));
-    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)");
-
-    // Route switches (home <-> inner page) happen behind the transition curtain
-    // (lib/page-transition.ts), so the bar simply snaps to its new layout there.
-    if (!isHome) {
-      set("--nav-p", "1");
-      return;
-    }
-
-    // Scroll distance over which the slide happens: until the hero's bottom edge reaches the
-    // bar's bottom edge (i.e. section 2 arrives under the menu). Layout offsets (not rects) so a
-    // running `.page-enter` reveal can't skew it; re-measured on resize / hero or bar size changes.
-    let range = 1;
-    const measure = () => {
-      const hero = document.querySelector<HTMLElement>("main > section");
-      let heroBottom = window.innerHeight * 0.94;
-      if (hero) {
-        let top = 0;
-        for (let el: HTMLElement | null = hero; el; el = el.offsetParent as HTMLElement | null)
-          top += el.offsetTop;
-        heroBottom = top + hero.offsetHeight;
-      }
-      range = Math.max(1, heroBottom - header.getBoundingClientRect().bottom);
-    };
-    let raf = 0;
-    const update = () => {
-      raf = 0;
-      let p = Math.min(1, Math.max(0, window.scrollY / range));
-      if (reduce.matches) p = p >= 0.5 ? 1 : 0;
-      set("--nav-p", p.toFixed(4));
-    };
-    const onScroll = () => {
-      if (!raf) raf = requestAnimationFrame(update);
-    };
-    const onResize = () => {
-      measure();
-      onScroll();
-    };
-    measure();
-    update();
-    const ro = new ResizeObserver(onResize);
-    const hero = document.querySelector("main > section");
-    if (hero) ro.observe(hero);
-    ro.observe(header);
-    window.addEventListener("scroll", onScroll, { passive: true });
-    window.addEventListener("resize", onResize, { passive: true });
-    reduce.addEventListener("change", onScroll);
-    return () => {
-      ro.disconnect();
-      window.removeEventListener("scroll", onScroll);
-      window.removeEventListener("resize", onResize);
-      reduce.removeEventListener("change", onScroll);
-      if (raf) cancelAnimationFrame(raf);
-    };
-  }, [isHome]);
-
-  // Two-layer centering: a full-width track moves -50% of the bar while the group inside moves
-  // +50% of its own width, both scaled by (1 - p). p = 0 -> centered, p = 1 -> flush right.
-  const initial = { "--nav-p": isHome ? 0 : 1, "--nav-t": "0s" } as CSSProperties;
-  const slide =
-    "[transition:transform_var(--nav-t,0s)_cubic-bezier(.33,1,.68,1)] will-change-transform";
-  const track: CSSProperties = { transform: "translate3d(calc(-50% * (1 - var(--nav-p))), 0, 0)" };
-  const group: CSSProperties = { transform: "translate3d(calc(50% * (1 - var(--nav-p))), 0, 0)" };
+  const [origin, setOrigin] = useState("calc(100% - 44px) 36px");
 
   const links = [
+    ["/", t("home") ?? "Início"],
     ["/galeria", t("gallery")],
     ["/sets", t("sets")],
     ["/live-sets", t("liveSets")],
@@ -112,139 +48,185 @@ export function SiteHeader() {
     ["/presskit", t("presskit")],
   ] as const;
 
+  const open = mode !== "closed";
+  const overlay = mode === "overlay";
+
+  useEffect(() => {
+    setMode("closed");
+  }, [pathname]);
+
+  useEffect(() => {
+    setMenuOpen(overlay);
+    if (!open) return;
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setMode("closed");
+    };
+    window.addEventListener("keydown", onKey);
+    const previous = document.body.style.overflow;
+    if (overlay) document.body.style.overflow = "hidden";
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      document.body.style.overflow = previous;
+      setMenuOpen(false);
+    };
+  }, [open, overlay]);
+
+  const duration = reduced ? 0.2 : 0.8;
+
+  useEffect(() => {
+    const node = overlayRef.current;
+    if (!overlay || !node || reduced) return;
+    const animation = node.animate(
+      [{ clipPath: `circle(0% at ${origin})` }, { clipPath: `circle(150% at ${origin})` }],
+      { duration: duration * 1000, easing: "cubic-bezier(.22,1,.36,1)", fill: "both" },
+    );
+    return () => animation.cancel();
+  }, [overlay, origin, reduced, duration]);
+
+  const close = () => setMode("closed");
+
+  const renderItems = (labelClass: string) =>
+    links.map(([to, label], index) => {
+      const dimmed = hovered !== null && hovered !== index;
+      return (
+        <motion.li
+          key={to}
+          initial={reduced ? false : { opacity: 0, y: 28, filter: "blur(12px)" }}
+          animate={{ opacity: dimmed ? 0.32 : 1, y: 0, filter: "blur(0px)" }}
+          transition={{ duration, ease: EASE_OUT, delay: reduced ? 0 : 0.24 + index * 0.07 }}
+        >
+          <Link
+            to={to}
+            onClick={close}
+            onPointerEnter={(event) => {
+              if (event.pointerType === "mouse") setHovered(index);
+            }}
+            onPointerLeave={() => setHovered((current) => (current === index ? null : current))}
+            className="inline-flex items-baseline gap-4 text-white no-underline"
+          >
+            <span className="font-mono text-[13px] tracking-[0.16em] text-white/45 md:text-[11px]">{pad(index + 1)}</span>
+            <span className={labelClass}>{label}</span>
+          </Link>
+        </motion.li>
+      );
+    });
+
+  const datesIndex = links.length;
+
   return (
     <>
-      {/* Floating bar: detached from the viewport top/sides so content shows in the gap above.
-          Content edges sit at 20px (mobile) / 40px (desktop), where ScrollLogo docks the logo. */}
-      <header
-        ref={headerRef}
-        style={initial}
-        className="fixed inset-x-3 top-[max(env(safe-area-inset-top),0.75rem)] z-50 rounded-xl border border-border/50 bg-background/40 px-2 py-1 shadow-[0_10px_30px_-12px_rgb(0_0_0/0.65)] backdrop-blur-sm md:inset-x-5 md:top-4 md:px-5 md:py-2.5"
-      >
-        <div className="grid items-center">
-          <div
-            className="h-6 w-28 shrink-0 justify-self-start [grid-area:1/1]"
-            aria-hidden="true"
-          />
-          <div
-            className={`pointer-events-none hidden justify-end [grid-area:1/1] md:flex ${slide}`}
-            style={track}
-          >
-            <div
-              className={`pointer-events-auto flex items-center gap-4 lg:gap-6 xl:gap-7 ${slide}`}
-              style={group}
-            >
-              <nav className="flex items-center gap-4 lg:gap-6 xl:gap-7">
-                {links.map(([to, label]) => (
-                  <Link
-                    key={to}
-                    to={to}
-                    className="whitespace-nowrap font-mono text-[11px] uppercase tracking-[.1em] text-muted-foreground transition-colors hover:text-foreground lg:tracking-[.14em] xl:tracking-[.18em]"
-                    activeProps={{ className: "text-foreground" }}
-                  >
-                    <SwapText>{label}</SwapText>
-                  </Link>
-                ))}
-                <UpcomingDatesNavItem variant="desktop" />
-              </nav>
+      <header className="pointer-events-none fixed inset-x-0 top-0 z-[70] flex justify-center px-3 pt-[max(env(safe-area-inset-top),0.75rem)] md:px-6">
+        <div
+          className={`pointer-events-auto flex w-full max-w-[1200px] text-[16px] text-white md:text-[13px] ${
+            mode === "bar"
+              ? "max-h-[calc(100dvh-1.5rem)] flex-col overflow-y-auto py-3.5 pr-5 pl-5 md:py-4 md:pr-8 md:pl-8"
+              : "items-center justify-between py-3.5 pr-7 pl-8 [clip-path:polygon(22px_0,calc(100%-22px)_0,100%_50%,calc(100%-22px)_100%,22px_100%,0_50%)] md:py-[5px] md:pr-7 md:pl-[34px] md:[clip-path:polygon(16px_0,calc(100%-16px)_0,100%_50%,calc(100%-16px)_100%,16px_100%,0_50%)]"
+          }`}
+          style={{
+            color: "#fafafa",
+            background: "rgba(0,0,0,0.55)",
+            backdropFilter: "blur(16px)",
+            WebkitBackdropFilter: "blur(16px)",
+          }}
+        >
+          <div className="flex w-full items-center justify-between gap-3">
+            <Link to="/" aria-label="Tulio — início" className="inline-flex shrink-0 items-center text-[18px] no-underline md:text-[13px]">
+              <TulioWordmark className="text-[18px] md:text-[13px]" />
+            </Link>
+            <div className="flex shrink-0 items-center gap-3 md:gap-5">
               <LanguageSelector />
-            </div>
-          </div>
-          <div
-            className={`pointer-events-none flex justify-end [grid-area:1/1] md:hidden ${slide}`}
-            style={track}
-          >
-            <div className={`pointer-events-auto ${slide}`} style={group}>
-              <Button
-                variant="ghost"
+              <button
+                ref={toggleRef}
+                type="button"
+                className="flex items-center gap-3 bg-transparent p-0 text-inherit"
+                aria-expanded={open}
                 aria-label={open ? t("closeMenu") : t("openMenu")}
-                onClick={() => setOpen((v) => !v)}
-                className="size-11 shrink-0 text-foreground hover:bg-transparent hover:text-foreground focus-visible:bg-transparent"
+                onPointerEnter={(event) => {
+                  if (event.pointerType === "mouse") setButtonHover(true);
+                }}
+                onPointerLeave={() => setButtonHover(false)}
+                onClick={() => {
+                  if (open) {
+                    setMode("closed");
+                    return;
+                  }
+                  const button = toggleRef.current;
+                  if (button) {
+                    const rect = button.getBoundingClientRect();
+                    setOrigin(`${Math.round(rect.right - 20)}px ${Math.round(rect.top + rect.height / 2)}px`);
+                  }
+                  setMode(isOnOpeningSection() ? "overlay" : "bar");
+                }}
               >
-                {open ? <X className="size-6" /> : <Menu className="size-6" />}
-              </Button>
+                <span className="grid justify-items-end overflow-hidden py-1 text-[16px] leading-none tracking-[0.02em] md:py-[3px] md:text-[12px]" aria-hidden>
+                  <motion.span
+                    className="col-start-1 row-start-1"
+                    animate={{ y: open ? -22 : 0, opacity: open ? 0 : buttonHover || open ? 1 : 0.7 }}
+                    transition={{ duration: reduced ? 0 : 0.52, ease: [0.65, 0, 0.35, 1] }}
+                  >
+                    Menu
+                  </motion.span>
+                  <motion.span
+                    className="col-start-1 row-start-1"
+                    animate={{ y: open ? 0 : 22, opacity: open ? 1 : 0 }}
+                    transition={{ duration: reduced ? 0 : 0.52, ease: [0.65, 0, 0.35, 1] }}
+                  >
+                    Close
+                  </motion.span>
+                </span>
+              </button>
             </div>
           </div>
+          {mode === "bar" ? (
+            <nav aria-label="Menu" className="pt-4 pb-4">
+              <ul className="flex flex-col gap-2">
+                {renderItems(BAR_LABEL)}
+                <motion.li
+                  initial={reduced ? false : { opacity: 0, y: 28, filter: "blur(12px)" }}
+                  animate={{ opacity: hovered !== null && hovered !== datesIndex ? 0.32 : 1, y: 0, filter: "blur(0px)" }}
+                  transition={{ duration, ease: EASE_OUT, delay: reduced ? 0 : 0.24 + datesIndex * 0.07 }}
+                  onPointerEnter={(event) => {
+                    if (event.pointerType === "mouse") setHovered(datesIndex);
+                  }}
+                  onPointerLeave={() => setHovered((current) => (current === datesIndex ? null : current))}
+                >
+                  <UpcomingDatesNavItem variant="menu" index={datesIndex} labelClassName={BAR_LABEL} onSelect={close} />
+                </motion.li>
+              </ul>
+            </nav>
+          ) : null}
         </div>
       </header>
 
-      {/* Mobile fullscreen menu overlay (sibling so it can sit above the fixed center logo) */}
-      <div
-        ref={overlayRef}
-        style={initial}
-        aria-hidden={!open}
-        className={`md:hidden fixed inset-0 z-[65] flex flex-col justify-between px-6 pt-24 pb-10 transition-all duration-500 ease-[cubic-bezier(.76,0,.24,1)] ${
-          open ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
-        } bg-background/50 backdrop-blur-2xl`}
-      >
-        {/* gradient veils so the bar and the floating player read cleanly */}
-        <div className="pointer-events-none absolute inset-x-0 top-0 h-40 bg-gradient-to-b from-background/95 via-background/60 to-transparent" />
-        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-background via-background/80 to-transparent" />
-
-        {/* close button: same track as the menu icon, so it opens exactly where the icon is */}
-        <div
-          className="pointer-events-none absolute inset-x-[21px] top-[calc(max(env(safe-area-inset-top),0.75rem)+5px)] flex justify-end"
-          style={track}
-        >
-          <button
-            type="button"
-            aria-label={t("closeMenu")}
-            onClick={() => setOpen(false)}
-            className={`inline-flex size-11 items-center justify-center text-foreground hover:text-foreground ${open ? "pointer-events-auto" : "pointer-events-none"}`}
-            tabIndex={open ? 0 : -1}
-            style={group}
+      <AnimatePresence>
+        {overlay ? (
+          <motion.div
+            role="dialog"
+            aria-modal="true"
+            aria-label="Menu"
+            ref={overlayRef}
+            className="fixed inset-0 z-[65] flex flex-col bg-black/55 text-white backdrop-blur-2xl md:bg-transparent md:backdrop-blur-none"
+            style={{ clipPath: `circle(150% at ${origin})` }}
           >
-            <X className="size-6" />
-          </button>
-        </div>
-
-        <nav className="relative -mx-2 flex min-h-0 flex-col gap-1 overflow-y-auto overscroll-contain px-2">
-          {links.map(([to, label], i) => (
-            <Link
-              key={to}
-              to={to}
-              onClick={() => setOpen(false)}
-              className="group block py-3 font-display text-4xl font-black uppercase leading-none tracking-tight text-foreground/85 transition-all duration-500 hover:text-foreground"
-              style={{
-                transitionDelay: open ? `${120 + i * 80}ms` : "0ms",
-                opacity: open ? 1 : 0,
-                transform: open ? "translateY(0)" : "translateY(28px)",
-              }}
-            >
-              <span className="block overflow-hidden">
-                <span className="block transition-transform duration-500 group-hover:translate-y-[-105%]">
-                  {label}
-                </span>
-              </span>
-              <span className="block overflow-hidden">
-                <span className="block translate-y-[105%] text-foreground transition-transform duration-500 group-hover:translate-y-0">
-                  {label}
-                </span>
-              </span>
-            </Link>
-          ))}
-          <UpcomingDatesNavItem
-            variant="mobile"
-            index={links.length}
-            menuOpen={open}
-            onSelect={() => setOpen(false)}
-          />
-        </nav>
-
-        <div
-          className="relative flex shrink-0 items-center justify-between border-t border-border/40 pt-5"
-          style={{
-            opacity: open ? 1 : 0,
-            transform: open ? "translateY(0)" : "translateY(20px)",
-            transition: `opacity .5s cubic-bezier(.76,0,.24,1)${open ? " .12s" : ""}, transform .5s cubic-bezier(.76,0,.24,1)${open ? " .12s" : ""}`,
-          }}
-        >
-          <LanguageSelector mobile />
-          <span className="font-mono text-[10px] uppercase tracking-[.2em] text-muted-foreground">
-            {t("location")}
-          </span>
-        </div>
-      </div>
+            <nav className="flex flex-1 flex-col justify-center overflow-y-auto px-6 pt-28 pb-8 md:px-16 md:pb-10">
+              <ul className="flex flex-col gap-2 md:gap-1">
+                {renderItems(OVERLAY_LABEL)}
+                <motion.li
+                  initial={reduced ? false : { opacity: 0, y: 28, filter: "blur(12px)" }}
+                  animate={{ opacity: hovered !== null && hovered !== datesIndex ? 0.32 : 1, y: 0, filter: "blur(0px)" }}
+                  transition={{ duration, ease: EASE_OUT, delay: reduced ? 0 : 0.24 + datesIndex * 0.07 }}
+                  onPointerEnter={(event) => {
+                    if (event.pointerType === "mouse") setHovered(datesIndex);
+                  }}
+                  onPointerLeave={() => setHovered((current) => (current === datesIndex ? null : current))}
+                >
+                  <UpcomingDatesNavItem variant="menu" index={datesIndex} labelClassName={OVERLAY_LABEL} onSelect={close} />
+                </motion.li>
+              </ul>
+            </nav>
+          </motion.div>
+        ) : null}
+      </AnimatePresence>
 
       <UpcomingDatesDialog />
     </>

@@ -1,6 +1,6 @@
 import { useRouterState } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
-import logo from "@/assets/jula-logo.png.asset.json";
+import { TulioWordmark } from "@/components/tulio/TulioWordmark";
 import { useI18n } from "@/lib/i18n";
 import {
   completeIntro,
@@ -128,15 +128,10 @@ export function LoadingExperience() {
     >
       <div className="intro-curtain">
         <div className="intro-stage">
-          <img
-            src={logo.url}
-            alt=""
-            className="intro-logo h-auto w-full invert"
-            fetchPriority="high"
-          />
+          <TulioWordmark className="intro-logo text-[clamp(3.5rem,12vw,7rem)] text-foreground" />
           <div className="intro-meta flex flex-col items-center gap-4">
             <div className="h-px w-52 overflow-hidden bg-border">
-              <div ref={barRef} className="intro-bar h-full w-full origin-left bg-primary" />
+              <div ref={barRef} className="intro-bar h-full w-full origin-left bg-white" />
             </div>
             <p className="font-mono text-[10px] uppercase tracking-[.32em] text-muted-foreground">
               {t("loading")}

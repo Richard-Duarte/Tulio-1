@@ -28,7 +28,7 @@ export const Route = createFileRoute("/live-sets")({
 function Empty() {
   const { t } = useI18n();
   return (
-    <main>
+    <main className="nc-page bg-black">
       <PageIntro
         eyebrow={t("liveSetsEyebrow")}
         title={t("liveSets")}
@@ -45,7 +45,7 @@ function LiveSets() {
   const { liveSets: items } = Route.useLoaderData();
   const [open, setOpen] = useState<LiveSet | null>(null);
   return (
-    <main>
+    <main className="nc-page bg-black">
       <PageIntro
         eyebrow={t("liveSetsEyebrow")}
         title={t("liveSets")}

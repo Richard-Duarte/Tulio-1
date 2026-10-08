@@ -1,2 +1,28 @@
-import { SwapText } from "@/components/jula/SwapText";
-export function PageIntro({eyebrow,title,description}:{eyebrow:string;title:string;description:string}){return <section className="px-5 pb-16 pt-36 md:px-10 md:pb-24 md:pt-48"><p className="font-mono text-[10px] uppercase tracking-[.22em] text-primary">{eyebrow}</p><h1 className="mt-5 max-w-5xl text-5xl font-semibold uppercase leading-[.9] md:text-8xl"><SwapText>{title}</SwapText></h1><p className="mt-7 max-w-xl text-base leading-7 text-muted-foreground">{description}</p></section>}
+import { SpacedHeading } from "@/components/nocturna/SpacedHeading";
+import { SectionWipe } from "@/components/nocturna/SectionTransition";
+import { NocturnaEyebrow } from "@/components/nocturna/NocturnaShell";
+
+export function PageIntro({
+  eyebrow,
+  title,
+  description,
+}: {
+  eyebrow: string;
+  title: string;
+  description: string;
+}) {
+  return (
+    <>
+      <SectionWipe />
+      <section className="nc-grid-border-b px-5 pb-14 pt-28 md:px-10 md:pb-20 md:pt-36 lg:px-14">
+        <div className="max-w-4xl">
+          <NocturnaEyebrow>{eyebrow}</NocturnaEyebrow>
+          <SpacedHeading as="h1" className="mt-5 text-[clamp(2rem,5.5vw,3.65rem)]">
+            {title}
+          </SpacedHeading>
+          <p className="nc-lead mt-6 max-w-2xl">{description}</p>
+        </div>
+      </section>
+    </>
+  );
+}

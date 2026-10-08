@@ -37,14 +37,13 @@ const messages = {
     location: "São Paulo · Brasil",
     biography: "01 · Biografia",
     visualArchive: "Arquivo visual",
-    visualTitle: "Entre luz, som e movimento.",
+    visualTitle: "O arquivo ainda está em silêncio.",
     viewGallery: "Ver galeria",
     galleryEyebrow: "01 · Arquivo",
     galleryDescription:
       "Fragmentos de pista, bastidores e encontros que atravessam a trajetória de Tulio.",
     setsEyebrow: "02 · Escuta",
-    setsDescription:
-      "Gravações que atravessam House, Minimal, Electro e Trance, construídas para diferentes pistas e atmosferas.",
+    setsDescription: "Sets de techno, secos e noturnos, feitos para a pista.",
     setsSoon: "Novos sets em breve.",
     releasesEyebrow: "03 · Discografia",
     releasesDescription:
@@ -150,7 +149,7 @@ const messages = {
     location: "São Paulo · Brasil",
     biography: "01 · Biografía",
     visualArchive: "Archivo visual",
-    visualTitle: "Entre luz, sonido y movimiento.",
+    visualTitle: "El archivo todavía está en silencio.",
     viewGallery: "Ver galería",
     galleryEyebrow: "01 · Archivo",
     galleryDescription:
@@ -263,7 +262,7 @@ const messages = {
     location: "São Paulo · Brazil",
     biography: "01 · Biography",
     visualArchive: "Visual archive",
-    visualTitle: "Between light, sound and movement.",
+    visualTitle: "The archive is still quiet.",
     viewGallery: "View gallery",
     galleryEyebrow: "01 · Archive",
     galleryDescription:
@@ -376,7 +375,7 @@ const messages = {
     location: "São Paulo · Brésil",
     biography: "01 · Biographie",
     visualArchive: "Archives visuelles",
-    visualTitle: "Entre lumière, son et mouvement.",
+    visualTitle: "L'archive est encore silencieuse.",
     viewGallery: "Voir la galerie",
     galleryEyebrow: "01 · Archives",
     galleryDescription:
@@ -489,7 +488,7 @@ const messages = {
     location: "São Paulo · Brasilien",
     biography: "01 · Biografie",
     visualArchive: "Visuelles Archiv",
-    visualTitle: "Zwischen Licht, Klang und Bewegung.",
+    visualTitle: "Das Archiv ist noch still.",
     viewGallery: "Galerie ansehen",
     galleryEyebrow: "01 · Archiv",
     galleryDescription:
@@ -602,7 +601,7 @@ const messages = {
     location: "São Paulo · Brazilië",
     biography: "01 · Biografie",
     visualArchive: "Visueel archief",
-    visualTitle: "Tussen licht, geluid en beweging.",
+    visualTitle: "Het archief is nog stil.",
     viewGallery: "Bekijk galerij",
     galleryEyebrow: "01 · Archief",
     galleryDescription: "Momenten van de dansvloer, backstage en ontmoetingen tijdens Tulio's reis.",

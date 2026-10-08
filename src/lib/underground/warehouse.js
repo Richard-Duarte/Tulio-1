@@ -187,6 +187,59 @@ export async function loadWarehouseGLB(loader, probe = WAREHOUSE.glb.autoDetect 
   const c = box.getCenter(V());
   inner.position.x -= c.x; inner.position.z -= c.z; inner.position.y -= box.min.y;
   root.position.fromArray(WAREHOUSE.glb.offset);
-  root.traverse((o) => { if (o.isMesh) o.receiveShadow = true; });
+  const { emissive, emissiveGamma, tint, metalness, skylight } = WAREHOUSE.glb;
+  // One colour drives everything that reads as "light coming through the skylights": the panel seen
+  // through the slots and the baked light pool on the floor. app.js animates it (`setSkyColor`).
+  const skyColor = new THREE.Color(1, 1, 1);
+  const skyUniform = { value: skyColor };
+  root.traverse((o) => {
+    if (!o.isMesh) return;
+    o.receiveShadow = true;
+    // Sketchfab interiors ship with a baked (daylight) lightmap in the emissive slot; dim it so the
+    // club lighting reads, and tone down the metallic concrete which has no environment to reflect.
+    for (const m of [o.material].flat()) {
+      if (!m) continue;
+      if (emissive != null && 'emissiveIntensity' in m) m.emissiveIntensity = emissive;
+      if (tint != null) m.color?.multiplyScalar(tint);
+      if (metalness != null && 'metalness' in m) m.metalness = Math.min(m.metalness, metalness);
+      if (m.emissiveMap) {
+        // Baked lightmap → tinted by the skylight colour; the power curve keeps only the light pools
+        // (the lit-grey concrete would otherwise feed the bloom and wash the frame out).
+        const gamma = emissiveGamma || 1;
+        m.onBeforeCompile = (shader) => {
+          shader.uniforms.uSkyColor = skyUniform;
+          shader.fragmentShader = shader.fragmentShader
+            .replace('#include <common>', '#include <common>\nuniform vec3 uSkyColor;')
+            .replace(
+              '#include <emissivemap_fragment>',
+              `#ifdef USE_EMISSIVEMAP
+                vec4 emissiveColor = texture2D( emissiveMap, vEmissiveMapUv );
+                totalEmissiveRadiance *= pow( emissiveColor.rgb, vec3( ${gamma.toFixed(2)} ) ) * uSkyColor;
+              #endif`,
+            );
+        };
+        m.customProgramCacheKey = () => `venue-emissive-${gamma}`;
+        m.needsUpdate = true;
+      }
+    }
+  });
+  // Light panel above the ceiling: the skylight slots are open, so this is what you see through them.
+  // Plain colour > 1 so the bloom picks it up like a real light box.
+  if (skylight) {
+    const panelMat = new THREE.MeshBasicMaterial({ color: 0xffffff, fog: false, toneMapped: true });
+    const dims = box.getSize(V());
+    const panel = new THREE.Mesh(new THREE.PlaneGeometry(dims.x * 1.2, dims.z * 1.2), panelMat);
+    panel.name = 'skylight-panel';
+    panel.rotation.x = Math.PI / 2; // face down
+    panel.position.set(0, dims.y - (skylight.depth ?? 0.3), 0);
+    root.add(panel);
+    const gain = skylight.intensity ?? 2.5;
+    root.userData.skylight = { panel, mat: panelMat, gain };
+  }
+  root.userData.setSkyColor = (color, pulse = 1) => {
+    skyColor.copy(color);
+    const sk = root.userData.skylight;
+    if (sk) sk.mat.color.copy(color).multiplyScalar(sk.gain * pulse);
+  };
   return root;
 }

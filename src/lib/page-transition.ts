@@ -95,6 +95,10 @@ function stopRunning() {
   running = [];
 }
 
+function pulseGlitch(_root: HTMLElement) {
+  /* Nocturna uses a clean curtain — no RGB glitch slices. */
+}
+
 // The panel is a solid colour, so sliding it (transform) looks exactly like the intro's clip-path
 // wipe but runs on the compositor: smooth even while the next page is busy on the main thread.
 // The edge is a full-size box whose bottom border is the glowing line, moved in sync with it.
@@ -112,6 +116,7 @@ function closeCurtain(): Promise<void> {
   stopRunning();
   phase = "closing";
   root.setAttribute("data-active", "");
+  pulseGlitch(root);
   if (reducedMotion()) {
     panel.style.transform = SHOWN;
     running = [
@@ -152,6 +157,7 @@ function openCurtain(): Promise<void> {
   stopRunning();
   phase = "opening";
   closing = null;
+  pulseGlitch(root);
   if (reducedMotion()) {
     panel.style.transform = SHOWN;
     running = [
@@ -180,6 +186,7 @@ function openCurtain(): Promise<void> {
       for (const animation of animations) animation.cancel();
       running = [];
       panel.style.transform = "";
+      root.classList.remove("is-glitching");
       root.removeAttribute("data-active");
       phase = "idle";
     },

@@ -1,6 +1,6 @@
 import { Link, useRouterState } from "@tanstack/react-router";
 import { useEffect, useRef } from "react";
-import logo from "@/assets/jula-logo.png.asset.json";
+import { TulioWordmark } from "@/components/tulio/TulioWordmark";
 
 export function ScrollLogo() {
   const pathname = useRouterState({ select: (state) => state.location.pathname });
@@ -26,9 +26,11 @@ export function ScrollLogo() {
       const bar = document.querySelector("header > div");
       const barH = bar ? bar.getBoundingClientRect().height : 49;
       const barTop = bar ? bar.getBoundingClientRect().top : 20;
-      const logoH = endWidth * 0.214; // logo aspect ratio
+      const logoH = endWidth * 0.22;
       const endY = barTop + (barH - logoH) / 2;
       element.style.width = `${width}px`;
+      element.style.fontSize = `${width * 0.16}px`;
+      element.style.opacity = home ? String(Math.min(1, Math.max(0, (progress - 0.08) / 0.35))) : "1";
       element.style.transform = `translate3d(${startX + (endX - startX) * progress}px, ${startY + (endY - startY) * progress}px, 0)`;
     };
     const schedule = () => {
@@ -48,10 +50,10 @@ export function ScrollLogo() {
     <Link
       ref={ref}
       to="/"
-      aria-label="Jula — início"
-      className="fixed left-0 top-0 z-[60] block w-[min(76vw,640px)] will-change-transform"
+      aria-label="Tulio — início"
+      className="fixed left-0 top-0 z-[60] block w-[min(76vw,640px)] opacity-0 will-change-transform"
     >
-      <img src={logo.url} alt="Jula" className="h-auto w-full invert" fetchPriority="high" />
+      <TulioWordmark className="text-[1em] text-foreground" />
     </Link>
   );
 }

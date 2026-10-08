@@ -9,18 +9,32 @@
 export const WAREHOUSE = {
   width: 24,          // X
   length: 40,         // Z
-  eaveHeight: 8,      // wall height at the sides
+  eaveHeight: 4.8,    // wall height at the sides (chain hoists reach up to here)
   ridgeHeight: 10.5,  // roof peak
   bays: 6,            // number of structural bays along Z (columns + trusses)
   skylightBays: [1, 3, 4], // bays that get a (dirty) roof skylight
-  // Drop public/models/warehouse.glb in and it replaces the procedural placeholder.
+  // Venue model (replaces the procedural warehouse). Tulio: brutalist concrete interior.
+  // Native size 40.8 x 42.2 m with a 3.6 m ceiling; scaled up so the ceiling clears the light truss,
+  // then pushed along +Z so its back wall sits behind the booth (z ≈ -20) like the warehouse end wall.
   glb: {
-    url: 'models/warehouse.glb',
+    url: 'models/brutalist-interior.glb',
     autoDetect: true,  // probe for the file at startup (a missing file logs one harmless 404); false = always procedural
-    fitLength: 40,     // auto-scale so the model's longest horizontal side = this (null = keep scale)
-    rotationY: 0,      // rotate if the model's long axis is not Z
-    offset: [0, 0, 0], // manual nudge after auto-centering
-    credit: '“Abandoned Warehouse Building” by jimbogies — Sketchfab (Standard license)',
+    fitLength: 66,     // auto-scale so the model's longest horizontal side = this (null = keep scale) → inner ceiling ≈ 4.85 m
+    rotationY: Math.PI / 2, // the 5 skylight slots run along the model's X: turn them to run along Z (booth axis)
+    offset: [3.5, 0, 11.6], // measured: inner back wall → z ≈ -20 (behind the booth), the 5 slots centred on x = 0 running z ≈ -15 … 11 over the floor
+    emissive: 1.0,     // baked light pools (emissive slot), tinted live by the skylight colour …
+    emissiveGamma: 2.2, // … with a power curve so the grey concrete bake doesn't feed the bloom
+    // The ceiling slots are open: a colour-cycling light panel above the slab is what shows through them.
+    skylight: {
+      depth: 0.25, intensity: 1.35, cycleSeconds: 24, saturation: 0.75, lightness: 0.6,
+      lights: [[-6, -10], [6, -10], [-6, 2], [6, 2]], lightIntensity: 22, // point lights under the slots (x, z)
+    },
+    tint: null,        // keep the concrete albedo as authored
+    metalness: 0.15,   // cap the (very high) baked metalness: no environment map to reflect, it would render black
+    fogDensity: 0.014, // thinner fog than the warehouse so the concrete hall and its skylight slots read
+    hemi: 0.45,        // more ambient than the warehouse so the concrete reads
+    hazeOpacity: 0.06,
+    credit: '“Brutalist Interior” — Sketchfab',
   },
 };
 
@@ -49,6 +63,9 @@ export const BOOTH = {
     position: [0, 0.6, -17.76], rotY: 0,
     scale: 1,            // real-world size already; `height` (m) would normalize instead
     keepOrigin: true,    // don't recentre on the bounding box (the arms reach forward)
+    // Look from the reference photo: black tee, no chain. Material name → colour multiplier; mesh names hidden.
+    materialTint: { DJ_Clothes: 0x202020 },
+    hideMeshes: ['Chain1'],
     // Baked clip (DJ_Dance_128BPM, 16 beats) is locked to the scene beat clock (MUSIC.bpm):
     // jog/EQ/fader moves, bounce + head nod on every kick, right-fist pump to the crowd on clip beats 11-15.
     clipName: 'DJ_Dance_128BPM', clipBpm: 128, clipBeats: 16,
@@ -98,7 +115,7 @@ export const SUB_LAYOUTS = {
 
 // Lighting truss hanging over the dance floor (rectangle, box-truss section).
 export const LIGHT_TRUSS = {
-  y: 6.6, x: [-6, 6], z: [-14.5, -3.5], section: 0.3,
+  y: 4.3, x: [-6, 6], z: [-14.5, -3.5], section: 0.3, // under the brutalist ceiling (inner ≈ 4.85 m)
   movers: [ // moving heads hung under the truss
     [-4.5, -14.5], [-1.5, -14.5], [1.5, -14.5], [4.5, -14.5],
     [-6, -8], [6, -8],
@@ -111,7 +128,8 @@ export const LIGHT_TRUSS = {
   strobes: [[-3, -3.5], [3, -3.5], [0, -14.5]],
 };
 
-export const LASER = { origin: [0, 3.4, -19.6], beams: 16, spread: 1.1, length: 30, color: 0x22ff55 };
+// Triangle mark on the inner back wall, above the booth, facing the dance floor (+Z).
+export const BACK_LOGO = { url: '/brand/tulio-mark.png', position: [0, 3.15, -19.45], size: 2.4 };
 
 export const MUSIC = { bpm: 128 };
 

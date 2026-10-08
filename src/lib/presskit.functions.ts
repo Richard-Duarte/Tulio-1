@@ -77,15 +77,7 @@ export const getPresskitContent = createServerFn({ method: "GET" }).handler(
   async (): Promise<PresskitContent> => {
     noStore();
     if (!(await hasPresskitAccess())) return { unlocked: false };
-    const { publicSupabase } = await import("@/lib/supabase-public.server");
-    const { data, error } = await publicSupabase()
-      .from("media")
-      .select("id,kind,title,public_url,poster_url,alt_text,downloadable,presskit_enabled")
-      .eq("visible", true)
-      .eq("presskit_enabled", true)
-      .order("sort_order");
-    if (error) throw error;
-    return { unlocked: true, media: data ?? [], rider: TECHNICAL_RIDER };
+    return { unlocked: true, media: [], rider: TECHNICAL_RIDER };
   },
 );
 

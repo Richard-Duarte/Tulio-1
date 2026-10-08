@@ -3,7 +3,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { ImageUp, LoaderCircle, Pencil, Plus, Save, Trash2, Wand2, X } from "lucide-react";
 import { useRef, useState } from "react";
 import { toast } from "sonner";
-import logo from "@/assets/jula-logo.png.asset.json";
+import { TulioWordmark } from "@/components/tulio/TulioWordmark";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
@@ -279,7 +279,7 @@ export function UpcomingDatesAdmin() {
                   <img src={shown} alt="" className="size-full object-cover" />
                 ) : (
                   <div className="grid size-full place-items-center bg-gradient-to-br from-primary/40 to-background">
-                    <img src={logo.url} alt="" className="w-2/3 opacity-80" />
+                    <TulioWordmark className="text-2xl text-foreground opacity-80" />
                   </div>
                 )}
               </div>

@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo } from "react";
 import { PageIntro } from "@/components/jula/PageIntro";
-import { SwapText } from "@/components/jula/SwapText";
+import { TitleMetal } from "@/components/tulio/TitleMetal";
 import { SetsPlayer } from "@/components/sets/SetsPlayer";
 import { SetsPlayerProvider, useSetsPlayer } from "@/components/sets/SetsPlayerProvider";
 import { UndergroundScene } from "@/components/sets/UndergroundScene";
@@ -59,10 +59,18 @@ function Sets() {
         })),
     [sets],
   );
+  if (tracks.length === 0) {
+    return (
+      <>
+        <UndergroundScene />
+        <Empty />
+      </>
+    );
+  }
   return (
     <SetsPlayerProvider tracks={tracks} shuffle={setsShuffle}>
       <UndergroundScene />
-      <SetsStage empty={tracks.length === 0} />
+      <SetsStage empty={false} />
       <SetsPlayer />
     </SetsPlayerProvider>
   );
@@ -86,15 +94,11 @@ function SetsStage({ empty }: { empty: boolean }) {
       <section
         className={`px-5 pb-10 pt-24 transition-[opacity,transform] duration-300 ease-out motion-reduce:transform-none motion-reduce:transition-none md:px-10 md:pb-16 md:pt-48 ${sceneOnly ? "-translate-y-2 opacity-0 [&_*]:!pointer-events-none" : ""}`}
       >
-        <p className="font-mono text-[10px] uppercase tracking-[.22em] text-primary">
-          {t("setsEyebrow")}
-        </p>
-        <h1 className="mt-4 max-w-5xl text-5xl font-semibold uppercase leading-[.9] md:mt-5 md:text-8xl">
-          <SwapText>{t("sets")}</SwapText>
-        </h1>
-        <p
-          className={`mt-7 max-w-xl text-base leading-7 text-muted-foreground ${empty ? "" : "max-md:hidden"}`}
-        >
+        <p className="nc-eyebrow">{t("setsEyebrow")}</p>
+        <TitleMetal className="mt-4 max-w-4xl text-[clamp(2rem,5.5vw,3.75rem)] md:mt-5">
+          {t("sets")}
+        </TitleMetal>
+        <p className={`nc-lead mt-6 max-w-xl ${empty ? "" : "max-md:hidden"}`}>
           {empty ? t("setsSoon") : t("setsDescription")}
         </p>
       </section>

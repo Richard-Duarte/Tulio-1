@@ -75,8 +75,8 @@ export async function createScene(target, o = {}) {
 
   const scene = new THREE.Scene();
   scene.background = new THREE.Color(0x020203);
-  scene.fog = new THREE.FogExp2(0x050408, 0.03);
-  const hemi = new THREE.HemisphereLight(0x2a2a40, 0x0a0806, 0.15); scene.add(hemi);
+  scene.fog = new THREE.FogExp2(0x050408, WAREHOUSE.glb?.fogDensity ?? 0.03);
+  const hemi = new THREE.HemisphereLight(0x2a2a40, 0x0a0806, WAREHOUSE.glb?.hemi ?? 0.15); scene.add(hemi);
   if (o.debug) { hemi.color.set(0xffffff); hemi.groundColor.set(0x888888); hemi.intensity = 2.5; scene.fog.density = 0.002; }
 
   const camera = new THREE.PerspectiveCamera(embed ? CAMERA.embed.fov : CAMERA.fov, W / H, 0.05, 200);
@@ -147,27 +147,40 @@ export async function createScene(target, o = {}) {
     if (ownCanvas) canvas.remove();
     scene.clear();
   }
-  const api = { dispose, scene, camera, renderer, get controls() { return controls; }, get cameraMode() { return embed ? camMode : inIntro ? 'intro' : 'user'; }, quality: qName, credits: CREDITS, get disposed() { return disposed; } };
+  const api = { dispose, scene, camera, renderer, composer, get controls() { return controls; }, get cameraMode() { return embed ? camMode : inIntro ? 'intro' : 'user'; }, quality: qName, credits: CREDITS, get disposed() { return disposed; } };
   o.signal?.addEventListener('abort', dispose);
 
   // ── load everything ──
   const loader = new GLTFLoader(); loader.setMeshoptDecoder(MeshoptDecoder);
   const safe = (p, name) => p.catch((e) => { console.error('failed to load', name, e); return null; });
   const [whGLB, top, sub, djSetup, dj] = await Promise.all([
-    loadWarehouseGLB(loader, embed ? false : undefined),
-    safe(loadModel(loader, MODELS.top), 'top'),
-    safe(loadModel(loader, MODELS.sub), 'sub'),
+    loadWarehouseGLB(loader),
+    MODELS.top ? safe(loadModel(loader, MODELS.top), 'top') : null,
+    MODELS.sub ? safe(loadModel(loader, MODELS.sub), 'sub') : null,
     safe(loadModel(loader, MODELS.djSetup), 'djSetup'),
     buildDJ(loader),
   ]);
   if (disposed) { dispose(); return api; }
   const credits = [...CREDITS];
-  if (whGLB) { scene.add(whGLB); credits.unshift(WAREHOUSE.glb.credit); } else scene.add(buildProceduralWarehouse());
+  const skyLights = [];
+  if (whGLB) {
+    scene.add(whGLB); credits.unshift(WAREHOUSE.glb.credit);
+    // light actually falling from the skylight slots onto the floor (same colour as the panel)
+    for (const [x, z] of WAREHOUSE.glb.skylight?.lights ?? []) {
+      const l = new THREE.PointLight(0xffffff, WAREHOUSE.glb.skylight.lightIntensity ?? 60, 32, 1.6);
+      l.position.set(x, WAREHOUSE.eaveHeight - 0.15, z); scene.add(l); skyLights.push(l);
+    }
+  } else scene.add(buildProceduralWarehouse());
   api.credits = credits;
   if (o.creditsEl) o.creditsEl.innerHTML = credits.join('<br>');
-  scene.add(buildRig({ top, sub, djSetup }));
+  const rig = buildRig({ top, sub, djSetup }); scene.add(rig);
+  const rigMixers = rig.userData.mixers ?? [];
   if (!shadows) scene.traverse((m) => { if (m.isMesh) m.castShadow = false; });
   const show = buildShow(scene, { strobe: o.strobe !== false, shadows, maxMovers: Q.maxMovers, crowdCount: Q.crowd, hazeCount: Q.haze });
+  if (whGLB) { // the venue model brings its own ceiling: no roof skylight shafts, lighter haze
+    for (const s of show.shafts) s.visible = false;
+    if (WAREHOUSE.glb.hazeOpacity != null) show.hazeMat.opacity = WAREHOUSE.glb.hazeOpacity;
+  }
   scene.add(dj.object);
   if (dj.object.userData.keyLight) { const k = dj.object.userData.keyLight; scene.add(k, k.target); }
   api.djMode = dj.mode; api.crowdCount = show.crowd?.count ?? 0;
@@ -234,7 +247,7 @@ export async function createScene(target, o = {}) {
   }
 
   // ── animation ──
-  const tmpDir = new THREE.Vector3(), tmpLook = new THREE.Vector3(), tmpCol = new THREE.Color(), washCol = new THREE.Color(0xff2a00);
+  const tmpDir = new THREE.Vector3(), tmpLook = new THREE.Vector3(), tmpCol = new THREE.Color(), tmpCol2 = new THREE.Color(), washCol = new THREE.Color(0xff2a00);
   const timer = new THREE.Timer(); timer.connect?.(document); cleanups.push(() => timer.dispose?.());
   const beatLen = 60 / MUSIC.bpm;
   const riserLED = scene.getObjectByName('riserLED');
@@ -287,8 +300,20 @@ export async function createScene(target, o = {}) {
       if (h.position.z < -19 || h.position.z > 9) h.userData.v.z *= -1;
     }
     show.sodium.intensity = 25 * (Math.sin(time * 37) > 0.97 ? 0.2 : 1);
+    if (whGLB?.userData.setSkyColor) {
+      // skylight light boxes: slow hue sweep, pulled towards the current palette each phrase, breathing with the kick
+      const sk = WAREHOUSE.glb.skylight ?? {};
+      const hue = (time / (sk.cycleSeconds ?? 24)) % 1;
+      tmpCol.setHSL(hue, sk.saturation ?? 0.75, sk.lightness ?? 0.6);
+      tmpCol2.setHex(pal[phrase % 2 === 0 ? 0 : 1]);
+      tmpCol.lerp(tmpCol2, 0.35);
+      whGLB.userData.setSkyColor(tmpCol, 0.85 + 0.25 * kickv);
+      for (const l of skyLights) l.color.copy(tmpCol);
+      hemi.color.copy(tmpCol).lerp(tmpCol2.setScalar(1), 0.4); // the room picks up the skylight colour
+    }
     show.crowd?.update(beat);
     dj.update(beat, dt);
+    for (const m of rigMixers) m.update(dt);
     grain.uniforms.time.value = time;
   }
 

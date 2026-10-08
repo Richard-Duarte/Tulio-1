@@ -28,7 +28,7 @@ import {
   useSyncExternalStore,
 } from "react";
 import { createPortal } from "react-dom";
-import logo from "@/assets/jula-logo.png.asset.json";
+import { TulioWordmark } from "@/components/tulio/TulioWordmark";
 import { SwapText } from "@/components/jula/SwapText";
 import { useI18n, type Locale } from "@/lib/i18n";
 import { getUpcomingDates, type UpcomingDate } from "@/lib/upcoming-dates.functions";
@@ -42,7 +42,7 @@ function setOpenState(next: boolean) {
   isOpen = next;
   listeners.forEach((l) => l());
 }
-const openUpcomingDates = () => setOpenState(true);
+export const openUpcomingDates = () => setOpenState(true);
 const closeUpcomingDates = () => setOpenState(false);
 function useUpcomingDatesOpen() {
   return useSyncExternalStore(
@@ -130,11 +130,13 @@ export function UpcomingDatesNavItem({
   variant,
   index = 0,
   menuOpen = false,
+  labelClassName,
   onSelect,
 }: {
-  variant: "desktop" | "mobile";
+  variant: "desktop" | "mobile" | "menu";
   index?: number;
   menuOpen?: boolean;
+  labelClassName?: string;
   onSelect?: () => void;
 }) {
   const { t } = useI18n();
@@ -144,6 +146,21 @@ export function UpcomingDatesNavItem({
     onSelect?.();
     openUpcomingDates();
   };
+  if (variant === "menu")
+    return (
+      <button
+        type="button"
+        onClick={onClick}
+        aria-haspopup="dialog"
+        aria-expanded={open}
+        className="inline-flex items-baseline gap-4 bg-transparent p-0 text-left text-white"
+      >
+        <span className="font-mono text-[13px] tracking-[0.16em] text-white/45 md:text-[11px]">
+          {String(index + 1).padStart(2, "0")}
+        </span>
+        <span className={labelClassName}>{label}</span>
+      </button>
+    );
   if (variant === "desktop")
     return (
       <button
@@ -151,7 +168,8 @@ export function UpcomingDatesNavItem({
         onClick={onClick}
         aria-haspopup="dialog"
         aria-expanded={open}
-        className={`whitespace-nowrap font-mono text-[11px] uppercase tracking-[.1em] transition-colors hover:text-foreground lg:tracking-[.14em] xl:tracking-[.18em] ${open ? "text-foreground" : "text-muted-foreground"}`}
+        data-glitch={label}
+        className={`nav-pill-link relative z-[1] whitespace-nowrap px-3 py-2 font-mono text-[10px] uppercase tracking-[0.2em] ${open ? "text-white" : "text-white/55"}`}
       >
         <SwapText>{label}</SwapText>
       </button>
@@ -401,12 +419,9 @@ function Fallback() {
   return (
     <div
       className="grid size-full place-items-center"
-      style={{
-        background:
-          "radial-gradient(120% 90% at 30% 20%, oklch(0.55 0.2 258 / .9), transparent 60%), radial-gradient(90% 80% at 80% 90%, oklch(0.35 0.15 280 / .9), transparent 60%), #0b0d18",
-      }}
+      style={{ background: "#0c0c0c" }}
     >
-      <img src={logo.url} alt="" className="w-1/2 opacity-90" />
+      <TulioWordmark className="text-4xl text-white" />
     </div>
   );
 }

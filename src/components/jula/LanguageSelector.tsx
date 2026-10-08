@@ -15,11 +15,11 @@ export function LanguageSelector({ mobile = false }: { mobile?: boolean }) {
       aria-label={t("language")}
       className={mobile
         ? "text-left font-mono text-xs uppercase tracking-[.2em] text-muted-foreground outline-none transition-colors hover:text-foreground focus-visible:text-foreground"
-        : "font-mono text-[11px] uppercase tracking-[.18em] text-muted-foreground outline-none transition-colors hover:text-foreground focus-visible:text-foreground"}
+        : "font-mono text-[11px] uppercase tracking-[0.18em] text-white/80 outline-none hover:text-white focus-visible:text-white"}
     >
       <SwapText>{mobile ? languageNames[locale] : locale.toUpperCase()}</SwapText>
     </DropdownMenuTrigger>
-    <DropdownMenuContent align="end" className="min-w-44">
+    <DropdownMenuContent align="end" className="z-[80] min-w-44">
       <DropdownMenuRadioGroup value={locale} onValueChange={(value) => setLocale(value as Locale)}>
         {locales.map((item) => <DropdownMenuRadioItem key={item} value={item} className="font-mono text-xs">{languageNames[item]}</DropdownMenuRadioItem>)}
       </DropdownMenuRadioGroup>

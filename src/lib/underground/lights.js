@@ -1,7 +1,6 @@
 // Show lighting: truss, moving heads with volumetric beams, washes, strobes, laser fan, haze, crowd.
 import * as THREE from 'three';
-import { LIGHT_TRUSS, LASER, CROWD, WAREHOUSE, CAMERA } from './layout.js';
-import { beamsMesh } from './warehouse.js';
+import { LIGHT_TRUSS, CROWD, WAREHOUSE, CAMERA, BACK_LOGO } from './layout.js';
 import { smokeTexture, radialTexture, rand } from './textures.js';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 
@@ -42,51 +41,18 @@ export function makeBeam(length, angle, color, intensity = 1) {
 
 export function buildShow(scene, opts) {
   const show = new THREE.Group(); show.name = 'show'; scene.add(show);
-  const T = LIGHT_TRUSS, y = T.y, s = T.section;
-  const alu = new THREE.MeshStandardMaterial({ color: 0x9a9a9a, metalness: 0.9, roughness: 0.35 });
+  const T = LIGHT_TRUSS, y = T.y;
   const fixtureMat = new THREE.MeshStandardMaterial({ color: 0x111111, metalness: 0.4, roughness: 0.5 });
-
-  // box truss rectangle
-  const beams = [];
-  const [x0, x1] = T.x, [z0, z1] = T.z;
-  const edges = [[V(x0, y, z0), V(x1, y, z0)], [V(x1, y, z0), V(x1, y, z1)], [V(x1, y, z1), V(x0, y, z1)], [V(x0, y, z1), V(x0, y, z0)]];
-  for (const [a, b] of edges) {
-    const dir = b.clone().sub(a), len = dir.length(); dir.normalize();
-    const side = V(-dir.z, 0, dir.x).multiplyScalar(s / 2), upv = V(0, s / 2, 0);
-    const corners = [side.clone().add(upv), side.clone().sub(upv), side.clone().negate().add(upv), side.clone().negate().sub(upv)];
-    for (const c of corners) beams.push([a.clone().add(c), b.clone().add(c), 0.04]);
-    const n = Math.round(len / s);
-    for (let i = 0; i < n; i++) {
-      const p0 = a.clone().addScaledVector(dir, (i / n) * len), p1 = a.clone().addScaledVector(dir, ((i + 1) / n) * len);
-      for (let k = 0; k < 4; k++) beams.push([p0.clone().add(corners[k]), p1.clone().add(corners[(k + 1) % 4]), 0.018]);
-    }
-  }
-  // chain hoists up to the roof trusses
-  for (const x of [x0, x1]) for (const z of [z0, z1]) beams.push([V(x, y + s / 2, z), V(x, WAREHOUSE.eaveHeight, z), 0.02]);
-  show.add(beamsMesh(beams, alu));
-
-  // ── moving heads ──
-  const movers = T.movers.slice(0, opts.maxMovers ?? T.movers.length).map(([x, z], i) => {
-    const pos = V(x, y - s / 2 - 0.35, z);
-    const body = new THREE.Group(); body.position.copy(pos);
-    const base = new THREE.Mesh(new THREE.BoxGeometry(0.4, 0.15, 0.3), fixtureMat); base.position.y = 0.28; body.add(base);
-    const head = new THREE.Mesh(new THREE.CylinderGeometry(0.13, 0.16, 0.34, 16), fixtureMat); body.add(head);
-    const lens = new THREE.Mesh(new THREE.CircleGeometry(0.11, 20), new THREE.MeshBasicMaterial({ color: 0xffffff }));
-    show.add(body);
-    const light = new THREE.SpotLight(0xffffff, 900, 32, 0.13, 0.5, 1.6);
-    light.position.copy(pos); show.add(light); show.add(light.target);
-    const beam = makeBeam(15, 0.13, 0xffffff, 0.5); beam.position.copy(pos); show.add(beam);
-    lens.position.copy(pos); show.add(lens);
-    return { pos, light, beam, head, lens, i };
-  });
+  // No box truss and no moving heads: the brutalist ceiling is the rig. `movers` stays empty so the
+  // update loop (which drives heads/beams) simply has nothing to step.
+  const movers = [];
+  const [z0] = T.z;
 
   // ── red / amber washes ──
   const washes = T.washes.map((w) => {
     const light = new THREE.SpotLight(w.color, 380, 30, w.angle ?? 0.42, 0.8, 1.5);
     light.position.set(w.pos[0], y - 0.3, w.pos[1]); light.target.position.fromArray(w.target);
     show.add(light, light.target);
-    const par = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.12, 0.25, 12), fixtureMat);
-    par.position.copy(light.position); show.add(par);
     return { light, base: 380 };
   });
   // uplights behind the booth, washing the back wall red
@@ -115,33 +81,35 @@ export function buildShow(scene, opts) {
 
   // hazard: hazy sodium lamp far at the back
   const lampShade = new THREE.Mesh(new THREE.ConeGeometry(0.35, 0.3, 16, 1, true), new THREE.MeshStandardMaterial({ color: 0x2a2a2a, metalness: 0.6, roughness: 0.5, side: THREE.DoubleSide }));
-  lampShade.position.set(-5, 6.2, 12); show.add(lampShade);
+  const lampY = Math.min(6.2, WAREHOUSE.eaveHeight - 0.5); // under a pitched roof it hangs above the eaves; under a flat ceiling, below it
+  lampShade.position.set(-5, lampY, 12); show.add(lampShade);
   const bulb = new THREE.Mesh(new THREE.SphereGeometry(0.09, 12, 8), new THREE.MeshBasicMaterial({ color: new THREE.Color(3, 1.3, 0.3) }));
-  bulb.position.set(-5, 6.05, 12); show.add(bulb);
-  const sodium = new THREE.PointLight(0xff9a3a, 25, 16, 1.6); sodium.position.set(-5, 5.9, 12); show.add(sodium);
-  const cable = new THREE.Mesh(new THREE.CylinderGeometry(0.01, 0.01, 2), fixtureMat); cable.position.set(-5, 7.3, 12); show.add(cable);
+  bulb.position.set(-5, lampY - 0.15, 12); show.add(bulb);
+  const sodium = new THREE.PointLight(0xff9a3a, 25, 16, 1.6); sodium.position.set(-5, lampY - 0.3, 12); show.add(sodium);
+  const cableLen = Math.max(0.4, Math.min(2, WAREHOUSE.eaveHeight + 0.5 - lampY));
+  const cable = new THREE.Mesh(new THREE.CylinderGeometry(0.01, 0.01, cableLen), fixtureMat); cable.position.set(-5, lampY + cableLen / 2, 12); show.add(cable);
 
-  // ── strobes ──
+  // ── strobes (light only: the hanging boxes went with the truss) ──
   const strobeMat = new THREE.MeshBasicMaterial({ color: 0x111111 });
-  const strobes = T.strobes.map(([x, z]) => {
-    const m = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.18, 0.12), strobeMat); m.position.set(x, y - s / 2 - 0.12, z); show.add(m); return m;
-  });
+  const strobes = [];
   const strobeLight = new THREE.PointLight(0xdfe8ff, 0, 40, 1.2); strobeLight.position.set(0, y - 0.5, -10); show.add(strobeLight);
 
-  // ── laser fan ──
-  const laserGroup = new THREE.Group(); laserGroup.position.fromArray(LASER.origin); show.add(laserGroup);
-  const laserTex = radialTexture('rgba(255,255,255,1)', 'rgba(255,255,255,0)', 64);
-  const laserMat = new THREE.MeshBasicMaterial({ color: new THREE.Color(LASER.color).multiplyScalar(1.6), alphaMap: laserTex, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide });
-  const laserGeo = new THREE.PlaneGeometry(0.022, LASER.length); laserGeo.translate(0, LASER.length / 2, 0); laserGeo.rotateX(Math.PI / 2);
-  // stretch alphaMap across width only: rewrite uvs so v is constant
-  const luv = laserGeo.attributes.uv; for (let i = 0; i < luv.count; i++) luv.setY(i, 0.5);
+  // Laser fan removed. Empty group/list keep the update loop a no-op.
+  const laserGroup = new THREE.Group();
   const lasers = [];
-  for (let i = 0; i < LASER.beams; i++) {
-    const g = new THREE.Group();
-    const a = new THREE.Mesh(laserGeo, laserMat), b = new THREE.Mesh(laserGeo, laserMat); b.rotation.z = Math.PI / 2;
-    g.add(a, b); laserGroup.add(g); lasers.push(g);
-  }
-  const laserBox = new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.15, 0.3), fixtureMat); laserBox.position.fromArray(LASER.origin); show.add(laserBox);
+
+  // Logo on the back wall, above the booth, facing the floor.
+  const logoMat = new THREE.MeshBasicMaterial({ transparent: true, depthWrite: false, toneMapped: false });
+  const logo = new THREE.Mesh(new THREE.PlaneGeometry(BACK_LOGO.size, BACK_LOGO.size), logoMat);
+  logo.name = 'back-logo';
+  logo.position.fromArray(BACK_LOGO.position);
+  show.add(logo);
+  new THREE.TextureLoader().load(BACK_LOGO.url, (tex) => {
+    tex.colorSpace = THREE.SRGBColorSpace;
+    tex.anisotropy = 4;
+    logoMat.map = tex;
+    logoMat.needsUpdate = true;
+  });
 
   // ── haze sprites ──
   const smoke = smokeTexture();

@@ -28,7 +28,7 @@ export const Route = createFileRoute("/releases")({
 function Empty() {
   const { t } = useI18n();
   return (
-    <main>
+    <main className="nc-page bg-black">
       <PageIntro
         eyebrow={t("releasesEyebrow")}
         title={t("releases")}
@@ -74,7 +74,7 @@ function Releases() {
   const { t } = useI18n();
   const { releases, links } = Route.useLoaderData();
   return (
-    <main>
+    <main className="nc-page bg-black">
       <PageIntro
         eyebrow={t("releasesEyebrow")}
         title={t("releases")}

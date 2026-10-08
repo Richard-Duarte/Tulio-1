@@ -13,7 +13,6 @@ import { Toaster } from "@/components/ui/sonner";
 import { SiteHeader } from "@/components/jula/SiteHeader";
 import { AudioPlayer } from "@/components/jula/AudioPlayer";
 import { Footer } from "@/components/jula/Footer";
-import { ScrollLogo } from "@/components/jula/ScrollLogo";
 import { LoadingExperience } from "@/components/jula/LoadingExperience";
 import { PageCurtain } from "@/components/jula/PageCurtain";
 import { supabase } from "@/integrations/supabase/client";
@@ -26,6 +25,7 @@ import {
   introNoScriptCss,
   markIntroBooted,
 } from "@/lib/intro";
+import { useDampedScroll } from "@/lib/damped-scroll";
 import { usePageTransitions } from "@/lib/page-transition";
 import { useIdleRoutePrefetch } from "@/lib/prefetch";
 
@@ -112,7 +112,10 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       },
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
-      { rel: "stylesheet", href: "https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=Inter:wght@300;400;500;600&family=Syne:wght@600;700;800&display=swap" },
+      {
+        rel: "stylesheet",
+        href: "https://fonts.googleapis.com/css2?family=Funnel+Display:wght@400;500;600&family=Fragment+Mono:ital@0;1&display=swap",
+      },
       { rel: "icon", href: "/favicon.png", type: "image/png", sizes: "64x64" },
       { rel: "apple-touch-icon", href: "/apple-touch-icon.png", sizes: "180x180" },
     ],
@@ -162,12 +165,12 @@ function RootComponent() {
   }, []);
   usePageTransitions();
   useIdleRoutePrefetch();
+  useDampedScroll();
 
   return (
     <QueryClientProvider client={queryClient}>
       {!privateArea && <LoadingExperience />}
       {!privateArea && <SiteHeader />}
-      {!privateArea && <ScrollLogo />}
       <LocalizedOutlet />
       {!privateArea && <Footer />}
       {!privateArea && <AudioPlayer />}
@@ -181,7 +184,7 @@ function RootComponent() {
 function LocalizedOutlet() {
   const { locale } = useI18n();
   return (
-    <div className="page-enter" key={locale}>
+    <div className="page-enter pb-28 md:pb-32" key={locale}>
       <Outlet />
     </div>
   );

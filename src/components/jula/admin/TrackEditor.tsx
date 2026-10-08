@@ -22,7 +22,7 @@ const empty = {
   id: undefined as string | undefined,
   url: "",
   title: "",
-  artist: "Jula",
+  artist: "Tulio",
   cover: "",
   active: true,
 };
@@ -125,7 +125,7 @@ export function TrackEditor({
           item: {
             ...(form.id ? { id: form.id } : {}),
             title: form.title.trim(),
-            artist: form.artist.trim() || "Jula",
+            artist: form.artist.trim() || "Tulio",
             cover_url: form.cover.trim() || null,
             audio_url: form.url.trim(),
             active: form.active,

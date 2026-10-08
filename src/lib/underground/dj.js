@@ -88,11 +88,17 @@ export async function buildDJ(loader) {
   if (gltf) {
     root.position.fromArray(cfg.position);
     model = gltf.scene;
+    const tints = cfg.materialTint ?? {}, hidden = new Set(cfg.hideMeshes ?? []);
     model.traverse((o) => {
       if (!o.isMesh) return;
+      if (hidden.has(o.name)) { o.visible = false; return; }
       o.castShadow = true; o.receiveShadow = true;
       o.frustumCulled = false; // skinned mesh leaves its rest bbox while animating
-      if (o.material) o.material.side = THREE.DoubleSide;
+      for (const m of [o.material].flat()) {
+        if (!m) continue;
+        m.side = THREE.DoubleSide;
+        if (tints[m.name] != null) m.color?.setHex(tints[m.name]); // multiplies the baked texture
+      }
     });
     if (cfg.scale && cfg.scale !== 1) model.scale.multiplyScalar(cfg.scale);
     if (cfg.height || !cfg.keepOrigin) {

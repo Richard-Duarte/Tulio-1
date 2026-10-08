@@ -32,7 +32,7 @@ export function SocialBar({ links }: { links: SocialUrls }) {
           target="_blank"
           rel="noreferrer noopener"
           aria-label={item.label}
-          className="grid size-10 place-items-center opacity-70 transition-all duration-500 hover:-translate-y-0.5 hover:opacity-100"
+          className="grid size-10 place-items-center opacity-50 grayscale transition-all duration-300 hover:-translate-y-1 hover:opacity-100 hover:grayscale-0"
         >
           <img src={item.icon} alt={item.label} className="size-8 object-contain" loading="lazy" />
         </a>

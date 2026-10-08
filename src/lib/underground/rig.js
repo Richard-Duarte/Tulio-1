@@ -26,7 +26,21 @@ export async function loadModel(loader, def) {
   const g = new THREE.Group(); g.add(inner);
   g.userData.size = box.getSize(new THREE.Vector3());
   g.userData.box = box;
+  if (def.animate && gltf.animations.length) g.userData.animations = gltf.animations;
   return g;
+}
+
+// Clone a loaded model; if it carries animation clips, drive the clone with its own mixer
+// (clips bind by node name, which clone() preserves). Mixers are collected on `rig.userData.mixers`.
+function cloneModel(model, mixers) {
+  const clone = model.clone();
+  const clips = model.userData.animations;
+  if (clips?.length && mixers) {
+    const mixer = new THREE.AnimationMixer(clone);
+    for (const clip of clips) mixer.clipAction(clip).play();
+    mixers.push(mixer);
+  }
+  return clone;
 }
 
 const blobTex = radialTexture('rgba(255,255,255,1)', 'rgba(255,255,255,0)');
@@ -40,6 +54,7 @@ export function blobShadow(w, d, opacity = 0.75) {
 
 export function buildRig(models) {
   const rig = new THREE.Group(); rig.name = 'rig';
+  const mixers = []; rig.userData.mixers = mixers;
   const blackPaint = new THREE.MeshStandardMaterial({ color: 0x151515, roughness: 0.8 });
   const plyMat = new THREE.MeshStandardMaterial({ color: 0x0e0d0c, roughness: 0.9 });
 
@@ -114,10 +129,14 @@ export function buildRig(models) {
       plinth.position.y = elev / 2; g.add(plinth);
       const b = blobShadow(1.1, 1.0); b.position.set(t.x, 0.004, t.z); rig.add(b);
     }
-    const top = models.top ? models.top.clone() : new THREE.Mesh(new THREE.BoxGeometry(0.6, 1.1, 0.5), blackPaint);
+    const top = models.top ? cloneModel(models.top, mixers) : new THREE.Mesh(new THREE.BoxGeometry(0.6, 1.1, 0.5), blackPaint);
     top.position.y = elev;
     if (t.frontAlign && models.top) top.position.z = (subD - models.top.userData.size.z) / 2;
     g.add(top); rig.add(g);
+    if (!t.onSubs && !t.standHeight && models.top) { // straight on the floor: ground it with a soft shadow
+      const sz = models.top.userData.size;
+      const b = blobShadow(sz.x * 1.15, sz.z * 1.25); b.position.set(t.x, 0.004, t.z); b.rotation.z = t.rotY; rig.add(b);
+    }
   }
   return rig;
 }

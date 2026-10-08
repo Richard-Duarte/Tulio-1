@@ -1,0 +1,66 @@
+import type { GridShapeType } from "./shape-grid";
+import type { FramerGridOptions } from "./create-grid-scene";
+
+/** Defaults from grid-preview.framer.website (triangle variant LgAR35d_V). */
+export const FRAMER_GRID_TRIANGLE: FramerGridOptions = {
+  type: "triangle",
+  n: 40,
+  padding: 0,
+  colors: [0x202020, 0xffffff],
+  light1Color: 0xffffff,
+  light1Intensity: 1000,
+  light1PositionZ: 5,
+  light2Color: 0xffffff,
+  light2Intensity: 500,
+  light2PositionZ: -20,
+  bloom: { strength: 0.1, radius: 0, threshold: 0 },
+  depthScale: 1,
+  timeCoef: 1,
+  materialParams: { metalness: 0.8, roughness: 0.5, clearcoat: 1, clearcoatRoughness: 0.1 },
+};
+
+export const FRAMER_SHAPE_PRESETS: Record<GridShapeType, FramerGridOptions> = {
+  triangle: FRAMER_GRID_TRIANGLE,
+  hexagon: {
+    type: "hexagon",
+    n: 20,
+    padding: 0,
+    colors: [0x202020, 0xffffff],
+    light1Color: 0xffffff,
+    light1Intensity: 1000,
+    light1PositionZ: 5,
+    light2Color: 0xffffff,
+    light2Intensity: 500,
+    light2PositionZ: -20,
+    bloom: { strength: 0.1, radius: 0, threshold: 0 },
+    materialParams: { metalness: 0.8, roughness: 0.5, clearcoat: 1, clearcoatRoughness: 0.1 },
+  },
+  square: {
+    type: "square",
+    n: 20,
+    padding: 0,
+    colors: [0x202020, 0xffffff],
+    light1Color: 0xffffff,
+    light1Intensity: 1000,
+    light1PositionZ: 5,
+    light2Color: 0xffffff,
+    light2Intensity: 500,
+    light2PositionZ: -20,
+    bloom: { strength: 0.1, radius: 0, threshold: 0 },
+    materialParams: { metalness: 0.8, roughness: 0.5, clearcoat: 1, clearcoatRoughness: 0.1 },
+  },
+  circle: {
+    type: "circle",
+    n: 20,
+    padding: 0,
+    colors: [0x202020, 0xffffff],
+    light1Color: 0xffffff,
+    light1Intensity: 1000,
+    light1PositionZ: 5,
+    light2Color: 0xffffff,
+    light2Intensity: 500,
+    light2PositionZ: -20,
+    bloom: { strength: 0.1, radius: 0, threshold: 0 },
+    materialParams: { metalness: 0.8, roughness: 0.5, clearcoat: 1, clearcoatRoughness: 0.1 },
+  },
+};
