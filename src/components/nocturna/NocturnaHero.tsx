@@ -23,7 +23,7 @@ export function NocturnaHero({
   return (
     <section className="nc-hero nc-grid-border-b">
       <div className="nc-grid-hero">
-        <div className="nc-grid-border-r flex flex-col justify-between px-5 py-10 md:px-10 md:py-14 lg:px-14 lg:py-16">
+        <div className="nc-grid-border-r nc-pad-x nc-pad-y flex flex-col justify-between">
           <Reveal>
             {badges?.length ? (
               <div className="mb-10 flex flex-wrap gap-2">

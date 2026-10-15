@@ -14,7 +14,7 @@ export function PageIntro({
   return (
     <>
       <SectionWipe />
-      <section className="nc-grid-border-b px-5 pb-14 pt-28 md:px-10 md:pb-20 md:pt-36 lg:px-14">
+      <section className="nc-grid-border-b nc-pad-x nc-pad-y">
         <div className="max-w-4xl">
           <NocturnaEyebrow>{eyebrow}</NocturnaEyebrow>
           <SpacedHeading as="h1" className="mt-5 text-[clamp(2rem,5.5vw,3.65rem)]">

@@ -73,6 +73,12 @@
   --nc-bg-alt: #000000;
   --nc-border: #222226;
   --nc-line: 1px solid var(--nc-border);
+  /* Equal inset from grid lines to type — same top and bottom everywhere */
+  --nc-pad-x: 1.25rem;
+  --nc-pad-x-md: 2.5rem;
+  --nc-pad-x-lg: 3.5rem;
+  --nc-pad-y: 3rem;
+  --nc-pad-y-md: 4rem;
   --nc-muted: #7a7a82;
   --nc-accent: #ffffff;
   --nc-accent-mint: #ffffff;
@@ -373,6 +379,30 @@
 }
 .nc-grid-border-r {
   border-right: var(--nc-line, 1px solid var(--nc-border));
+}
+.nc-pad-x {
+  padding-left: var(--nc-pad-x);
+  padding-right: var(--nc-pad-x);
+}
+.nc-pad-y {
+  padding-top: var(--nc-pad-y);
+  padding-bottom: var(--nc-pad-y);
+}
+@media (min-width: 768px) {
+  .nc-pad-x {
+    padding-left: var(--nc-pad-x-md);
+    padding-right: var(--nc-pad-x-md);
+  }
+  .nc-pad-y {
+    padding-top: var(--nc-pad-y-md);
+    padding-bottom: var(--nc-pad-y-md);
+  }
+}
+@media (min-width: 1024px) {
+  .nc-pad-x {
+    padding-left: var(--nc-pad-x-lg);
+    padding-right: var(--nc-pad-x-lg);
+  }
 }
 @media (max-width: 767px) {
   .nc-grid-border-r {

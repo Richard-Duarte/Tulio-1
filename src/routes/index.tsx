@@ -103,13 +103,9 @@ function Home() {
       />
 
       <NocturnaSection alt className="nc-section-alt">
-        <NocturnaSectionHeader
-          eyebrow={nc.stepsEyebrow}
-          title={nc.stepsTitle}
-          className="px-5 pt-12 pb-6 md:px-10 md:pt-16 md:pb-8 lg:px-14"
-        />
+        <NocturnaSectionHeader eyebrow={nc.stepsEyebrow} title={nc.stepsTitle} />
         {carousel.length > 1 && (
-          <div className="nc-grid-border-t nc-grid-border-b overflow-hidden py-6">
+          <div className="nc-grid-border-t nc-grid-border-b overflow-hidden">
             <div className="marquee-track flex w-max gap-0">
               {[...carousel, ...carousel].map((item, i) => (
                 <img
