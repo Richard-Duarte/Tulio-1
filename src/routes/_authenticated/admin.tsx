@@ -88,6 +88,7 @@ function Admin() {
   };
   const [home, setHome] = useState(emptyHome);
   const [homeUploading, setHomeUploading] = useState(false);
+  const [heroTitle, setHeroTitle] = useState("Trajetória");
   const [heroBody, setHeroBody] = useState("");
   const [heroImage, setHeroImage] = useState("/brand/tulio-n26.jpg");
   const [heroUploading, setHeroUploading] = useState(false);
@@ -122,6 +123,7 @@ function Admin() {
         spotify_url: row.spotify_url ?? "",
         beatport_url: row.beatport_url ?? "",
       });
+      setHeroTitle(row.hero_title?.trim() || "Trajetória");
       setHeroBody(row.hero_body ?? "");
       setHeroImage(row.hero_image_url || "/brand/tulio-n26.jpg");
     }
@@ -267,6 +269,15 @@ function Admin() {
                 }}
               />
             </label>
+            <label className="mt-4 block text-xs uppercase tracking-[.15em] text-muted-foreground">
+              Trajetória
+              <Input
+                className="mt-1"
+                value={heroTitle}
+                onChange={(e) => setHeroTitle(e.target.value)}
+                placeholder="Trajetória"
+              />
+            </label>
             <Textarea
               className="mt-4 min-h-72"
               value={heroBody}
@@ -279,6 +290,7 @@ function Admin() {
                 await saveHome({
                   data: {
                     ...home,
+                    hero_title: heroTitle,
                     hero_body: heroBody,
                     hero_image_url: heroImage,
                   },

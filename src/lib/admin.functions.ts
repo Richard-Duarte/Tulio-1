@@ -162,6 +162,7 @@ export const saveTulioHome = createServerFn({ method: "POST" })
         instagram_url: homeUrl,
         spotify_url: homeUrl,
         beatport_url: homeUrl,
+        hero_title: z.string().trim().max(120).optional(),
         hero_body: z.string().max(10000).optional(),
         hero_image_url: homeImage.optional(),
       })

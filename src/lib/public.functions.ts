@@ -1,5 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import type { Database } from "@/integrations/supabase/types";
+import { DEFAULT_HERO_TITLE } from "@/lib/hero-copy";
 import { carouselPhotos, siteParties, sitePhotos, siteVideos } from "@/lib/site-photos";
 
 type Tables = Database["public"]["Tables"];
@@ -30,6 +31,7 @@ export const tulioHomeDefaults = {
   section1_image_url: "/brand/tulio-session.jpg",
   section1_image_alt: "Tulio no set",
   section1_right_image_url: "/brand/tulio-booth.jpg",
+  hero_title: DEFAULT_HERO_TITLE,
   hero_body: tulioHeroBody,
   hero_image_url: "/brand/tulio-n26.jpg",
   booking_email: "soniccdrivebookings@gmail.com",
@@ -50,7 +52,7 @@ export const getTulioHome = createServerFn({ method: "GET" }).handler(async () =
     const { data, error } = await publicSupabase()
       .from("tulio_home")
       .select(
-        "section1_image_url, section1_image_alt, section1_right_image_url, hero_body, hero_image_url, booking_email, facebook_url, x_url, tiktok_url, youtube_url, soundcloud_url, bandcamp_url, instagram_url, spotify_url, beatport_url",
+        "section1_image_url, section1_image_alt, section1_right_image_url, hero_title, hero_body, hero_image_url, booking_email, facebook_url, x_url, tiktok_url, youtube_url, soundcloud_url, bandcamp_url, instagram_url, spotify_url, beatport_url",
       )
       .eq("singleton_key", "main")
       .maybeSingle();
@@ -61,6 +63,7 @@ export const getTulioHome = createServerFn({ method: "GET" }).handler(async () =
       section1_image_url: data.section1_image_url || tulioHomeDefaults.section1_image_url,
       section1_image_alt: data.section1_image_alt || tulioHomeDefaults.section1_image_alt,
       section1_right_image_url: data.section1_right_image_url || tulioHomeDefaults.section1_right_image_url,
+      hero_title: data.hero_title?.trim() || tulioHomeDefaults.hero_title,
       hero_body: data.hero_body || tulioHomeDefaults.hero_body,
       hero_image_url: data.hero_image_url || tulioHomeDefaults.hero_image_url,
       booking_email: data.booking_email || tulioHomeDefaults.booking_email,

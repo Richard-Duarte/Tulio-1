@@ -3,6 +3,7 @@ import { SpacedHeading } from "@/components/nocturna/SpacedHeading";
 import { Reveal } from "@/components/nocturna/NocturnaMotion";
 import { NocturnaHeroVisual } from "@/components/nocturna/NocturnaVisual";
 import { NocturnaBadge } from "@/components/nocturna/NocturnaShell";
+import { HERO_ROLE_LINE } from "@/lib/hero-copy";
 
 export function NocturnaHero({
   badges,
@@ -37,7 +38,7 @@ export function NocturnaHero({
               </SpacedHeading>
             ) : null}
             {paragraphs?.length ? (
-              <div className="max-w-xl space-y-5">
+              <div className={`max-w-xl space-y-5${title ? " mt-6" : ""}`}>
                 {paragraphs.map((paragraph) => (
                   <p key={paragraph.slice(0, 24)} className="text-sm leading-7 text-white/82 md:text-[15px]">
                     {paragraph}
@@ -50,7 +51,7 @@ export function NocturnaHero({
             {actions ? <div className="mt-9 flex flex-wrap items-center gap-4">{actions}</div> : null}
           </Reveal>
           <p className="nc-muted mt-12 hidden font-mono text-[10px] uppercase tracking-[0.22em] md:block">
-            DJ · produtor · SP
+            {HERO_ROLE_LINE}
           </p>
         </div>
         <Reveal delay={0.08} className="nc-grid-border-r min-h-[42vh] md:min-h-0">

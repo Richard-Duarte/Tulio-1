@@ -479,6 +479,7 @@ export type Database = {
           facebook_url: string | null;
           hero_body: string | null;
           hero_image_url: string | null;
+          hero_title: string | null;
           instagram_url: string | null;
           section1_image_alt: string | null;
           section1_image_url: string | null;
@@ -498,6 +499,7 @@ export type Database = {
           facebook_url?: string | null;
           hero_body?: string | null;
           hero_image_url?: string | null;
+          hero_title?: string | null;
           instagram_url?: string | null;
           section1_image_alt?: string | null;
           section1_image_url?: string | null;
@@ -517,6 +519,7 @@ export type Database = {
           facebook_url?: string | null;
           hero_body?: string | null;
           hero_image_url?: string | null;
+          hero_title?: string | null;
           instagram_url?: string | null;
           section1_image_alt?: string | null;
           section1_image_url?: string | null;

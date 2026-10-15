@@ -7,6 +7,7 @@ import { NocturnaHero } from "@/components/nocturna/NocturnaHero";
 import { SectionWipe } from "@/components/nocturna/SectionTransition";
 import { NocturnaSection } from "@/components/nocturna/NocturnaShell";
 import { getHomepageMedia, getSiteSettings, getTulioHome, tulioHeroBody, tulioHomeDefaults } from "@/lib/public.functions";
+import { resolveHeroTitle } from "@/lib/hero-copy";
 import { getNocturnaHomeCopy } from "@/lib/nocturna-home";
 import { useI18n } from "@/lib/i18n";
 import { signalIntroReady } from "@/lib/intro";
@@ -134,6 +135,7 @@ function Home() {
       </NocturnaSection>
 
       <NocturnaHero
+        title={resolveHeroTitle(home.hero_title)}
         paragraphs={(home.hero_body && (locale === "pt" || home.hero_body.trim() !== tulioHeroBody)
           ? home.hero_body.split(/\n\n+/).map((paragraph) => paragraph.trim()).filter(Boolean)
           : [...nc.heroParagraphs])}
