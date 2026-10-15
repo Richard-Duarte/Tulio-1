@@ -72,6 +72,7 @@
   --nc-bg-elevated: #000000;
   --nc-bg-alt: #000000;
   --nc-border: #222226;
+  --nc-line: 1px solid var(--nc-border);
   --nc-muted: #7a7a82;
   --nc-accent: #ffffff;
   --nc-accent-mint: #ffffff;
@@ -134,10 +135,12 @@
   --accent-foreground: oklch(0.97 0 0);
   --destructive: oklch(0.97 0 0);
   --destructive-foreground: oklch(0.08 0 0);
-  --border: oklch(1 0 0 / 16%);
-  --input: oklch(1 0 0 / 22%);
+  /* Match nocturna grid hairlines — avoid thicker/lighter oklch borders on public pages */
+  --border: #222226;
+  --input: #484851;
   --ring: oklch(0.97 0 0);
   --glow: oklch(1 0 0 / 28%);
+  --nc-border: #222226;
   --chart-1: oklch(0.97 0 0);
   --chart-2: oklch(0.72 0 0);
   --chart-3: oklch(0.5 0 0);
@@ -358,23 +361,23 @@
 }
 .nc-section-wipe {
   height: 0;
-  border-bottom: 1px solid var(--nc-border);
+  border-bottom: var(--nc-line, 1px solid var(--nc-border));
   background: none;
   box-shadow: none;
 }
 .nc-grid-border-b {
-  border-bottom: 1px solid var(--nc-border);
+  border-bottom: var(--nc-line, 1px solid var(--nc-border));
 }
 .nc-grid-border-t {
-  border-top: 1px solid var(--nc-border);
+  border-top: var(--nc-line, 1px solid var(--nc-border));
 }
 .nc-grid-border-r {
-  border-right: 1px solid var(--nc-border);
+  border-right: var(--nc-line, 1px solid var(--nc-border));
 }
 @media (max-width: 767px) {
   .nc-grid-border-r {
     border-right: none;
-    border-bottom: 1px solid var(--nc-border);
+    border-bottom: var(--nc-line, 1px solid var(--nc-border));
   }
 }
 .nc-grid-hero {
@@ -405,7 +408,7 @@
     grid-template-columns: repeat(3, 1fr);
   }
   .nc-grid-3 > *:not(:last-child) {
-    border-right: 1px solid var(--nc-border);
+    border-right: var(--nc-line, 1px solid var(--nc-border));
   }
 }
 .nc-cell-interactive {
@@ -439,6 +442,23 @@
 .nc-corner-btn:hover .nc-corner-bracket {
   border-color: var(--nc-accent-mint);
   box-shadow: 0 0 8px rgb(255 255 255 / 35%);
+}
+/* Hero CTAs: gray starts on Ouvir sets; on Ver galeria hover it moves — no other effects */
+.nc-cta-pair .nc-cta-default {
+  background: rgb(255 255 255 / 6%);
+}
+.nc-cta-pair:has(.nc-cta-alt:hover) .nc-cta-default,
+.nc-cta-pair:has(.nc-cta-alt:focus-visible) .nc-cta-default {
+  background: transparent;
+}
+.nc-cta-pair .nc-cta-alt:hover,
+.nc-cta-pair .nc-cta-alt:focus-visible {
+  background: rgb(255 255 255 / 6%);
+}
+.nc-cta-pair .nc-corner-btn:hover .nc-corner-bracket,
+.nc-cta-pair .nc-corner-btn:focus-visible .nc-corner-bracket {
+  border-color: rgb(255 255 255 / 55%);
+  box-shadow: none;
 }
 .nc-corner-bracket {
   position: absolute;

@@ -115,7 +115,7 @@ export function NocturnaQuotesGrid({
         <Reveal key={q.name}>
           <HoverCell className="h-full px-5 py-10 md:px-10 md:py-12 nc-grid-border-r">
             <p className="text-base leading-relaxed text-white md:text-lg">{q.quote}</p>
-            <footer className="mt-8 border-t border-[var(--nc-border)] pt-5">
+            <footer className="nc-grid-border-t mt-8 pt-5">
               <p className="font-mono text-sm text-white">{q.name}</p>
               <p className="nc-muted mt-1 font-mono text-xs">{q.role}</p>
             </footer>

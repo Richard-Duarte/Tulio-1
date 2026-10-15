@@ -106,7 +106,10 @@ function HeroPlayer() {
   };
 
   return createPortal(
-    <div className="pointer-events-none fixed inset-x-2 bottom-[max(env(safe-area-inset-bottom),0.5rem)] z-[45] flex flex-col items-end md:inset-x-auto md:bottom-5 md:right-5 md:w-[400px]">
+    <div
+      data-audio-player=""
+      className="pointer-events-none fixed inset-x-2 bottom-[max(env(safe-area-inset-bottom),0.5rem)] z-[45] flex flex-col items-end md:inset-x-auto md:bottom-5 md:right-5 md:w-[400px]"
+    >
       <audio
         ref={audio}
         src={current?.audio_url}

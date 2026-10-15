@@ -109,14 +109,14 @@ function Home() {
           className="px-5 pt-12 pb-6 md:px-10 md:pt-16 md:pb-8 lg:px-14"
         />
         {carousel.length > 1 && (
-          <div className="overflow-hidden border-y border-[var(--nc-border)] py-6">
+          <div className="nc-grid-border-t nc-grid-border-b overflow-hidden py-6">
             <div className="marquee-track flex w-max gap-0">
               {[...carousel, ...carousel].map((item, i) => (
                 <img
                   key={`${item.id}-${i}`}
                   src={item.public_url ?? ""}
                   alt={item.alt_text}
-                  className="nc-dither-img h-44 w-auto border-r border-[var(--nc-border)] object-cover md:h-52"
+                  className="nc-dither-img nc-grid-border-r h-44 w-auto object-cover md:h-52"
                   loading={i < carousel.length ? "eager" : "lazy"}
                   decoding="async"
                 />
@@ -140,12 +140,14 @@ function Home() {
           : [...nc.heroParagraphs])}
         imageUrl={home.hero_image_url || "/brand/tulio-n26.jpg"}
         actions={
-          <>
-            <CornerButton to="/sets">{nc.ctaPrimary}</CornerButton>
-            <CornerButton to="/galeria" variant="primary">
+          <div className="nc-cta-pair flex flex-wrap items-center gap-4">
+            <CornerButton to="/sets" variant="primary" className="nc-cta-default">
+              {nc.ctaPrimary}
+            </CornerButton>
+            <CornerButton to="/galeria" className="nc-cta-alt">
               {nc.ctaSecondary}
             </CornerButton>
-          </>
+          </div>
         }
       />
 

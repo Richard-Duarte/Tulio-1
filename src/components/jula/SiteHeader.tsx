@@ -30,7 +30,7 @@ export function SiteHeader() {
 
   return (
     <>
-      <header className="fixed inset-x-0 top-0 z-[70] border-b border-[var(--nc-border)] bg-black text-white">
+      <header className="nc-grid-border-b fixed inset-x-0 top-0 z-[70] bg-black text-white">
         <div className="flex justify-center px-4 pt-[max(env(safe-area-inset-top),1.25rem)] md:pt-[max(env(safe-area-inset-top),1.5rem)]">
           <Link to="/" aria-label="Tulio — início" className="inline-flex no-underline">
             <TulioWordmark className="text-[36px] md:text-[46px]" />
