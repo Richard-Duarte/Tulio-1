@@ -24,12 +24,12 @@ import { LinkSetEditor } from "@/components/jula/admin/LinkSetEditor";
 import { UpcomingDatesAdmin } from "@/components/jula/admin/UpcomingDatesAdmin";
 import { MediaLibrary } from "@/components/jula/admin/MediaLibrary";
 import { ReleaseEditor } from "@/components/jula/admin/ReleaseEditor";
-import { ReleaseSectionsEditor } from "@/components/jula/admin/ReleaseSectionsEditor";
 import { TrackEditor } from "@/components/jula/admin/TrackEditor";
+import { siteParties } from "@/lib/site-photos";
 export const Route = createFileRoute("/_authenticated/admin")({
   head: () => ({
     meta: [
-      { title: "Painel — JULA" },
+      { title: "Painel — TULIO" },
       { name: "description", content: "Gerenciamento de conteúdo do site de Tulio." },
       { property: "og:title", content: "Painel — JULA" },
       { property: "og:description", content: "Área administrativa." },
@@ -40,6 +40,22 @@ export const Route = createFileRoute("/_authenticated/admin")({
   }),
   component: Admin,
 });
+function mediaParties(items: { party_id?: string | null }[]) {
+  const list = siteParties.map((party) => ({
+    id: party.id,
+    name: party.name,
+    happened_at: party.happened_at,
+  }));
+  const known = new Set(list.map((party) => party.id));
+  for (const item of items) {
+    if (item.party_id && !known.has(item.party_id)) {
+      known.add(item.party_id);
+      list.push({ id: item.party_id, name: item.party_id, happened_at: "" });
+    }
+  }
+  return list;
+}
+
 function Admin() {
   const fn = useServerFn(getAdminData);
   const save = useServerFn(saveAdminItem);
@@ -71,6 +87,9 @@ function Admin() {
   };
   const [home, setHome] = useState(emptyHome);
   const [homeUploading, setHomeUploading] = useState(false);
+  const [heroBody, setHeroBody] = useState("");
+  const [heroImage, setHeroImage] = useState("/brand/tulio-n26.jpg");
+  const [heroUploading, setHeroUploading] = useState(false);
   const savePass = useServerFn(setPresskitPassword);
   const savePanel = useServerFn(setPanelPassword);
   const [presskitPass, setPresskitPass] = useState("");
@@ -101,6 +120,8 @@ function Admin() {
         spotify_url: row.spotify_url ?? "",
         beatport_url: row.beatport_url ?? "",
       });
+      setHeroBody(row.hero_body ?? "");
+      setHeroImage(row.hero_image_url || "/brand/tulio-n26.jpg");
     }
   }, [data]);
   async function refresh() {
@@ -203,7 +224,6 @@ function Admin() {
           <TabsTrigger value="live_sets">Live Sets</TabsTrigger>
           <TabsTrigger value="releases">Releases</TabsTrigger>
           <TabsTrigger value="tracks">Player</TabsTrigger>
-          <TabsTrigger value="release">Release</TabsTrigger>
           <TabsTrigger value="media">Mídia</TabsTrigger>
           <TabsTrigger value="redes">Sessão 1</TabsTrigger>
           <TabsTrigger value="acesso">Acesso</TabsTrigger>
@@ -211,26 +231,54 @@ function Admin() {
           <TabsTrigger value="datas">Próximas datas</TabsTrigger>
         </TabsList>
         <TabsContent value="site">
-          <Panel title="Texto da Home">
-            <Input value={releaseTitle} onChange={(e) => setReleaseTitle(e.target.value)} />
-            <Textarea
-              className="mt-3 min-h-72"
-              value={releaseBody}
-              onChange={(e) => setReleaseBody(e.target.value)}
-            />
-            <label className="mt-5 flex items-center gap-3 text-sm">
-              <Switch checked={playerEnabled} onCheckedChange={setPlayerEnabled} /> Exibir player
+          <Panel title="Texto da home">
+            <p className="-mt-3 mb-5 text-sm text-muted-foreground">
+              O texto e a foto que aparecem juntos na home.
+            </p>
+            {heroImage && (
+              <img src={heroImage} alt="" className="mb-4 aspect-[4/5] w-40 object-cover" />
+            )}
+            <label className="block text-xs uppercase tracking-[.15em] text-muted-foreground">
+              Foto ao lado do texto
+              <Input
+                className="mt-1"
+                type="file"
+                accept="image/*"
+                disabled={heroUploading}
+                onChange={async (e) => {
+                  const file = e.target.files?.[0];
+                  e.target.value = "";
+                  if (!file) return;
+                  setHeroUploading(true);
+                  try {
+                    const ext = file.name.split(".").pop()?.toLowerCase() || "jpg";
+                    const path = `home/hero-${Date.now()}.${ext}`;
+                    await uploadSiteMediaFile(file, path);
+                    const url = supabase.storage.from("site-media").getPublicUrl(path).data.publicUrl;
+                    setHeroImage(url);
+                    toast.success("Foto enviada. Salve para publicar.");
+                  } catch {
+                    toast.error("Não foi possível enviar a foto.");
+                  } finally {
+                    setHeroUploading(false);
+                  }
+                }}
+              />
             </label>
+            <Textarea
+              className="mt-4 min-h-72"
+              value={heroBody}
+              onChange={(e) => setHeroBody(e.target.value)}
+            />
             <Button
               className="mt-6"
+              disabled={heroUploading}
               onClick={async () => {
-                await saveSite({
+                await saveHome({
                   data: {
-                    release_title: releaseTitle,
-                    release_body: releaseBody,
-                    player_enabled: playerEnabled,
-                    player_shuffle: playerShuffle,
-                    sets_shuffle: setsShuffle,
+                    ...home,
+                    hero_body: heroBody,
+                    hero_image_url: heroImage,
                   },
                 });
                 toast.success("Site atualizado.");
@@ -290,7 +338,12 @@ function Admin() {
           />
         </TabsContent>
         <TabsContent value="media">
-          <MediaLibrary media={data.media} parties={data.parties} onChanged={refresh} />
+          <MediaLibrary
+            library="tulio"
+            media={data.media}
+            parties={mediaParties(data.media)}
+            onChanged={refresh}
+          />
         </TabsContent>
         <TabsContent value="redes">
           <Panel title="Sessão 1">
@@ -448,9 +501,6 @@ function Admin() {
               )}
             </section>
           </div>
-        </TabsContent>
-        <TabsContent value="release">
-          <ReleaseSectionsEditor items={data.release_sections ?? []} onChanged={refresh} />
         </TabsContent>
         <TabsContent value="acesso">
           <div className="space-y-6">

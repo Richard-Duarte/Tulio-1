@@ -24,9 +24,13 @@ const tulioSettings = {
   booking_email: "soniccdrivebookings@gmail.com",
 };
 
+export const tulioHeroBody = tulioSettings.release_body;
+
 export const tulioHomeDefaults = {
   section1_image_url: "/brand/tulio-session.jpg",
   section1_image_alt: "Tulio no set",
+  hero_body: tulioHeroBody,
+  hero_image_url: "/brand/tulio-n26.jpg",
   booking_email: "soniccdrivebookings@gmail.com",
   facebook_url: null as string | null,
   x_url: null as string | null,
@@ -45,7 +49,7 @@ export const getTulioHome = createServerFn({ method: "GET" }).handler(async () =
     const { data, error } = await publicSupabase()
       .from("tulio_home")
       .select(
-        "section1_image_url, section1_image_alt, booking_email, facebook_url, x_url, tiktok_url, youtube_url, soundcloud_url, bandcamp_url, instagram_url, spotify_url, beatport_url",
+        "section1_image_url, section1_image_alt, hero_body, hero_image_url, booking_email, facebook_url, x_url, tiktok_url, youtube_url, soundcloud_url, bandcamp_url, instagram_url, spotify_url, beatport_url",
       )
       .eq("singleton_key", "main")
       .maybeSingle();
@@ -55,6 +59,8 @@ export const getTulioHome = createServerFn({ method: "GET" }).handler(async () =
       ...data,
       section1_image_url: data.section1_image_url || tulioHomeDefaults.section1_image_url,
       section1_image_alt: data.section1_image_alt || tulioHomeDefaults.section1_image_alt,
+      hero_body: data.hero_body || tulioHomeDefaults.hero_body,
+      hero_image_url: data.hero_image_url || tulioHomeDefaults.hero_image_url,
       booking_email: data.booking_email || tulioHomeDefaults.booking_email,
     };
   } catch {
@@ -119,11 +125,71 @@ export const getPublicMusic = createServerFn({ method: "GET" }).handler(async ()
     return emptyMusic();
   }
 });
-export const getPublicMedia = createServerFn({ method: "GET" }).handler(async () => [
-  ...sitePhotos,
-  ...siteVideos,
-]);
+const mediaColumns =
+  "id, kind, title, public_url, poster_url, alt_text, downloadable, presskit_enabled, party_id, sort_order, captured_at, homepage_enabled, homepage_order";
+
+function mapTulioMedia(row: {
+  id: string;
+  kind: string;
+  title: string;
+  public_url: string | null;
+  poster_url: string | null;
+  alt_text: string;
+  downloadable: boolean;
+  presskit_enabled: boolean;
+  party_id: string | null;
+  sort_order: number;
+  captured_at: string | null;
+  homepage_enabled: boolean;
+  homepage_order: number;
+}) {
+  return {
+    id: row.id,
+    kind: row.kind === "video" ? ("video" as const) : ("image" as const),
+    title: row.title,
+    public_url: row.public_url,
+    poster_url: row.poster_url,
+    alt_text: row.alt_text,
+    downloadable: row.downloadable,
+    presskit_enabled: row.presskit_enabled,
+    party_id: row.party_id,
+    sort_order: row.sort_order,
+    captured_at: row.captured_at,
+    homepage: row.homepage_enabled,
+    homepage_order: row.homepage_order,
+  };
+}
+
+export const getPublicMedia = createServerFn({ method: "GET" }).handler(async () => {
+  try {
+    const { publicSupabase } = await import("@/lib/supabase-public.server");
+    const { data, error } = await publicSupabase()
+      .from("tulio_media")
+      .select(mediaColumns)
+      .eq("visible", true)
+      .order("sort_order");
+    if (error || !data?.length) return [...sitePhotos, ...siteVideos];
+    return data.map(mapTulioMedia);
+  } catch {
+    return [...sitePhotos, ...siteVideos];
+  }
+});
 export const getHomepageMedia = createServerFn({ method: "GET" }).handler(async () => {
+  try {
+    const { publicSupabase } = await import("@/lib/supabase-public.server");
+    const { data, error } = await publicSupabase()
+      .from("tulio_media")
+      .select(mediaColumns)
+      .eq("visible", true)
+      .eq("homepage_enabled", true)
+      .eq("kind", "image")
+      .order("homepage_order");
+    if (!error && data?.length) {
+      return data.slice(0, 14).map((row, index) => ({ ...mapTulioMedia(row), sort_order: index }));
+    }
+  } catch {
+    // The catalog below keeps the strip up if the table is unavailable.
+  }
   const photos = carouselPhotos().map((photo) => ({
     id: photo.id,
     kind: "image" as const,

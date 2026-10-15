@@ -408,12 +408,77 @@ export type Database = {
         };
         Relationships: [];
       };
+      tulio_media: {
+        Row: {
+          alt_text: string;
+          captured_at: string | null;
+          created_at: string;
+          downloadable: boolean;
+          homepage_enabled: boolean;
+          homepage_order: number;
+          id: string;
+          kind: string;
+          party_id: string | null;
+          poster_url: string | null;
+          presskit_enabled: boolean;
+          public_url: string | null;
+          sort_order: number;
+          storage_bucket: string;
+          storage_path: string;
+          title: string;
+          updated_at: string;
+          visible: boolean;
+        };
+        Insert: {
+          alt_text?: string;
+          captured_at?: string | null;
+          created_at?: string;
+          downloadable?: boolean;
+          homepage_enabled?: boolean;
+          homepage_order?: number;
+          id?: string;
+          kind: string;
+          party_id?: string | null;
+          poster_url?: string | null;
+          presskit_enabled?: boolean;
+          public_url?: string | null;
+          sort_order?: number;
+          storage_bucket?: string;
+          storage_path?: string;
+          title: string;
+          updated_at?: string;
+          visible?: boolean;
+        };
+        Update: {
+          alt_text?: string;
+          captured_at?: string | null;
+          created_at?: string;
+          downloadable?: boolean;
+          homepage_enabled?: boolean;
+          homepage_order?: number;
+          id?: string;
+          kind?: string;
+          party_id?: string | null;
+          poster_url?: string | null;
+          presskit_enabled?: boolean;
+          public_url?: string | null;
+          sort_order?: number;
+          storage_bucket?: string;
+          storage_path?: string;
+          title?: string;
+          updated_at?: string;
+          visible?: boolean;
+        };
+        Relationships: [];
+      };
       tulio_home: {
         Row: {
           bandcamp_url: string | null;
           beatport_url: string | null;
           booking_email: string | null;
           facebook_url: string | null;
+          hero_body: string | null;
+          hero_image_url: string | null;
           instagram_url: string | null;
           section1_image_alt: string | null;
           section1_image_url: string | null;
@@ -430,6 +495,8 @@ export type Database = {
           beatport_url?: string | null;
           booking_email?: string | null;
           facebook_url?: string | null;
+          hero_body?: string | null;
+          hero_image_url?: string | null;
           instagram_url?: string | null;
           section1_image_alt?: string | null;
           section1_image_url?: string | null;
@@ -446,6 +513,8 @@ export type Database = {
           beatport_url?: string | null;
           booking_email?: string | null;
           facebook_url?: string | null;
+          hero_body?: string | null;
+          hero_image_url?: string | null;
           instagram_url?: string | null;
           section1_image_alt?: string | null;
           section1_image_url?: string | null;

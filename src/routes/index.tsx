@@ -1,17 +1,12 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useLayoutEffect } from "react";
 import { CornerButton } from "@/components/nocturna/CornerButton";
-import {
-  NocturnaLogoStrip,
-  NocturnaSectionHeader,
-  NocturnaStepsGrid,
-} from "@/components/nocturna/NocturnaBlocks";
+import { NocturnaSectionHeader, NocturnaStepsGrid } from "@/components/nocturna/NocturnaBlocks";
 import { TriangleGridSection } from "@/components/nocturna/TriangleGridSection";
 import { NocturnaHero } from "@/components/nocturna/NocturnaHero";
 import { SectionWipe } from "@/components/nocturna/SectionTransition";
 import { NocturnaSection } from "@/components/nocturna/NocturnaShell";
-import { SocialBar } from "@/components/jula/SocialBar";
-import { getHomepageMedia, getReleaseSections, getSiteSettings, getTulioHome, tulioHomeDefaults } from "@/lib/public.functions";
+import { getHomepageMedia, getSiteSettings, getTulioHome, tulioHeroBody, tulioHomeDefaults } from "@/lib/public.functions";
 import { getNocturnaHomeCopy } from "@/lib/nocturna-home";
 import { useI18n } from "@/lib/i18n";
 import { signalIntroReady } from "@/lib/intro";
@@ -33,16 +28,14 @@ export const Route = createFileRoute("/")({
       bandcamp_url: null,
       booking_email: "soniccdrivebookings@gmail.com",
     };
-    const [settingsResult, mediaResult, sectionsResult, homeResult] = await Promise.allSettled([
+    const [settingsResult, mediaResult, homeResult] = await Promise.allSettled([
       getSiteSettings(),
       getHomepageMedia(),
-      getReleaseSections(),
       getTulioHome(),
     ]);
     return {
       settings: settingsResult.status === "fulfilled" ? settingsResult.value : fallbackSettings,
       media: mediaResult.status === "fulfilled" ? mediaResult.value : [],
-      sections: sectionsResult.status === "fulfilled" ? sectionsResult.value : [],
       home: homeResult.status === "fulfilled" ? homeResult.value : tulioHomeDefaults,
     };
   },
@@ -140,8 +133,10 @@ function Home() {
       </NocturnaSection>
 
       <NocturnaHero
-        paragraphs={nc.heroParagraphs}
-        imageUrl="/brand/tulio-n26.jpg"
+        paragraphs={(home.hero_body && (locale === "pt" || home.hero_body.trim() !== tulioHeroBody)
+          ? home.hero_body.split(/\n\n+/).map((paragraph) => paragraph.trim()).filter(Boolean)
+          : [...nc.heroParagraphs])}
+        imageUrl={home.hero_image_url || "/brand/tulio-n26.jpg"}
         actions={
           <>
             <CornerButton to="/sets" variant="primary">
@@ -154,9 +149,6 @@ function Home() {
 
       <SectionWipe />
 
-      <NocturnaLogoStrip>
-        <SocialBar links={home} all />
-      </NocturnaLogoStrip>
 
       {home.booking_email && (
         <div className="flex h-28 items-center justify-center bg-black px-6 text-center max-md:-mb-28 md:hidden">

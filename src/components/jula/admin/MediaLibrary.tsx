@@ -58,11 +58,15 @@ export function MediaLibrary({
   media,
   parties,
   onChanged,
+  library = "shared",
 }: {
   media: MediaItem[];
   parties: Party[];
   onChanged: () => Promise<void>;
+  library?: "shared" | "tulio";
 }) {
+  const table = library === "tulio" ? "tulio_media" : "media";
+  const placeLabel = library === "tulio" ? "Carrossel" : "Sessão 1";
   const save = useServerFn(saveAdminItem);
   const remove = useServerFn(deleteAdminItem);
   const transcodeOnServer = useServerFn(transcodeSiteMediaVideo);
@@ -124,7 +128,9 @@ export function MediaLibrary({
     setBusy(true);
     try {
       let linkedParty = partyId;
-      if (partyName) {
+      if (library === "tulio") {
+        linkedParty = partyId || partyName.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+      } else if (partyName) {
         const created = (await save({
           data: {
             table: "parties",
@@ -189,7 +195,7 @@ export function MediaLibrary({
         const title = file.name.replace(/\.[^.]+$/, "");
         await save({
           data: {
-            table: "media",
+            table: table,
             item: {
               kind: isVideoFile(file) ? "video" : "image",
               title,
@@ -230,7 +236,7 @@ export function MediaLibrary({
         if (item.storage_path) {
           await supabase.storage.from(item.storage_bucket || BUCKET).remove([item.storage_path]);
         }
-        await remove({ data: { table: "media", id: item.id } });
+        await remove({ data: { table, id: item.id } });
       }
       setSelected([]);
       await onChanged();
@@ -243,7 +249,7 @@ export function MediaLibrary({
   }
 
   async function patch(item: MediaItem, changes: Partial<MediaItem>) {
-    await save({ data: { table: "media", item: { ...item, ...changes } } });
+    await save({ data: { table, item: { ...item, ...changes } } });
     await onChanged();
   }
 
@@ -334,7 +340,7 @@ export function MediaLibrary({
                 </select>
               </label>
               <label className="mt-3 flex items-center justify-between text-xs text-muted-foreground">
-                Sessão 1{" "}
+                {placeLabel}{" "}
                 <Switch
                   checked={item.homepage_enabled}
                   onCheckedChange={(v) => void patch(item, { homepage_enabled: v })}
@@ -402,7 +408,7 @@ export function MediaLibrary({
               />
             </label>
             <label className="flex items-center justify-between text-sm">
-              Sessão 1 (Home) <Switch checked={home} onCheckedChange={setHome} />
+              {placeLabel} (Home) <Switch checked={home} onCheckedChange={setHome} />
             </label>
             <label className="flex items-center justify-between text-sm">
               Galeria <Switch checked={gallery} onCheckedChange={setGallery} />

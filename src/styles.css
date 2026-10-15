@@ -357,17 +357,10 @@
   }
 }
 .nc-section-wipe {
-  height: 1px;
-  transform-origin: left center;
-  background: linear-gradient(
-    90deg,
-    transparent 0%,
-    rgb(255 255 255 / 35%) 18%,
-    rgb(255 255 255 / 90%) 50%,
-    rgb(255 255 255 / 35%) 82%,
-    transparent 100%
-  );
-  box-shadow: 0 0 18px rgb(255 255 255 / 25%);
+  height: 0;
+  border-bottom: 1px solid var(--nc-border);
+  background: none;
+  box-shadow: none;
 }
 .nc-grid-border-b {
   border-bottom: 1px solid var(--nc-border);

@@ -26,11 +26,24 @@ const platforms = [
 const iconClass =
   "grid size-11 shrink-0 place-items-center transition-transform duration-300 hover:-translate-y-1";
 
-export function SocialBar({ links, all = false }: { links: SocialUrls; all?: boolean }) {
+export function SocialBar({
+  links,
+  all = false,
+  large = false,
+  showEmail = true,
+}: {
+  links: SocialUrls;
+  all?: boolean;
+  large?: boolean;
+  showEmail?: boolean;
+}) {
   const items = all
     ? platforms
     : platforms.filter((item) => (links[item.key] ?? "").trim().length > 0);
-  const email = (links.booking_email ?? "").trim();
+  const email = showEmail ? (links.booking_email ?? "").trim() : "";
+  const hitClass = large
+    ? "grid size-14 shrink-0 place-items-center transition-transform duration-300 hover:-translate-y-1"
+    : iconClass;
   if (!items.length && !email) return null;
   return (
     <div className="pointer-events-auto flex w-full flex-col items-center gap-3">
@@ -44,9 +57,11 @@ export function SocialBar({ links, all = false }: { links: SocialUrls; all?: boo
       )}
       <div
         className={
-          all
-            ? "grid w-full grid-cols-5 justify-items-center gap-y-6 md:flex md:flex-wrap md:justify-center md:gap-5"
-            : "flex flex-wrap items-center justify-center gap-x-3 gap-y-2 md:gap-x-4"
+          large
+            ? "grid w-full grid-cols-5 justify-items-center gap-y-8 md:flex md:flex-wrap md:justify-center md:gap-8"
+            : all
+              ? "grid w-full grid-cols-5 justify-items-center gap-y-6 md:flex md:flex-wrap md:justify-center md:gap-5"
+              : "flex flex-wrap items-center justify-center gap-x-3 gap-y-2 md:gap-x-4"
         }
       >
         {items.map((item) => {
@@ -55,13 +70,13 @@ export function SocialBar({ links, all = false }: { links: SocialUrls; all?: boo
             <img
               src={item.icon}
               alt=""
-              className="size-9 object-contain brightness-0 invert"
+              className={`${large ? "size-11" : "size-9"} object-contain brightness-0 invert`}
               loading="lazy"
             />
           );
           if (!href) {
             return (
-              <span key={item.key} className={iconClass} aria-label={item.label} title={item.label}>
+              <span key={item.key} className={hitClass} aria-label={item.label} title={item.label}>
                 {image}
               </span>
             );
@@ -74,7 +89,7 @@ export function SocialBar({ links, all = false }: { links: SocialUrls; all?: boo
               rel="noreferrer noopener"
               aria-label={item.label}
               title={item.label}
-              className={iconClass}
+              className={hitClass}
             >
               {image}
             </a>

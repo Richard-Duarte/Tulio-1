@@ -8,6 +8,7 @@ const tables = z.enum([
   "releases",
   "tracks",
   "media",
+  "tulio_media",
   "parties",
   "release_sections",
   "release_links",
@@ -50,7 +51,7 @@ export const getAdminData = createServerFn({ method: "GET" })
       context.supabase.from("releases").select("*").order("sort_order"),
       context.supabase.from("release_links").select("*").order("sort_order"),
       context.supabase.from("tracks").select("*").order("sort_order"),
-      context.supabase.from("media").select("*").order("sort_order"),
+      context.supabase.from("tulio_media").select("*").order("sort_order"),
       context.supabase.from("parties").select("*").order("sort_order"),
       context.supabase.from("release_sections").select("*").order("sort_order"),
     ]);
@@ -160,13 +161,17 @@ export const saveTulioHome = createServerFn({ method: "POST" })
         instagram_url: homeUrl,
         spotify_url: homeUrl,
         beatport_url: homeUrl,
+        hero_body: z.string().max(10000).optional(),
+        hero_image_url: homeImage.optional(),
       })
       .parse(input),
   )
   .handler(async ({ data, context }) => {
     await assertAdmin(context);
     const clean = Object.fromEntries(
-      Object.entries(data).map(([key, value]) => [key, value === "" ? null : value]),
+      Object.entries(data)
+        .filter(([, value]) => value !== undefined)
+        .map(([key, value]) => [key, value === "" ? null : value]),
     );
     const { error } = await context.supabase
       .from("tulio_home")
@@ -231,6 +236,24 @@ export const saveAdminItem = createServerFn({ method: "POST" })
         "poster_url",
         "alt_text",
         "sort_order",
+        "visible",
+        "presskit_enabled",
+        "downloadable",
+        "homepage_enabled",
+        "party_id",
+        "captured_at",
+      ],
+      tulio_media: [
+        "id",
+        "kind",
+        "title",
+        "storage_bucket",
+        "storage_path",
+        "public_url",
+        "poster_url",
+        "alt_text",
+        "sort_order",
+        "homepage_order",
         "visible",
         "presskit_enabled",
         "downloadable",
