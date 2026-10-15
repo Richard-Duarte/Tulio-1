@@ -147,13 +147,19 @@ export function GlitchingTechEye({
         ctx.scale(gScale, 1 / (gScale || 1));
       }
 
+      const eyeR = radius * 1.28;
       const orbGrad = ctx.createRadialGradient(cx, cy, 0, cx, cy, radius * 1.5);
       orbGrad.addColorStop(0, "rgba(255,255,255,0.42)");
       orbGrad.addColorStop(0.2, "rgba(210,210,210,0.28)");
       orbGrad.addColorStop(0.5, "rgba(90,90,90,0.16)");
       orbGrad.addColorStop(1, "rgba(0,0,0,0)");
+      ctx.save();
+      ctx.beginPath();
+      ctx.arc(cx, cy, eyeR, 0, Math.PI * 2);
+      ctx.clip();
       ctx.fillStyle = orbGrad;
       ctx.fillRect(0, 0, wCss, hCss);
+      ctx.restore();
 
       const maxOffset = radius * 0.18 * eyeFollow;
       let tx = 0;
@@ -290,10 +296,15 @@ export function GlitchingTechEye({
         }
         gctx.globalCompositeOperation = "source-over";
       }
+      ctx.save();
+      ctx.beginPath();
+      ctx.arc(cx, cy, eyeR, 0, Math.PI * 2);
+      ctx.clip();
       ctx.globalAlpha = 0.4 + grainStrength * 0.6;
       ctx.imageSmoothingEnabled = true;
       ctx.drawImage(grainCanvas, 0, 0, wCss, hCss);
       ctx.globalAlpha = 1;
+      ctx.restore();
       ctx.restore();
       frame = requestAnimationFrame(render);
     };
@@ -313,19 +324,14 @@ export function GlitchingTechEye({
       style={{
         background: "transparent",
         position: "relative",
-        overflow: "hidden",
+        overflow: "visible",
         filter: logoBlur ? "blur(18px)" : "none",
         transition: "filter 700ms ease-out",
       }}
     >
       <style>{"@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap');"}</style>
       <canvas ref={canvasRef} className="pointer-events-none absolute inset-0 h-full w-full" />
-      <canvas
-        ref={grainCanvasRef}
-        aria-hidden
-        className="pointer-events-none absolute inset-0 h-full w-full"
-        style={{ mixBlendMode: "overlay" }}
-      />
+      <canvas ref={grainCanvasRef} aria-hidden className="hidden" />
     </div>
   );
 }

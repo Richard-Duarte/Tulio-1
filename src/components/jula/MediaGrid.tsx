@@ -4,7 +4,7 @@ import { Check, CheckSquare, Download, LoaderCircle, X } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { PhotoLightbox } from "@/components/jula/PhotoLightbox";
-import { SwapText } from "@/components/jula/SwapText";
+import { GlyphHover } from "@/components/tulio/GlyphHover";
 import { useI18n, type Locale } from "@/lib/i18n";
 import { downloadMedia, downloadMediaZip, type ZipProgress } from "@/lib/media-download";
 import { cn } from "@/lib/utils";
@@ -39,7 +39,7 @@ function VideoWall({ videos, downloads }: { videos: MediaItem[]; downloads: bool
     <section id="galeria-videos">
       <header className="flex items-baseline justify-between border-b border-border/60 px-5 pb-3 md:px-10">
         <h2 className="text-2xl uppercase md:text-4xl">
-          <SwapText>{t("videos")}</SwapText>
+          <GlyphHover text={t("videos")} />
         </h2>
         <p className="font-mono text-[10px] uppercase tracking-[.18em] text-muted-foreground">
           {String(videos.length).padStart(2, "0")}
@@ -358,7 +358,7 @@ export function MediaGrid({
             <section key={group.party.id}>
               <header className="flex items-baseline justify-between border-b border-border/60 px-5 pb-3 md:px-10">
                 <h2 className="text-2xl uppercase md:text-4xl">
-                  <SwapText>{group.party.name}</SwapText>
+                  <GlyphHover text={group.party.name} />
                 </h2>
                 <p className="font-mono text-[10px] uppercase tracking-[.18em] text-muted-foreground">
                   {group.party.happened_at

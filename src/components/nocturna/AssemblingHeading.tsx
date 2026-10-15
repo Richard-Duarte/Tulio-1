@@ -5,8 +5,10 @@ import {
   useRef,
   useState,
   type ElementType,
+  type PointerEvent,
   type ReactNode,
 } from "react";
+import { GLYPH_STEP_MS, glyphFrame } from "@/components/tulio/GlyphHover";
 import { cn } from "@/lib/utils";
 
 const GLYPHS = ["▲", "7", "▼", "7", "▲", "▵", "7", "◢"] as const;
@@ -45,10 +47,40 @@ export function AssemblingHeading({
   const [locked, setLocked] = useState(0);
   const [noise, setNoise] = useState<string[]>([]);
   const [glitch, setGlitch] = useState(false);
+  const timers = useRef<number[]>([]);
   const seeds = useMemo(() => buildSeeds(text ? Math.min(32, text.length + 18) : 24), [text]);
+
+  const clearTimers = () => {
+    timers.current.forEach((id) => {
+      window.clearInterval(id);
+      window.clearTimeout(id);
+    });
+    timers.current = [];
+  };
+
+  const showFrame = (value: string, step: number) => {
+    setLocked(step);
+    setNoise([...glyphFrame(value, step)]);
+    setGlitch(step > 0 && step < [...value].length);
+  };
+
+  const playHover = () => {
+    if (!text || reduced) return;
+    clearTimers();
+    const length = [...text].length;
+    showFrame(text, 0);
+    let step = 0;
+    const tick = () => {
+      step += 1;
+      showFrame(text, step);
+      if (step < length) timers.current.push(window.setTimeout(tick, GLYPH_STEP_MS));
+    };
+    timers.current.push(window.setTimeout(tick, GLYPH_STEP_MS));
+  };
 
   useEffect(() => {
     if (!text) return;
+    clearTimers();
     setNoise(text.split("").map(() => pickGlyph()));
     if (reduced) {
       setLocked(text.length);
@@ -65,14 +97,10 @@ export function AssemblingHeading({
       if (i >= text.length) window.clearInterval(lockTimer);
     }, 58);
     const scrambleTimer = window.setInterval(() => {
-      setNoise((prev) =>
-        prev.map((g, idx) => (idx >= i ? pickGlyph() : g)),
-      );
+      setNoise((prev) => prev.map((g, idx) => (idx >= i ? pickGlyph() : g)));
     }, 65);
-    return () => {
-      window.clearInterval(lockTimer);
-      window.clearInterval(scrambleTimer);
-    };
+    timers.current.push(lockTimer, scrambleTimer);
+    return clearTimers;
   }, [inView, reduced, text]);
 
   if (!text) {
@@ -84,7 +112,9 @@ export function AssemblingHeading({
   return (
     <Tag
       ref={ref as never}
+      aria-label={text}
       className={cn("nc-display nc-assemble", glitch && "nc-assemble-glitch", className)}
+      onPointerEnter={(event: PointerEvent) => event.pointerType === "mouse" && playHover()}
     >
       <span className="nc-assemble-field" aria-hidden>
         {seeds.map((s, i) => (
