@@ -14,10 +14,15 @@ export function TriangleGridSection({
   imageUrl?: string;
   imageAlt?: string;
 }) {
+  const sessionSrc =
+    imageUrl.includes("tulio-session.jpg") && !imageUrl.includes("v=")
+      ? `${imageUrl}${imageUrl.includes("?") ? "&" : "?"}v=3`
+      : imageUrl;
+
   return (
-    <section className="relative overflow-hidden bg-black md:min-h-[calc(100dvh-8.4rem)]" aria-label="Abertura">
-      <div className="relative z-10 grid min-h-[78vh] grid-cols-2 md:h-[calc(100dvh-8.4rem)]">
-        <ImageGlitch src={imageUrl} alt={imageAlt} edge="left" />
+    <section className="relative overflow-hidden bg-black md:min-h-[calc(100dvh-9.2rem)]" aria-label="Abertura">
+      <div className="relative z-10 grid min-h-[78vh] grid-cols-2 md:h-[calc(100dvh-9.2rem)]">
+        <ImageGlitch src={sessionSrc} alt={imageAlt} edge="left" />
         <ImageGlitch src={BOOTH_PHOTO} alt="Tulio na cabine" edge="right" />
       </div>
       <div className="pointer-events-none absolute top-3 right-3 z-20 size-[34vw] max-w-[220px] md:top-6 md:right-8 md:size-[240px]">

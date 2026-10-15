@@ -217,13 +217,15 @@ export function NocturnaCtaBand({
   );
 }
 
-export function NocturnaLogoStrip({ label, children }: { label: string; children: ReactNode }) {
+export function NocturnaLogoStrip({ label, children }: { label?: string; children: ReactNode }) {
   return (
     <div className="nc-grid-border-b py-8">
       <NocturnaContainer>
-        <p className="nc-muted mb-6 text-center font-mono text-[10px] uppercase tracking-[0.22em]">
-          {label}
-        </p>
+        {label ? (
+          <p className="nc-muted mb-6 text-center font-mono text-[10px] uppercase tracking-[0.22em]">
+            {label}
+          </p>
+        ) : null}
         <div className="flex flex-wrap items-center justify-center gap-x-12 gap-y-4">{children}</div>
       </NocturnaContainer>
     </div>

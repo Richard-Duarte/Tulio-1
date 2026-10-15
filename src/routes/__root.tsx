@@ -186,7 +186,7 @@ function LocalizedOutlet() {
   const pathname = useRouterState({ select: (state) => state.location.pathname });
   const privateArea = pathname === "/auth" || pathname.startsWith("/admin");
   return (
-    <div className={privateArea ? "page-enter pb-28 md:pb-32" : "page-enter pt-[7.6rem] pb-28 md:pt-[8.4rem] md:pb-32"} key={locale}>
+    <div className={privateArea ? "page-enter pb-28 md:pb-32" : "page-enter pt-[8.15rem] pb-28 md:pt-[9.2rem] md:pb-32"} key={locale}>
       <Outlet />
     </div>
   );

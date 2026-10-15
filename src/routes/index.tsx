@@ -7,7 +7,6 @@ import {
   NocturnaStepsGrid,
 } from "@/components/nocturna/NocturnaBlocks";
 import { TriangleGridSection } from "@/components/nocturna/TriangleGridSection";
-import { TriangleImageCarousel } from "@/components/nocturna/TriangleImageCarousel";
 import { NocturnaHero } from "@/components/nocturna/NocturnaHero";
 import { SectionWipe } from "@/components/nocturna/SectionTransition";
 import { NocturnaSection } from "@/components/nocturna/NocturnaShell";
@@ -86,7 +85,6 @@ function Home() {
   const { settings, media, home } = Route.useLoaderData();
   const photos = media.filter((item) => item.kind === "image");
   const carousel = photos.slice(0, 14);
-  const heroImage = carousel[0]?.public_url ?? null;
   const carouselUrls = carousel.map((item) => item.public_url ?? "").join("\n");
 
   useLayoutEffect(() => {
@@ -110,8 +108,6 @@ function Home() {
         imageAlt={home.section1_image_alt}
       />
 
-      <TriangleImageCarousel images={carousel.map((item) => item.public_url ?? "").filter(Boolean)} />
-
       <NocturnaSection alt className="nc-section-alt">
         <NocturnaSectionHeader eyebrow={nc.stepsEyebrow} title={nc.stepsTitle} />
         <NocturnaStepsGrid
@@ -122,25 +118,6 @@ function Home() {
           ]}
         />
       </NocturnaSection>
-
-      <NocturnaHero
-        paragraphs={nc.heroParagraphs}
-        imageUrl="/brand/tulio-n26.jpg"
-        actions={
-          <>
-            <CornerButton to="/sets" variant="primary">
-              {nc.ctaPrimary}
-            </CornerButton>
-            <CornerButton to="/galeria">{nc.ctaSecondary}</CornerButton>
-          </>
-        }
-      />
-
-      <SectionWipe />
-
-      <NocturnaLogoStrip label={nc.trusted}>
-        <SocialBar links={home} all />
-      </NocturnaLogoStrip>
 
       {carousel.length > 1 && (
         <div className="overflow-hidden nc-grid-border-b py-6">
@@ -158,6 +135,25 @@ function Home() {
           </div>
         </div>
       )}
+
+      <NocturnaHero
+        paragraphs={nc.heroParagraphs}
+        imageUrl="/brand/tulio-n26.jpg"
+        actions={
+          <>
+            <CornerButton to="/sets" variant="primary">
+              {nc.ctaPrimary}
+            </CornerButton>
+            <CornerButton to="/galeria">{nc.ctaSecondary}</CornerButton>
+          </>
+        }
+      />
+
+      <SectionWipe />
+
+      <NocturnaLogoStrip>
+        <SocialBar links={home} all />
+      </NocturnaLogoStrip>
 
       {home.booking_email && (
         <div className="flex h-28 items-center justify-center bg-black px-6 text-center max-md:-mb-28 md:hidden">
