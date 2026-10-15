@@ -482,6 +482,7 @@ export type Database = {
           instagram_url: string | null;
           section1_image_alt: string | null;
           section1_image_url: string | null;
+          section1_right_image_url: string | null;
           singleton_key: string;
           soundcloud_url: string | null;
           spotify_url: string | null;
@@ -500,6 +501,7 @@ export type Database = {
           instagram_url?: string | null;
           section1_image_alt?: string | null;
           section1_image_url?: string | null;
+          section1_right_image_url?: string | null;
           singleton_key?: string;
           soundcloud_url?: string | null;
           spotify_url?: string | null;
@@ -518,6 +520,7 @@ export type Database = {
           instagram_url?: string | null;
           section1_image_alt?: string | null;
           section1_image_url?: string | null;
+          section1_right_image_url?: string | null;
           singleton_key?: string;
           soundcloud_url?: string | null;
           spotify_url?: string | null;

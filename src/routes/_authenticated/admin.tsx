@@ -73,6 +73,7 @@ function Admin() {
   const [party, setParty] = useState({ name: "", happened_at: "" });
   const emptyHome = {
     section1_image_url: "/brand/tulio-session.jpg",
+    section1_right_image_url: "/brand/tulio-booth.jpg",
     section1_image_alt: "Tulio no set",
     booking_email: "soniccdrivebookings@gmail.com",
     facebook_url: "",
@@ -108,6 +109,7 @@ function Admin() {
       const row = data.home;
       setHome({
         section1_image_url: row.section1_image_url ?? "",
+        section1_right_image_url: row.section1_right_image_url || "/brand/tulio-booth.jpg",
         section1_image_alt: row.section1_image_alt ?? "",
         booking_email: row.booking_email ?? "",
         facebook_url: row.facebook_url ?? "",
@@ -348,45 +350,52 @@ function Admin() {
         <TabsContent value="redes">
           <Panel title="Sessão 1">
             <p className="-mt-3 mb-5 text-sm text-muted-foreground">
-              A foto da direita, o texto dela e os links dos ícones da abertura. No celular, o
-              e-mail de bookings fica na faixa preta abaixo do carrossel.
+              As duas fotos da abertura, o texto da foto da esquerda e os links dos ícones. No
+              celular, o e-mail de bookings fica na faixa preta abaixo do carrossel.
             </p>
-            {home.section1_image_url && (
-              <img
-                src={home.section1_image_url}
-                alt=""
-                className="mb-4 aspect-[4/5] w-40 object-cover"
-              />
-            )}
-            <label className="block text-xs uppercase tracking-[.15em] text-muted-foreground">
-              Foto da sessão 1
-              <Input
-                className="mt-1"
-                type="file"
-                accept="image/*"
-                disabled={homeUploading}
-                onChange={async (e) => {
-                  const file = e.target.files?.[0];
-                  e.target.value = "";
-                  if (!file) return;
-                  setHomeUploading(true);
-                  try {
-                    const ext = file.name.split(".").pop()?.toLowerCase() || "jpg";
-                    const path = `home/section1-${Date.now()}.${ext}`;
-                    await uploadSiteMediaFile(file, path);
-                    const url = supabase.storage.from("site-media").getPublicUrl(path).data.publicUrl;
-                    setHome((v) => ({ ...v, section1_image_url: url }));
-                    toast.success("Foto enviada. Salve para publicar.");
-                  } catch {
-                    toast.error("Não foi possível enviar a foto.");
-                  } finally {
-                    setHomeUploading(false);
-                  }
-                }}
-              />
-            </label>
+            <div className="grid gap-6 sm:grid-cols-2">
+              {(
+                [
+                  ["section1_image_url", "Foto da esquerda", "left"],
+                  ["section1_right_image_url", "Foto da direita", "right"],
+                ] as const
+              ).map(([key, label, slot]) => (
+                <div key={key}>
+                  {home[key] && (
+                    <img src={home[key]} alt="" className="mb-4 aspect-[4/5] w-40 object-cover" />
+                  )}
+                  <label className="block text-xs uppercase tracking-[.15em] text-muted-foreground">
+                    {label}
+                    <Input
+                      className="mt-1"
+                      type="file"
+                      accept="image/*"
+                      disabled={homeUploading}
+                      onChange={async (e) => {
+                        const file = e.target.files?.[0];
+                        e.target.value = "";
+                        if (!file) return;
+                        setHomeUploading(true);
+                        try {
+                          const ext = file.name.split(".").pop()?.toLowerCase() || "jpg";
+                          const path = `home/section1-${slot}-${Date.now()}.${ext}`;
+                          await uploadSiteMediaFile(file, path);
+                          const url = supabase.storage.from("site-media").getPublicUrl(path).data.publicUrl;
+                          setHome((current) => ({ ...current, [key]: url }));
+                          toast.success("Foto enviada. Salve para publicar.");
+                        } catch {
+                          toast.error("Não foi possível enviar a foto.");
+                        } finally {
+                          setHomeUploading(false);
+                        }
+                      }}
+                    />
+                  </label>
+                </div>
+              ))}
+            </div>
             <label className="mt-3 block text-xs uppercase tracking-[.15em] text-muted-foreground">
-              Texto da foto
+              Texto da foto da esquerda
               <Input
                 className="mt-1"
                 value={home.section1_image_alt}

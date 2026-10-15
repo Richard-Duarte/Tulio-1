@@ -150,6 +150,7 @@ export const saveTulioHome = createServerFn({ method: "POST" })
     z
       .object({
         section1_image_url: homeImage,
+        section1_right_image_url: homeImage,
         section1_image_alt: z.string().trim().max(180),
         booking_email: z.string().trim().max(180),
         facebook_url: homeUrl,

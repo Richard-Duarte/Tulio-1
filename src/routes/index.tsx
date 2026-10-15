@@ -98,6 +98,7 @@ function Home() {
       <TriangleGridSection
         links={home}
         imageUrl={home.section1_image_url}
+        rightImageUrl={home.section1_right_image_url}
         imageAlt={home.section1_image_alt}
       />
 
