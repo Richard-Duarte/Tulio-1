@@ -92,10 +92,7 @@ export function NocturnaStepsGrid({
       {steps.map((step) => (
         <StaggerItem key={step.n}>
           <HoverCell className="relative h-full px-5 py-8 md:px-8 md:py-10 nc-grid-border-r last:border-r-0">
-            <span className="absolute right-5 top-6 font-mono text-lg text-[var(--nc-muted)] md:right-8">
-              ⋯
-            </span>
-            <p className="font-mono text-sm text-[var(--nc-accent-mint)]">{step.n}</p>
+            <p className="font-mono text-2xl tracking-[0.06em] text-white md:text-3xl">{step.n}</p>
             <SpacedHeading as="h3" className="mt-6 text-lg md:text-xl">
               {step.title}
             </SpacedHeading>

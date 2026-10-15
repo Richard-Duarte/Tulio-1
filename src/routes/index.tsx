@@ -142,10 +142,10 @@ function Home() {
         imageUrl={home.hero_image_url || "/brand/tulio-n26.jpg"}
         actions={
           <>
-            <CornerButton to="/sets" variant="primary">
-              {nc.ctaPrimary}
+            <CornerButton to="/sets">{nc.ctaPrimary}</CornerButton>
+            <CornerButton to="/galeria" variant="primary">
+              {nc.ctaSecondary}
             </CornerButton>
-            <CornerButton to="/galeria">{nc.ctaSecondary}</CornerButton>
           </>
         }
       />

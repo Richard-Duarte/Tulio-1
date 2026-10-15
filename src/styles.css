@@ -68,9 +68,9 @@
 }
 
 :root {
-  --nc-bg: #0d0d0e;
-  --nc-bg-elevated: #111113;
-  --nc-bg-alt: #0a0a0b;
+  --nc-bg: #000000;
+  --nc-bg-elevated: #000000;
+  --nc-bg-alt: #000000;
   --nc-border: #222226;
   --nc-muted: #7a7a82;
   --nc-accent: #ffffff;
@@ -198,7 +198,7 @@
   padding-block: 0;
 }
 .nc-section-alt {
-  background: #050505;
+  background: #000;
 }
 .nc-page {
   background: #000;

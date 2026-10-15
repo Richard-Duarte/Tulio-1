@@ -7,8 +7,13 @@ const TOUCH_GAIN = 0.62;
 /** Seconds for the scroll position to catch the wheel target. */
 const EASE_SECONDS = 0.12;
 
+/** Pure helper — kept testable so footer/layout regressions cannot hide under max scroll. */
+export function pageScrollMax(scrollHeight: number, viewportHeight: number) {
+  return Math.max(0, scrollHeight - viewportHeight);
+}
+
 function maxScroll() {
-  return Math.max(0, document.documentElement.scrollHeight - window.innerHeight);
+  return pageScrollMax(document.documentElement.scrollHeight, window.innerHeight);
 }
 
 function clampScroll(value: number) {
@@ -61,7 +66,8 @@ function bindDampedScroll() {
   let touchVelocity = 0;
 
   const write = (value: number) => {
-    window.scrollTo(0, clampScroll(value));
+    const next = clampScroll(value);
+    window.scrollTo(0, next);
     lastWritten = window.scrollY;
   };
 
@@ -69,11 +75,15 @@ function bindDampedScroll() {
     const dt = lastFrame ? Math.min(0.05, (now - lastFrame) / 1000) : 0.016;
     lastFrame = now;
     const current = window.scrollY;
+    // External scroll (scrollbar / anchoring): adopt it, but keep easing if we still
+    // have a farther target — otherwise late layout + rubber-band abort near the bottom.
     if (Math.abs(current - lastWritten) > 1.5) {
-      target = current;
       lastWritten = current;
-      raf = 0;
-      return;
+      if (Math.abs(target - current) <= 1.5) {
+        target = current;
+        raf = 0;
+        return;
+      }
     }
     target = clampScroll(target);
     const diff = target - current;
@@ -102,6 +112,7 @@ function bindDampedScroll() {
     const delta = event.deltaY * unit;
     if (!delta || nestedScrollable(event.target, delta)) return;
     event.preventDefault();
+    // Re-read scrollHeight every wheel so late images/footer don't cap the journey short.
     target = clampScroll(target + delta * WHEEL_GAIN);
     kick();
   };
@@ -109,10 +120,8 @@ function bindDampedScroll() {
   const onScroll = () => {
     const next = window.scrollY;
     if (Math.abs(next - lastWritten) <= 1.5) return;
-    target = next;
     lastWritten = next;
-    if (raf) cancelAnimationFrame(raf);
-    raf = 0;
+    if (!raf) target = next;
   };
 
   const onTouchStart = (event: TouchEvent) => {
@@ -176,7 +185,16 @@ function bindDampedScroll() {
 
   const onResize = () => {
     target = clampScroll(target);
+    if (Math.abs(target - window.scrollY) > 0.5) kick();
   };
+
+  const resizeObserver =
+    typeof ResizeObserver !== "undefined"
+      ? new ResizeObserver(() => {
+          onResize();
+        })
+      : null;
+  resizeObserver?.observe(document.documentElement);
 
   window.addEventListener("wheel", onWheel, { passive: false });
   window.addEventListener("scroll", onScroll, { passive: true });
@@ -188,6 +206,7 @@ function bindDampedScroll() {
 
   return () => {
     if (raf) cancelAnimationFrame(raf);
+    resizeObserver?.disconnect();
     window.removeEventListener("wheel", onWheel);
     window.removeEventListener("scroll", onScroll);
     window.removeEventListener("touchstart", onTouchStart);
