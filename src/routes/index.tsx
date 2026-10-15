@@ -4,7 +4,6 @@ import { CornerButton } from "@/components/nocturna/CornerButton";
 import { NocturnaSectionHeader, NocturnaStepsGrid } from "@/components/nocturna/NocturnaBlocks";
 import { TriangleGridSection } from "@/components/nocturna/TriangleGridSection";
 import { NocturnaHero } from "@/components/nocturna/NocturnaHero";
-import { SectionWipe } from "@/components/nocturna/SectionTransition";
 import { NocturnaSection } from "@/components/nocturna/NocturnaShell";
 import { getHomepageMedia, getSiteSettings, getTulioHome, tulioHeroBody, tulioHomeDefaults } from "@/lib/public.functions";
 import { resolveHeroTitle } from "@/lib/hero-copy";
@@ -150,11 +149,8 @@ function Home() {
         }
       />
 
-      <SectionWipe />
-
-
       {home.booking_email && (
-        <div className="flex h-28 items-center justify-center bg-black px-6 text-center max-md:-mb-28 md:hidden">
+        <div className="flex items-center justify-center bg-black px-6 py-8 text-center md:hidden">
           <a
             href={`mailto:${home.booking_email}`}
             className="break-all font-mono text-[11px] uppercase leading-snug tracking-[0.16em] text-white/75"
