@@ -1,10 +1,10 @@
 import { SocialBar, type SocialUrls } from "@/components/jula/SocialBar";
-import { useMenuOpen } from "@/lib/menu-open";
-import { FramerGridPreview } from "./FramerGridPreview";
 import { GlitchingTechEye } from "./GlitchingTechEye";
 import { ImageGlitch } from "./ImageGlitch";
 
-/** Section 1 — triangle grid, eye on the left, glitch photo on the right. */
+const BOOTH_PHOTO = "/brand/tulio-booth.jpg";
+
+/** Section 1 — session photo on the left, booth photo on the right, small eye at the top right. */
 export function TriangleGridSection({
   links,
   imageUrl = "/brand/tulio-session.jpg",
@@ -14,28 +14,19 @@ export function TriangleGridSection({
   imageUrl?: string;
   imageAlt?: string;
 }) {
-  const menuOpen = useMenuOpen();
-
   return (
-    <section className="relative overflow-hidden bg-black md:min-h-[100dvh]" aria-label="Abertura">
-      <FramerGridPreview className="pointer-events-none absolute inset-0" shape="triangle" controls={false} />
-      <div className="relative z-10 grid grid-cols-1 md:h-[100dvh] md:grid-cols-2">
-        <div className="relative h-[68vh] md:h-full">
-          <GlitchingTechEye
-            logoSrc="/brand/tulio-mark.png"
-            logoBlur={menuOpen}
-            className="absolute inset-0 h-full w-full"
-          />
-          <div
-            className="pointer-events-none absolute inset-x-0 bottom-6 z-20 flex justify-center px-6 transition-opacity duration-500 md:bottom-8"
-            style={{ opacity: menuOpen ? 0 : 1 }}
-          >
-            <div className={menuOpen ? "pointer-events-none w-full" : "pointer-events-auto w-full"}>
-              <SocialBar links={links} all />
-            </div>
-          </div>
+    <section className="relative overflow-hidden bg-black md:min-h-[calc(100dvh-7.5rem)]" aria-label="Abertura">
+      <div className="relative z-10 grid min-h-[78vh] grid-cols-2 md:h-[calc(100dvh-7.5rem)]">
+        <ImageGlitch src={imageUrl} alt={imageAlt} edge="left" />
+        <ImageGlitch src={BOOTH_PHOTO} alt="Tulio na cabine" edge="right" />
+      </div>
+      <div className="pointer-events-none absolute top-3 right-3 z-20 size-[34vw] max-w-[220px] overflow-hidden rounded-full md:top-6 md:right-8 md:size-[240px]">
+        <GlitchingTechEye logoSrc="/brand/tulio-mark.png" className="absolute inset-0 h-full w-full" />
+      </div>
+      <div className="pointer-events-none absolute inset-x-0 bottom-6 z-30 flex justify-center px-6 md:bottom-8">
+        <div className="pointer-events-auto w-full max-w-3xl">
+          <SocialBar links={links} all />
         </div>
-        <ImageGlitch src={imageUrl} alt={imageAlt} />
       </div>
     </section>
   );

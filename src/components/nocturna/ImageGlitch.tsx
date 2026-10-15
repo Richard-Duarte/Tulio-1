@@ -10,7 +10,7 @@ const HOLD_TICKS = 3;
  * Even-mode glitch from the Framer Glitch Effect: equal horizontal bands,
  * occasional small shifts that hold for a few frames.
  */
-export function ImageGlitch({ src, alt }: { src: string; alt: string }) {
+export function ImageGlitch({ src, alt, edge = "right" }: { src: string; alt: string; edge?: "left" | "right" }) {
   const rootRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -45,14 +45,12 @@ export function ImageGlitch({ src, alt }: { src: string; alt: string }) {
   return (
     <div
       ref={rootRef}
-      className="relative h-[46vh] w-full overflow-hidden md:h-full md:min-h-0"
+      className="relative h-full min-h-[52vh] w-full overflow-hidden md:min-h-0"
       style={{
         opacity: 0.78,
         mixBlendMode: "lighten",
-        maskImage:
-          "linear-gradient(to right, transparent 0%, #000 20%, #000 100%), linear-gradient(to bottom, transparent 0%, #000 12%, #000 88%, transparent 100%)",
-        WebkitMaskImage:
-          "linear-gradient(to right, transparent 0%, #000 20%, #000 100%), linear-gradient(to bottom, transparent 0%, #000 12%, #000 88%, transparent 100%)",
+        maskImage: `linear-gradient(to ${edge === "left" ? "left" : "right"}, transparent 0%, #000 20%, #000 100%), linear-gradient(to bottom, transparent 0%, #000 12%, #000 88%, transparent 100%)`,
+        WebkitMaskImage: `linear-gradient(to ${edge === "left" ? "left" : "right"}, transparent 0%, #000 20%, #000 100%), linear-gradient(to bottom, transparent 0%, #000 12%, #000 88%, transparent 100%)`,
         maskComposite: "intersect",
         WebkitMaskComposite: "source-in",
       }}

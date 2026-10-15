@@ -183,8 +183,10 @@ function RootComponent() {
 /** Remount route content when locale changes so all copy picks up the new language. */
 function LocalizedOutlet() {
   const { locale } = useI18n();
+  const pathname = useRouterState({ select: (state) => state.location.pathname });
+  const privateArea = pathname === "/auth" || pathname.startsWith("/admin");
   return (
-    <div className="page-enter pb-28 md:pb-32" key={locale}>
+    <div className={privateArea ? "page-enter pb-28 md:pb-32" : "page-enter pt-[6.85rem] pb-28 md:pt-[7.6rem] md:pb-32"} key={locale}>
       <Outlet />
     </div>
   );
