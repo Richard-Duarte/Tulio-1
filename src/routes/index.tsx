@@ -109,7 +109,27 @@ function Home() {
       />
 
       <NocturnaSection alt className="nc-section-alt">
-        <NocturnaSectionHeader eyebrow={nc.stepsEyebrow} title={nc.stepsTitle} />
+        <NocturnaSectionHeader
+          eyebrow={nc.stepsEyebrow}
+          title={nc.stepsTitle}
+          className="px-5 pt-12 pb-6 md:px-10 md:pt-16 md:pb-8 lg:px-14"
+        />
+        {carousel.length > 1 && (
+          <div className="overflow-hidden border-y border-[var(--nc-border)] py-6">
+            <div className="marquee-track flex w-max gap-0">
+              {[...carousel, ...carousel].map((item, i) => (
+                <img
+                  key={`${item.id}-${i}`}
+                  src={item.public_url ?? ""}
+                  alt={item.alt_text}
+                  className="nc-dither-img h-44 w-auto border-r border-[var(--nc-border)] object-cover md:h-52"
+                  loading={i < carousel.length ? "eager" : "lazy"}
+                  decoding="async"
+                />
+              ))}
+            </div>
+          </div>
+        )}
         <NocturnaStepsGrid
           steps={[
             { n: nc.step1n, title: nc.step1t, body: nc.step1b },
@@ -118,23 +138,6 @@ function Home() {
           ]}
         />
       </NocturnaSection>
-
-      {carousel.length > 1 && (
-        <div className="overflow-hidden nc-grid-border-b py-6">
-          <div className="marquee-track flex w-max gap-0">
-            {[...carousel, ...carousel].map((item, i) => (
-              <img
-                key={`${item.id}-${i}`}
-                src={item.public_url ?? ""}
-                alt={item.alt_text}
-                className="nc-dither-img h-44 w-auto border-r border-[var(--nc-border)] object-cover md:h-52"
-                loading={i < carousel.length ? "eager" : "lazy"}
-                decoding="async"
-              />
-            ))}
-          </div>
-        </div>
-      )}
 
       <NocturnaHero
         paragraphs={nc.heroParagraphs}

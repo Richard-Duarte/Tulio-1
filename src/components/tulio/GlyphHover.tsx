@@ -1,8 +1,9 @@
 import { useEffect, useRef, useState } from "react";
 
 const GLYPHS = ["7", "▲"] as const;
-/** A step slower than the first menu pass, so the letters lock in without rushing. */
+/** Menu pace. Titles use a shorter step so a long heading locks in sooner. */
 export const GLYPH_STEP_MS = 64;
+export const TITLE_STEP_MS = 28;
 
 export function glyphFrame(text: string, step: number) {
   return [...text]
@@ -14,7 +15,7 @@ export function glyphFrame(text: string, step: number) {
     .join("");
 }
 
-export function useGlyphHover(text: string) {
+export function useGlyphHover(text: string, stepMs = GLYPH_STEP_MS) {
   const [shown, setShown] = useState(text);
   const timers = useRef<number[]>([]);
 
@@ -38,17 +39,25 @@ export function useGlyphHover(text: string) {
     const tick = () => {
       step += 1;
       setShown(glyphFrame(text, step));
-      if (step < length) timers.current.push(window.setTimeout(tick, GLYPH_STEP_MS));
+      if (step < length) timers.current.push(window.setTimeout(tick, stepMs));
     };
-    timers.current.push(window.setTimeout(tick, GLYPH_STEP_MS));
+    timers.current.push(window.setTimeout(tick, stepMs));
   };
 
   return { shown, play };
 }
 
 /** Hover swaps each letter between 7 and ▲, then locks the real title in. */
-export function GlyphHover({ text, className }: { text: string; className?: string }) {
-  const { shown, play } = useGlyphHover(text);
+export function GlyphHover({
+  text,
+  className,
+  stepMs = GLYPH_STEP_MS,
+}: {
+  text: string;
+  className?: string;
+  stepMs?: number;
+}) {
+  const { shown, play } = useGlyphHover(text, stepMs);
   return (
     <span className={className} onPointerEnter={(event) => event.pointerType === "mouse" && play()}>
       {shown}

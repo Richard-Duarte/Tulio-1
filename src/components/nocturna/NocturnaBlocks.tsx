@@ -9,13 +9,15 @@ export function NocturnaSectionHeader({
   eyebrow,
   title,
   description,
+  className,
 }: {
   eyebrow: string;
   title: string;
   description?: string;
+  className?: string;
 }) {
   return (
-    <div className="px-5 py-12 md:px-10 md:py-16 lg:px-14">
+    <div className={className ?? "px-5 py-12 md:px-10 md:py-16 lg:px-14"}>
       <NocturnaEyebrow>{eyebrow}</NocturnaEyebrow>
       <SpacedHeading as="h2" className="mt-5 max-w-3xl text-[clamp(1.85rem,4vw,2.85rem)]">
         {title}

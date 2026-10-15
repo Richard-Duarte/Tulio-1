@@ -4,7 +4,7 @@ import { Download, LoaderCircle, LockKeyhole } from "lucide-react";
 import { useState } from "react";
 import { MediaGrid } from "@/components/jula/MediaGrid";
 import { PageIntro } from "@/components/jula/PageIntro";
-import { GlyphHover } from "@/components/tulio/GlyphHover";
+import { GlyphHover, TITLE_STEP_MS } from "@/components/tulio/GlyphHover";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { getPresskitContent, unlockPresskit, type PresskitContent } from "@/lib/presskit.functions";
@@ -144,7 +144,7 @@ function Presskit() {
           </div>
           <div>
             <p className="font-mono text-xl uppercase tracking-[.16em] text-primary md:text-2xl">
-              <GlyphHover text={t("technicalRider")} />
+              <GlyphHover text={t("technicalRider")} stepMs={TITLE_STEP_MS} />
             </p>
             {data.settings.booking_email && (
               <a
@@ -177,7 +177,7 @@ function Presskit() {
       <section className="py-20">
         <div className="mb-8 px-5 md:px-10">
           <h2 className="text-4xl uppercase">
-            <GlyphHover text={t("photosVideos")} />
+            <GlyphHover text={t("photosVideos")} stepMs={TITLE_STEP_MS} />
           </h2>
           <p className="mt-2 text-sm text-muted-foreground">
             <Download className="mr-2 inline size-4" />
@@ -207,7 +207,7 @@ function Presskit() {
           <form onSubmit={submit} className="w-full max-w-sm border border-border bg-card p-7">
             <LockKeyhole className="text-primary" />
             <h2 className="mt-8 text-3xl uppercase">
-              <GlyphHover text={t("presskitAccess")} />
+              <GlyphHover text={t("presskitAccess")} stepMs={TITLE_STEP_MS} />
             </h2>
             <p className="mt-3 text-sm leading-6 text-muted-foreground">{t("passwordPrompt")}</p>
             <Input

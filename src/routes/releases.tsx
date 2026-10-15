@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { Download } from "lucide-react";
 import { PageIntro } from "@/components/jula/PageIntro";
-import { GlyphHover } from "@/components/tulio/GlyphHover";
+import { GlyphHover, TITLE_STEP_MS } from "@/components/tulio/GlyphHover";
 import { Button } from "@/components/ui/button";
 import { getPublicMusic } from "@/lib/public.functions";
 import { useI18n } from "@/lib/i18n";
@@ -97,7 +97,7 @@ function Releases() {
                 />
               )}
               <h2 className="mt-6 text-4xl uppercase">
-                <GlyphHover text={release.title} />
+                <GlyphHover text={release.title} stepMs={TITLE_STEP_MS} />
               </h2>
               {release.released_at && (
                 <p className="mt-2 font-mono text-[10px] uppercase tracking-[.16em] text-muted-foreground">

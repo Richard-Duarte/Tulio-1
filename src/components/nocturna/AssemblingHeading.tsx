@@ -1,5 +1,5 @@
 import type { ElementType, ReactNode } from "react";
-import { GlyphHover } from "@/components/tulio/GlyphHover";
+import { GlyphHover, TITLE_STEP_MS } from "@/components/tulio/GlyphHover";
 import { cn } from "@/lib/utils";
 
 /**
@@ -21,7 +21,7 @@ export function AssemblingHeading({
 
   return (
     <Tag className={cn("nc-display", className)} aria-label={text}>
-      <GlyphHover text={text} />
+      <GlyphHover text={text} stepMs={TITLE_STEP_MS} />
     </Tag>
   );
 }
