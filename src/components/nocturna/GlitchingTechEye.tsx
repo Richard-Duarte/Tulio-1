@@ -1,6 +1,16 @@
 import { useEffect, useRef } from "react";
+import {
+  insetMarkTriangle,
+  measureMarkTriangle,
+  type MarkTriangle,
+} from "@/lib/mark-triangle";
 
 type RgbTints = { red: HTMLCanvasElement; green: HTMLCanvasElement; blue: HTMLCanvasElement };
+
+type PreparedMark = {
+  canvas: HTMLCanvasElement;
+  triangle: MarkTriangle;
+};
 
 type EyeProps = {
   logoSrc: string;
@@ -35,19 +45,30 @@ function tintLogo(image: CanvasImageSource, color: string, width: number, height
 }
 
 /** Push logo whites to pure #fff and boost the inner “7” strokes vs the triangle rim. */
-function prepareMark(image: HTMLImageElement) {
+function prepareMark(image: HTMLImageElement): PreparedMark {
   const w = image.naturalWidth;
   const h = image.naturalHeight;
   const canvas = document.createElement("canvas");
   canvas.width = w;
   canvas.height = h;
   const context = canvas.getContext("2d");
-  if (!context) return canvas;
+  const empty: PreparedMark = {
+    canvas,
+    triangle: insetMarkTriangle({
+      left: 0.08,
+      right: 0.92,
+      top: 0.08,
+      bottom: 0.92,
+      apexX: 0.5,
+    }),
+  };
+  if (!context) return empty;
   context.drawImage(image, 0, 0);
   const img = context.getImageData(0, 0, w, h);
   const { data } = img;
+  const triangle = insetMarkTriangle(measureMarkTriangle(data, w, h));
   const cx = w * 0.5;
-  const cy = h * 0.52;
+  const cy = h * ((triangle.top + triangle.bottom) / 2);
   for (let i = 0; i < data.length; i += 4) {
     const a = data[i + 3] ?? 0;
     if (a < 8) continue;
@@ -70,7 +91,7 @@ function prepareMark(image: HTMLImageElement) {
     data[i + 3] = inside ? Math.min(255, Math.round(a * 1.15 + 18)) : a;
   }
   context.putImageData(img, 0, 0);
-  return canvas;
+  return { canvas, triangle };
 }
 
 const GLITCH_CHARS = ["█", "▓", "▒", "░", "▄", "▀", "■", "□"];
@@ -92,6 +113,7 @@ export function GlitchingTechEye({
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const grainCanvasRef = useRef<HTMLCanvasElement>(null);
   const logoRef = useRef<HTMLCanvasElement | null>(null);
+  const triangleRef = useRef<MarkTriangle | null>(null);
   const tintsRef = useRef<RgbTints | null>(null);
   const blurRef = useRef(logoBlur);
   blurRef.current = logoBlur;
@@ -101,15 +123,17 @@ export function GlitchingTechEye({
     image.src = logoSrc;
     image.onload = () => {
       const mark = prepareMark(image);
-      logoRef.current = mark;
+      logoRef.current = mark.canvas;
+      triangleRef.current = mark.triangle;
       tintsRef.current = {
-        red: tintLogo(mark, RGB.red, mark.width, mark.height),
-        green: tintLogo(mark, RGB.green, mark.width, mark.height),
-        blue: tintLogo(mark, RGB.blue, mark.width, mark.height),
+        red: tintLogo(mark.canvas, RGB.red, mark.canvas.width, mark.canvas.height),
+        green: tintLogo(mark.canvas, RGB.green, mark.canvas.width, mark.canvas.height),
+        blue: tintLogo(mark.canvas, RGB.blue, mark.canvas.width, mark.canvas.height),
       };
     };
     return () => {
       logoRef.current = null;
+      triangleRef.current = null;
       tintsRef.current = null;
     };
   }, [logoSrc]);
@@ -217,10 +241,17 @@ export function GlitchingTechEye({
       if (logo && logo.width > 0) {
         ctx.save();
         ctx.beginPath();
-        // Approximate triangle clip around the mark.
-        ctx.moveTo(cx + eyeOffset.x, ly + logoSize * 0.08);
-        ctx.lineTo(lx + logoSize * 0.08, ly + logoSize * 0.92);
-        ctx.lineTo(lx + logoSize * 0.92, ly + logoSize * 0.92);
+        // Clip to the measured triangle of this asset (old 0.08/0.92 box drifts off the new mark).
+        const tri = triangleRef.current ?? {
+          left: 0.08,
+          right: 0.92,
+          top: 0.08,
+          bottom: 0.92,
+          apexX: 0.5,
+        };
+        ctx.moveTo(lx + logoSize * tri.apexX, ly + logoSize * tri.top);
+        ctx.lineTo(lx + logoSize * tri.left, ly + logoSize * tri.bottom);
+        ctx.lineTo(lx + logoSize * tri.right, ly + logoSize * tri.bottom);
         ctx.closePath();
         ctx.clip();
         ctx.font = `${Math.max(7, Math.floor(9 * dpr))}px "JetBrains Mono", ui-monospace, monospace`;
