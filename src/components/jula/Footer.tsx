@@ -96,8 +96,6 @@ export function Footer() {
           ADM
         </Link>
       </div>
-      {/* Fixed player clearance — outside the symmetric content pad */}
-      <div className="h-16 md:h-20" aria-hidden />
     </footer>
   );
 }
