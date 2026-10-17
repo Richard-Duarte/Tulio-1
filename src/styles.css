@@ -409,6 +409,18 @@
     border-right: none;
     border-bottom: var(--nc-line, 1px solid var(--nc-border));
   }
+  /* Stacked cells: the section's own bottom line closes the last one */
+  .nc-grid-2 > :last-child > .nc-grid-border-r,
+  .nc-grid-2 > .nc-grid-border-r:last-child,
+  .nc-grid-3 > :last-child > .nc-grid-border-r,
+  .nc-grid-3 > .nc-grid-border-r:last-child,
+  .nc-grid-hero > .nc-hero-copy {
+    border-bottom: none;
+  }
+}
+/* Vertical divider that stays vertical on phones (horizontal strips) */
+.nc-line-r {
+  border-right: var(--nc-line, 1px solid var(--nc-border));
 }
 .nc-grid-hero {
   display: grid;

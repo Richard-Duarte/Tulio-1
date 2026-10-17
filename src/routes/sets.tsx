@@ -92,7 +92,7 @@ function SetsStage({ empty }: { empty: boolean }) {
     >
       {/* PageIntro's markup, tighter on phones so the expanded player doesn't cover the title */}
       <section
-        className={`px-5 pb-10 pt-24 transition-[opacity,transform] duration-300 ease-out motion-reduce:transform-none motion-reduce:transition-none md:px-10 md:pb-16 md:pt-48 ${sceneOnly ? "-translate-y-2 opacity-0 [&_*]:!pointer-events-none" : ""}`}
+        className={`px-5 pb-10 pt-24 transition-[opacity,transform] duration-300 ease-out motion-reduce:transform-none motion-reduce:transition-none max-md:flex max-md:flex-col max-md:items-center max-md:text-center md:px-10 md:pb-16 md:pt-48 ${sceneOnly ? "-translate-y-2 opacity-0 [&_*]:!pointer-events-none" : ""}`}
       >
         <p className="nc-eyebrow">{t("setsEyebrow")}</p>
         <TitleMetal className="mt-4 max-w-4xl text-[clamp(2rem,5.5vw,3.75rem)] md:mt-5">

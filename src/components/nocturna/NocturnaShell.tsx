@@ -15,7 +15,7 @@ export { SectionTransition as NocturnaSection } from "@/components/nocturna/Sect
 
 export function NocturnaEyebrow({ children }: { children: ReactNode }) {
   return (
-    <p className="nc-eyebrow flex items-center gap-2 font-mono text-xs uppercase tracking-[0.14em]">
+    <p className="nc-eyebrow flex items-center gap-2 font-mono text-xs uppercase tracking-[0.14em] max-md:justify-center">
       <span className="nc-dot" aria-hidden />
       {children}
     </p>

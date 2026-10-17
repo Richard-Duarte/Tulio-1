@@ -1,4 +1,5 @@
 import { Link, useRouterState } from "@tanstack/react-router";
+import { useEffect, useRef } from "react";
 import { LanguageSelector } from "@/components/jula/LanguageSelector";
 import { UpcomingDatesDialog, openUpcomingDates } from "@/components/jula/UpcomingDates";
 import { GlyphHover } from "@/components/tulio/GlyphHover";
@@ -28,15 +29,33 @@ export function SiteHeader() {
       active ? "text-white" : "text-white/65 hover:text-white"
     }`;
 
+  const headerRef = useRef<HTMLElement>(null);
+  useEffect(() => {
+    const header = headerRef.current;
+    if (!header) return;
+    const root = document.documentElement;
+    const sync = () => root.style.setProperty("--site-header-h", `${header.offsetHeight}px`);
+    sync();
+    const observer = new ResizeObserver(sync);
+    observer.observe(header);
+    return () => {
+      observer.disconnect();
+      root.style.removeProperty("--site-header-h");
+    };
+  }, []);
+
   return (
     <>
-      <header className="nc-grid-border-b fixed inset-x-0 top-0 z-[70] bg-black text-white">
+      <header ref={headerRef} className="nc-grid-border-b fixed inset-x-0 top-0 z-[70] bg-black text-white">
         <div className="flex justify-center px-4 pt-[max(env(safe-area-inset-top),1.25rem)] md:pt-[max(env(safe-area-inset-top),1.5rem)]">
           <Link to="/" aria-label="Tulio — início" className="inline-flex no-underline">
             <TulioWordmark className="text-[36px] md:text-[46px]" />
           </Link>
         </div>
-        <nav aria-label="Menu" className="flex items-center justify-center gap-x-5 overflow-x-auto px-4 pt-5 pb-3 md:pt-6">
+        <nav
+          aria-label="Menu"
+          className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2.5 px-4 pt-5 pb-3 md:flex-nowrap md:gap-x-5 md:overflow-x-auto md:pt-6"
+        >
           {links.map(([to, label]) => (
             <Link key={to} to={to} aria-label={label} className={itemClass(isActive(pathname, to))}>
               <GlyphHover text={label} className="inline-block" />

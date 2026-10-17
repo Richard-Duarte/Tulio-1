@@ -105,14 +105,14 @@ function Home() {
       <NocturnaSection alt className="nc-section-alt">
         <NocturnaSectionHeader eyebrow={nc.stepsEyebrow} title={nc.stepsTitle} />
         {carousel.length > 1 && (
-          <div className="nc-grid-border-t nc-grid-border-b overflow-hidden">
+          <div className="nc-grid-border-t overflow-hidden">
             <div className="marquee-track flex w-max gap-0">
               {[...carousel, ...carousel].map((item, i) => (
                 <img
                   key={`${item.id}-${i}`}
                   src={item.public_url ?? ""}
                   alt={item.alt_text}
-                  className="nc-dither-img nc-grid-border-r h-44 w-auto object-cover md:h-52"
+                  className="nc-dither-img nc-line-r h-44 w-auto object-cover md:h-52"
                   loading={i < carousel.length ? "eager" : "lazy"}
                   decoding="async"
                 />
@@ -136,7 +136,7 @@ function Home() {
           : [...nc.heroParagraphs])}
         imageUrl={home.hero_image_url || "/brand/tulio-n26.jpg"}
         actions={
-          <div className="nc-cta-pair flex flex-wrap items-center gap-4">
+          <div className="nc-cta-pair flex flex-wrap items-center gap-4 max-md:justify-center">
             <CornerButton to="/sets" variant="primary" className="nc-cta-default">
               {nc.ctaPrimary}
             </CornerButton>
@@ -146,18 +146,6 @@ function Home() {
           </div>
         }
       />
-
-      {home.booking_email && (
-        <div className="flex items-center justify-center bg-black px-6 py-8 text-center md:hidden">
-          <a
-            href={`mailto:${home.booking_email}`}
-            className="break-all font-mono text-[11px] uppercase leading-snug tracking-[0.16em] text-white/75"
-          >
-            Bookings · {home.booking_email}
-          </a>
-        </div>
-      )}
-
     </main>
   );
 }

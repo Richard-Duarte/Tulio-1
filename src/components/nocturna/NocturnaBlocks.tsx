@@ -17,12 +17,12 @@ export function NocturnaSectionHeader({
   className?: string;
 }) {
   return (
-    <div className={className ?? "nc-pad-x nc-pad-y"}>
+    <div className={className ?? "nc-pad-x nc-pad-y max-md:text-center"}>
       <NocturnaEyebrow>{eyebrow}</NocturnaEyebrow>
-      <SpacedHeading as="h2" className="mt-5 max-w-3xl text-[clamp(1.85rem,4vw,2.85rem)]">
+      <SpacedHeading as="h2" className="mt-5 max-w-3xl text-[clamp(1.85rem,4vw,2.85rem)] max-md:mx-auto">
         {title}
       </SpacedHeading>
-      {description ? <p className="nc-lead mt-5 max-w-2xl">{description}</p> : null}
+      {description ? <p className="nc-lead mt-5 max-w-2xl max-md:mx-auto">{description}</p> : null}
     </div>
   );
 }
@@ -45,7 +45,7 @@ export function NocturnaFeatureRow({
   visual?: ReactNode;
 }) {
   const text = (
-    <HoverCell className="nc-pad-x nc-pad-y flex flex-col justify-center">
+    <HoverCell className="nc-pad-x nc-pad-y flex flex-col justify-center max-md:items-center max-md:text-center">
       <p className="font-mono text-xs uppercase tracking-[0.14em] text-[var(--nc-accent-mint)]">
         {index} — {label}
       </p>
@@ -91,7 +91,7 @@ export function NocturnaStepsGrid({
     <Stagger className="nc-grid-3 nc-grid-border-t">
       {steps.map((step) => (
         <StaggerItem key={step.n}>
-          <HoverCell className="nc-pad-x nc-pad-y relative h-full nc-grid-border-r last:border-r-0">
+          <HoverCell className="nc-pad-x nc-pad-y relative h-full nc-grid-border-r last:border-r-0 max-md:text-center">
             <p className="font-mono text-2xl tracking-[0.06em] text-white md:text-3xl">{step.n}</p>
             <SpacedHeading as="h3" className="mt-6 text-lg md:text-xl">
               {step.title}
@@ -113,7 +113,7 @@ export function NocturnaQuotesGrid({
     <div className="nc-grid-2">
       {quotes.map((q) => (
         <Reveal key={q.name}>
-          <HoverCell className="nc-pad-x nc-pad-y h-full nc-grid-border-r">
+          <HoverCell className="nc-pad-x nc-pad-y h-full nc-grid-border-r max-md:text-center">
             <p className="text-base leading-relaxed text-white md:text-lg">{q.quote}</p>
             <footer className="nc-grid-border-t mt-8 pt-5">
               <p className="font-mono text-sm text-white">{q.name}</p>
@@ -177,12 +177,12 @@ export function NocturnaFaqSection({
   return (
     <NocturnaSection>
       <div className="nc-grid-2 nc-grid-border-b">
-        <div className="nc-pad-x nc-pad-y nc-grid-border-r">
+        <div className="nc-pad-x nc-pad-y nc-grid-border-r max-md:text-center">
           <NocturnaEyebrow>{eyebrow}</NocturnaEyebrow>
-          <SpacedHeading as="h2" className="mt-5 max-w-md text-[clamp(1.75rem,3.5vw,2.5rem)]">
+          <SpacedHeading as="h2" className="mt-5 max-w-md text-[clamp(1.75rem,3.5vw,2.5rem)] max-md:mx-auto">
             {title}
           </SpacedHeading>
-          <p className="nc-lead mt-5 max-w-sm text-sm">{description}</p>
+          <p className="nc-lead mt-5 max-w-sm text-sm max-md:mx-auto">{description}</p>
         </div>
         <div>
           {items.map((item) => (
