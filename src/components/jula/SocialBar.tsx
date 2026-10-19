@@ -78,8 +78,8 @@ export function SocialBar({
             <img
               src={item.icon}
               alt=""
-              className={`${footer ? "size-[18px]" : large ? "size-11" : "size-9"} object-contain brightness-0 invert`}
-              loading="lazy"
+              className={`${footer ? "size-[18px]" : large ? "size-11" : "size-9"} object-contain`}
+              decoding="async"
             />
           );
           if (!href) {

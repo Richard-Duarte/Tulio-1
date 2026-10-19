@@ -32,6 +32,12 @@ test("marquee photos use a divider that stays vertical on phones", () => {
   assert.match(read("styles.css"), /\.nc-line-r\s*\{/);
 });
 
+test("strip photos cannot be selected or dragged (repeated clicks washed them out)", () => {
+  const index = read("routes/index.tsx");
+  assert.match(index, /overflow-hidden select-none">\s*<div className="marquee-track/);
+  assert.match(index, /draggable=\{false\}\s*className="nc-dither-img[^"]*\[-webkit-user-drag:none\]/);
+});
+
 test("stacked mobile cells do not double the section's closing line", () => {
   const css = read("styles.css");
   assert.match(css, /\.nc-grid-3 > :last-child > \.nc-grid-border-r/);

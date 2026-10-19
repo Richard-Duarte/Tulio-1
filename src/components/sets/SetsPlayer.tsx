@@ -34,9 +34,9 @@ import { WAVE_BARS, useSetsPlayer } from "./SetsPlayerProvider";
 const SKIP_BACK = 15;
 const SKIP_AHEAD = 30;
 
-// Same glass recipe as the SiteHeader bar.
+// Near-opaque like the solid SiteHeader: page content (footer icons) must not read through it.
 const glass =
-  "border border-border/50 bg-background/40 shadow-[0_10px_30px_-12px_rgb(0_0_0/0.65)] backdrop-blur-sm";
+  "border border-border/50 bg-black/90 shadow-[0_10px_30px_-12px_rgb(0_0_0/0.65)] backdrop-blur-sm";
 const panel = "rounded-lg border border-border/40 bg-background/35";
 const iconBtn =
   "inline-flex shrink-0 items-center justify-center rounded-full text-foreground/75 transition-[color,background-color,transform,opacity] duration-150 hover:text-foreground active:scale-90 disabled:pointer-events-none disabled:opacity-30 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary";
@@ -85,7 +85,6 @@ export function SetsPlayer() {
     <MotionConfig reducedMotion="user">
       <style>{css}</style>
       <div
-        data-audio-player=""
         data-sets-player=""
         className="pointer-events-none fixed inset-x-2 bottom-[max(env(safe-area-inset-bottom),0.5rem)] z-[45] flex flex-col items-stretch gap-2 md:inset-x-auto md:bottom-5 md:right-5 md:w-[400px] md:items-end"
       >

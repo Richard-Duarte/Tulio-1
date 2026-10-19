@@ -105,14 +105,16 @@ function Home() {
       <NocturnaSection alt className="nc-section-alt">
         <NocturnaSectionHeader eyebrow={nc.stepsEyebrow} title={nc.stepsTitle} />
         {carousel.length > 1 && (
-          <div className="nc-grid-border-t overflow-hidden">
+          // Repeated clicks would select the photos and the selection color washes them out.
+          <div className="nc-grid-border-t overflow-hidden select-none">
             <div className="marquee-track flex w-max gap-0">
               {[...carousel, ...carousel].map((item, i) => (
                 <img
                   key={`${item.id}-${i}`}
                   src={item.public_url ?? ""}
                   alt={item.alt_text}
-                  className="nc-dither-img nc-line-r h-44 w-auto object-cover md:h-52"
+                  draggable={false}
+                  className="nc-dither-img nc-line-r h-44 w-auto object-cover [-webkit-touch-callout:none] [-webkit-user-drag:none] md:h-52"
                   loading={i < carousel.length ? "eager" : "lazy"}
                   decoding="async"
                 />
