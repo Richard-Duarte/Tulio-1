@@ -29,10 +29,19 @@ export const getSiteSettings = createServerFn({ method: "GET" }).handler(async (
       )
       .limit(1)
       .maybeSingle();
-    if (error || !data) return tulioSettings;
-    return { ...tulioSettings, ...data };
+    if (error || !data) return { ...tulioSettings, sets_description: null as string | null };
+    // Separate query so a missing column (before ajustes.sql is applied) never breaks the settings.
+    const extra = await publicSupabase()
+      .from("site_settings")
+      .select("sets_description" as "id")
+      .limit(1)
+      .maybeSingle();
+    const sets_description =
+      ((extra.data as unknown as { sets_description?: string | null } | null)?.sets_description ??
+        null) as string | null;
+    return { ...tulioSettings, ...data, sets_description };
   } catch {
-    return tulioSettings;
+    return { ...tulioSettings, sets_description: null as string | null };
   }
 });
 const emptyMusic = () => ({

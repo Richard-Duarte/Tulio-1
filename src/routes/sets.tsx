@@ -1,3 +1,4 @@
+import { NocturnaEyebrow } from "@/components/nocturna/NocturnaShell";
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo } from "react";
 import { PageIntro } from "@/components/jula/PageIntro";
@@ -13,7 +14,11 @@ import { useI18n } from "@/lib/i18n";
 export const Route = createFileRoute("/sets")({
   loader: async () => {
     const [music, settings] = await Promise.all([getPublicMusic(), getSiteSettings()]);
-    return { ...music, sets_shuffle: settings.sets_shuffle ?? false };
+    return {
+      ...music,
+      sets_shuffle: settings.sets_shuffle ?? false,
+      sets_description: settings.sets_description ?? null,
+    };
   },
   head: () => ({
     meta: [
@@ -78,6 +83,7 @@ function Sets() {
 
 function SetsStage({ empty }: { empty: boolean }) {
   const { t } = useI18n();
+  const { sets_description: setsDescription } = Route.useLoaderData();
   const { store } = useSetsPlayer();
   // Minimized player = "just the scene": the heading fades out (kept in the DOM / a11y tree,
   // and click-through so it never blocks camera drags) and comes back when the player expands.
@@ -92,14 +98,14 @@ function SetsStage({ empty }: { empty: boolean }) {
     >
       {/* PageIntro's markup, tighter on phones so the expanded player doesn't cover the title */}
       <section
-        className={`px-5 pb-10 pt-24 transition-[opacity,transform] duration-300 ease-out motion-reduce:transform-none motion-reduce:transition-none md:px-10 md:pb-16 md:pt-48 ${sceneOnly ? "-translate-y-2 opacity-0 [&_*]:!pointer-events-none" : ""}`}
+        className={`px-5 pb-10 pt-24 transition-[opacity,transform] duration-300 ease-out motion-reduce:transform-none motion-reduce:transition-none md:px-10 md:pb-16 md:pt-36 lg:px-14 ${sceneOnly ? "-translate-y-2 opacity-0 [&_*]:!pointer-events-none" : ""}`}
       >
-        <p className="nc-eyebrow">{t("setsEyebrow")}</p>
-        <TitleMetal className="mt-4 max-w-4xl text-[clamp(2rem,5.5vw,3.75rem)] md:mt-5">
+        <NocturnaEyebrow>{t("setsEyebrow")}</NocturnaEyebrow>
+        <TitleMetal className="mt-5 max-w-4xl text-[clamp(2rem,5.5vw,3.65rem)]">
           {t("sets")}
         </TitleMetal>
-        <p className={`nc-lead mt-6 max-w-xl ${empty ? "" : "max-md:hidden"}`}>
-          {empty ? t("setsSoon") : t("setsDescription")}
+        <p className={`nc-lead mt-6 max-w-2xl ${empty ? "" : "max-md:hidden"}`}>
+          {empty ? t("setsSoon") : setsDescription?.trim() || t("setsDescription")}
         </p>
       </section>
     </main>

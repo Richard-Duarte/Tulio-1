@@ -3,6 +3,7 @@ import { createPortal } from "react-dom";
 import { Check, CheckSquare, Download, LoaderCircle, X } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import { CornerButton } from "@/components/nocturna/CornerButton";
 import { PhotoLightbox } from "@/components/jula/PhotoLightbox";
 import { SwapText } from "@/components/jula/SwapText";
 import { useI18n, type Locale } from "@/lib/i18n";
@@ -242,17 +243,20 @@ export function MediaGrid({
 
   return (
     <>
-      <div className="mb-10 flex flex-wrap items-center gap-2 px-5 md:px-10">
-        <Button variant={tab === "photos" ? "default" : "outline"} onClick={() => setTab("photos")}>
+      <div className="mb-10 flex flex-wrap items-center gap-4 px-5 md:px-10">
+        <CornerButton
+          variant={tab === "photos" ? "primary" : "ghost"}
+          onClick={() => setTab("photos")}
+        >
           {t("photos")}
-        </Button>
+        </CornerButton>
         {allowVideos && (
-          <Button
-            variant={tab === "videos" ? "default" : "outline"}
+          <CornerButton
+            variant={tab === "videos" ? "primary" : "ghost"}
             onClick={() => setTab("videos")}
           >
             {t("videos")}
-          </Button>
+          </CornerButton>
         )}
         {tab === "photos" && canSelect && (
           <Button

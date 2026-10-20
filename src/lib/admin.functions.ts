@@ -97,6 +97,21 @@ export const saveSettings = createServerFn({ method: "POST" })
     if (error) throw error;
     return { ok: true };
   });
+export const saveSetsDescription = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input) => z.object({ sets_description: z.string().trim().max(1000) }).parse(input))
+  .handler(async ({ data, context }) => {
+    await assertAdmin(context);
+    const { error } = await context.supabase
+      .from("site_settings")
+      .update({
+        sets_description: data.sets_description === "" ? null : data.sets_description,
+        updated_at: new Date().toISOString(),
+      } as never)
+      .eq("singleton_key", "main");
+    if (error) throw error;
+    return { ok: true };
+  });
 const socialUrl = z
   .string()
   .trim()

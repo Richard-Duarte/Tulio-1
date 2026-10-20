@@ -7,10 +7,10 @@ const ease = [0.22, 1, 0.36, 1] as const;
 /** Standalone divider between hero / strips and next block. */
 export function SectionWipe() {
   const reduced = useReducedMotion();
-  if (reduced) return <div className="nc-section-wipe nc-grid-border-b" aria-hidden />;
+  if (reduced) return <div className="nc-section-wipe" aria-hidden />;
   return (
     <motion.div
-      className="nc-section-wipe nc-grid-border-b"
+      className="nc-section-wipe"
       initial={{ scaleX: 0, opacity: 0 }}
       whileInView={{ scaleX: 1, opacity: 1 }}
       viewport={{ once: true, amount: 0.6 }}
