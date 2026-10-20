@@ -142,12 +142,20 @@ function closeCurtain(): Promise<void> {
     ];
   }
   const animations = running;
-  closing = Promise.all(animations.map((a) => a.finished)).then(
-    () => {
-      if (running === animations) phase = "closed";
-    },
-    () => undefined,
-  );
+  closing = Promise.race([
+    Promise.all(animations.map((a) => a.finished)).then(
+      () => {
+        if (running === animations) phase = "closed";
+      },
+      () => undefined,
+    ),
+    // A stalled Web Animation must not hold the router or leave an invisible click blocker.
+    wait(CLOSE_MS + 400).then(() => {
+      if (phase !== "closing" || running !== animations) return;
+      panel.style.transform = SHOWN;
+      phase = "closed";
+    }),
+  ]);
   return closing;
 }
 
@@ -180,18 +188,19 @@ function openCurtain(): Promise<void> {
     ];
   }
   const animations = running;
-  return Promise.all(animations.map((a) => a.finished)).then(
-    () => {
-      if (running !== animations) return; // re-closed by a newer navigation
-      for (const animation of animations) animation.cancel();
-      running = [];
-      panel.style.transform = "";
-      root.classList.remove("is-glitching");
-      root.removeAttribute("data-active");
-      phase = "idle";
-    },
-    () => undefined,
-  );
+  const finish = () => {
+    if (running !== animations) return; // re-closed by a newer navigation
+    for (const animation of animations) animation.cancel();
+    running = [];
+    panel.style.transform = "";
+    root.classList.remove("is-glitching");
+    root.removeAttribute("data-active");
+    phase = "idle";
+  };
+  return Promise.race([
+    Promise.all(animations.map((a) => a.finished)).then(finish, finish),
+    wait(OPEN_MS + 400).then(finish),
+  ]);
 }
 
 /** Wait until what the visitor will see first is actually painted-ready (at most READY_TIMEOUT). */

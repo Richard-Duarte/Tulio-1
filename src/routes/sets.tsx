@@ -93,12 +93,12 @@ function SetsStage({ empty }: { empty: boolean }) {
     // page is see-through for drags (they reach the 3D background's camera controls); only the
     // text and links stay interactive.
     <main
-      className="pointer-events-none relative flex min-h-[100svh] flex-col pb-28 md:pb-8 [&_:is(h1,p,li,summary,a,button)]:pointer-events-auto [&_:is(h1,p)]:w-fit"
+      className="pointer-events-none relative flex min-h-[100svh] flex-col pb-28 md:pb-8 [&_:is(h1,h2,h3,p,li,summary,a,button)]:pointer-events-auto [&_:is(h1,h2,h3,p)]:w-fit"
       data-scene-passthrough=""
     >
       {/* PageIntro's markup, tighter on phones so the expanded player doesn't cover the title */}
       <section
-        className={`px-5 pb-10 pt-24 transition-[opacity,transform] duration-300 ease-out motion-reduce:transform-none motion-reduce:transition-none md:px-10 md:pb-16 md:pt-36 lg:px-14 ${sceneOnly ? "-translate-y-2 opacity-0 [&_*]:!pointer-events-none" : ""}`}
+        className={`px-5 pb-10 pt-24 transition-[opacity,transform] duration-300 ease-out motion-reduce:transform-none motion-reduce:transition-none max-md:flex max-md:flex-col max-md:items-center max-md:text-center md:px-10 md:py-16 lg:px-14 ${sceneOnly ? "-translate-y-2 opacity-0 [&_*]:!pointer-events-none" : ""}`}
       >
         <NocturnaEyebrow>{t("setsEyebrow")}</NocturnaEyebrow>
         <TitleMetal className="mt-5 max-w-4xl text-[clamp(2rem,5.5vw,3.65rem)]">

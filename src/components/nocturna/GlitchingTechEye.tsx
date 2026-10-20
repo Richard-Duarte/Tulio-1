@@ -1,6 +1,16 @@
 import { useEffect, useRef } from "react";
+import {
+  insetMarkTriangle,
+  measureMarkTriangle,
+  type MarkTriangle,
+} from "@/lib/mark-triangle";
 
 type RgbTints = { red: HTMLCanvasElement; green: HTMLCanvasElement; blue: HTMLCanvasElement };
+
+type PreparedMark = {
+  canvas: HTMLCanvasElement;
+  triangle: MarkTriangle;
+};
 
 type EyeProps = {
   logoSrc: string;
@@ -21,22 +31,72 @@ const RGB = {
   blue: "#2f5bff",
 } as const;
 
-function tintLogo(image: HTMLImageElement, color: string) {
+function tintLogo(image: CanvasImageSource, color: string, width: number, height: number) {
   const canvas = document.createElement("canvas");
-  canvas.width = image.naturalWidth;
-  canvas.height = image.naturalHeight;
+  canvas.width = width;
+  canvas.height = height;
   const context = canvas.getContext("2d");
   if (!context) return canvas;
-  context.drawImage(image, 0, 0);
+  context.drawImage(image, 0, 0, width, height);
   context.globalCompositeOperation = "source-in";
   context.fillStyle = color;
-  context.fillRect(0, 0, canvas.width, canvas.height);
+  context.fillRect(0, 0, width, height);
   return canvas;
+}
+
+/** Push logo whites to pure #fff and boost the inner “7” strokes vs the triangle rim. */
+function prepareMark(image: HTMLImageElement): PreparedMark {
+  const w = image.naturalWidth;
+  const h = image.naturalHeight;
+  const canvas = document.createElement("canvas");
+  canvas.width = w;
+  canvas.height = h;
+  const context = canvas.getContext("2d");
+  const empty: PreparedMark = {
+    canvas,
+    triangle: insetMarkTriangle({
+      left: 0.08,
+      right: 0.92,
+      top: 0.08,
+      bottom: 0.92,
+      apexX: 0.5,
+    }),
+  };
+  if (!context) return empty;
+  context.drawImage(image, 0, 0);
+  const img = context.getImageData(0, 0, w, h);
+  const { data } = img;
+  const triangle = insetMarkTriangle(measureMarkTriangle(data, w, h));
+  const cx = w * 0.5;
+  const cy = h * ((triangle.top + triangle.bottom) / 2);
+  for (let i = 0; i < data.length; i += 4) {
+    const a = data[i + 3] ?? 0;
+    if (a < 8) continue;
+    const r = data[i] ?? 0;
+    const g = data[i + 1] ?? 0;
+    const b = data[i + 2] ?? 0;
+    const lum = (r + g + b) / 3;
+    if (lum < 40) continue;
+    const x = (i / 4) % w;
+    const y = Math.floor(i / 4 / w);
+    // Distance from mark center — the “7” sits inside the triangle.
+    const dx = (x - cx) / w;
+    const dy = (y - cy) / h;
+    const inside = Math.hypot(dx, dy) < 0.26;
+    const punch = inside ? 1 : 0.88;
+    const bright = Math.min(255, Math.round(255 * punch + (255 - lum) * (inside ? 0.55 : 0)));
+    data[i] = bright;
+    data[i + 1] = bright;
+    data[i + 2] = bright;
+    data[i + 3] = inside ? Math.min(255, Math.round(a * 1.15 + 18)) : a;
+  }
+  context.putImageData(img, 0, 0);
+  return { canvas, triangle };
 }
 
 const GLITCH_CHARS = ["█", "▓", "▒", "░", "▄", "▀", "■", "□"];
 
-/** Framer "The Glitching Tech Eye", with the logo drawn in place of the iris circle. */
+/** Glitching tech mark: logo at full eye size, no iris ring; grain/ascii/RGB stay. */
 export function GlitchingTechEye({
   logoSrc,
   logoBlur = false,
@@ -52,7 +112,8 @@ export function GlitchingTechEye({
   const containerRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const grainCanvasRef = useRef<HTMLCanvasElement>(null);
-  const logoRef = useRef<HTMLImageElement | null>(null);
+  const logoRef = useRef<HTMLCanvasElement | null>(null);
+  const triangleRef = useRef<MarkTriangle | null>(null);
   const tintsRef = useRef<RgbTints | null>(null);
   const blurRef = useRef(logoBlur);
   blurRef.current = logoBlur;
@@ -61,15 +122,18 @@ export function GlitchingTechEye({
     const image = new Image();
     image.src = logoSrc;
     image.onload = () => {
-      logoRef.current = image;
+      const mark = prepareMark(image);
+      logoRef.current = mark.canvas;
+      triangleRef.current = mark.triangle;
       tintsRef.current = {
-        red: tintLogo(image, RGB.red),
-        green: tintLogo(image, RGB.green),
-        blue: tintLogo(image, RGB.blue),
+        red: tintLogo(mark.canvas, RGB.red, mark.canvas.width, mark.canvas.height),
+        green: tintLogo(mark.canvas, RGB.green, mark.canvas.width, mark.canvas.height),
+        blue: tintLogo(mark.canvas, RGB.blue, mark.canvas.width, mark.canvas.height),
       };
     };
     return () => {
       logoRef.current = null;
+      triangleRef.current = null;
       tintsRef.current = null;
     };
   }, [logoSrc]);
@@ -134,7 +198,9 @@ export function GlitchingTechEye({
 
       const cx = wCss / 2;
       const cy = hCss / 2;
-      const radius = Math.min(wCss, hCss) * 0.2;
+      // Logo fills the former iris diameter (no ring / no circular fill).
+      const eyeR = Math.min(wCss, hCss) * 0.24;
+      const logoSize = eyeR * 2;
 
       const rotation = time * rotationSpeed * Math.PI * 0.5;
       const shouldGlitch = Math.random() < 0.08 * glitchiness;
@@ -147,22 +213,14 @@ export function GlitchingTechEye({
         ctx.scale(gScale, 1 / (gScale || 1));
       }
 
-      const orbGrad = ctx.createRadialGradient(cx, cy, 0, cx, cy, radius * 1.5);
-      orbGrad.addColorStop(0, "rgba(255,255,255,0.42)");
-      orbGrad.addColorStop(0.2, "rgba(210,210,210,0.28)");
-      orbGrad.addColorStop(0.5, "rgba(90,90,90,0.16)");
-      orbGrad.addColorStop(1, "rgba(0,0,0,0)");
-      ctx.fillStyle = orbGrad;
-      ctx.fillRect(0, 0, wCss, hCss);
-
-      const maxOffset = radius * 0.18 * eyeFollow;
+      const maxOffset = eyeR * 0.14 * eyeFollow;
       let tx = 0;
       let ty = 0;
       if (mouse.inside) {
         const dx = mouse.x - cx;
         const dy = mouse.y - cy;
         const len = Math.hypot(dx, dy) || 1;
-        const k = Math.min(1, len / (radius * 1.2));
+        const k = Math.min(1, len / (eyeR * 1.1));
         tx = (dx / len) * maxOffset * k;
         ty = (dy / len) * maxOffset * k;
       }
@@ -173,85 +231,70 @@ export function GlitchingTechEye({
       if (rgbFrames > 0) rgbFrames -= 1;
       else if (Math.random() < 0.012 * glitchiness) rgbFrames = 10 + Math.floor(Math.random() * 8);
       const rgbBurst = rgbFrames > 0;
-      const split = Math.max(4, radius * 0.05);
-
-      ctx.lineWidth = 2;
-      if (rgbBurst) {
-        const fringes: Array<[number, number, string]> = [
-          [-split, split * 0.25, RGB.red],
-          [split, -split * 0.15, RGB.blue],
-          [split * 0.2, split * 0.7, RGB.green],
-        ];
-        for (const [ox, oy, color] of fringes) {
-          ctx.strokeStyle = color;
-          ctx.beginPath();
-          ctx.arc(cx + ox, cy + oy, radius * 1.2, 0, Math.PI * 2);
-          ctx.stroke();
-        }
-      }
-      ctx.strokeStyle = "rgba(255,255,255,0.72)";
-      if (shouldGlitch) {
-        const segments = 8;
-        for (let i = 0; i < segments; i++) {
-          const a0 = (i / segments) * Math.PI * 2;
-          const a1 = ((i + 1) / segments) * Math.PI * 2;
-          const rr = radius * 1.2 + (Math.random() - 0.5) * 10 * glitchiness;
-          ctx.beginPath();
-          ctx.arc(cx, cy, rr, a0, a1);
-          ctx.stroke();
-        }
-      } else {
-        ctx.beginPath();
-        ctx.arc(cx, cy, radius * 1.2, 0, Math.PI * 2);
-        ctx.stroke();
-      }
-      ctx.restore();
-
-      ctx.font = `${Math.max(8, Math.floor(10 * dpr))}px "JetBrains Mono", ui-monospace, monospace`;
-      ctx.textAlign = "center";
-      ctx.textBaseline = "middle";
-      const spacing = 9;
-      const cols = Math.min(maxAsciiCols, Math.floor(wCss / spacing));
-      const rows = Math.min(maxAsciiRows, Math.floor(hCss / spacing));
-      for (let i = 0; i < cols; i++) {
-        for (let j = 0; j < rows; j++) {
-          const x = (i - cols / 2) * spacing + cx;
-          const y = (j - rows / 2) * spacing + cy;
-          const dx = x - cx;
-          const dy = y - cy;
-          const dist = Math.hypot(dx, dy);
-          if (dist < radius && Math.random() > 0.4) {
-            const z = Math.sqrt(Math.max(0, radius * radius - dx * dx - dy * dy));
-            const rotZ = dx * Math.sin(rotation) + z * Math.cos(rotation);
-            const bright = (rotZ + radius) / (radius * 2);
-            if (rotZ > -radius * 0.3) {
-              let idx = Math.floor(bright * (density.length - 1));
-              idx = Math.min(density.length - 1, Math.max(0, idx));
-              let ch = density[idx] ?? " ";
-              if (dist < radius * 0.8 && glitchiness > 0.8 && Math.random() < 0.3) {
-                ch = GLITCH_CHARS[Math.floor(Math.random() * GLITCH_CHARS.length)] ?? ch;
-              }
-              const alpha = Math.max(0.2, bright);
-              if (rgbBurst) {
-                ctx.fillStyle = `rgba(255,42,42,${alpha})`;
-                ctx.fillText(ch, x - split, y + split * 0.25);
-                ctx.fillStyle = `rgba(47,91,255,${alpha})`;
-                ctx.fillText(ch, x + split, y - split * 0.15);
-                ctx.fillStyle = `rgba(61,255,106,${alpha})`;
-                ctx.fillText(ch, x + split * 0.2, y + split * 0.7);
-              }
-              ctx.fillStyle = `rgba(255,255,255,${alpha})`;
-              ctx.fillText(ch, x, y);
-            }
-          }
-        }
-      }
+      const split = Math.max(4, eyeR * 0.05);
 
       const logo = logoRef.current;
-      if (logo && logo.complete && logo.naturalWidth > 0) {
-        const size = radius * 0.92;
-        const lx = cx + eyeOffset.x - size / 2;
-        const ly = cy + eyeOffset.y - size / 2;
+      const lx = cx + eyeOffset.x - logoSize / 2;
+      const ly = cy + eyeOffset.y - logoSize / 2;
+
+      // ASCII texture only on the mark silhouette (no circular orb).
+      if (logo && logo.width > 0) {
+        ctx.save();
+        ctx.beginPath();
+        // Clip to the measured triangle of this asset (old 0.08/0.92 box drifts off the new mark).
+        const tri = triangleRef.current ?? {
+          left: 0.08,
+          right: 0.92,
+          top: 0.08,
+          bottom: 0.92,
+          apexX: 0.5,
+        };
+        ctx.moveTo(lx + logoSize * tri.apexX, ly + logoSize * tri.top);
+        ctx.lineTo(lx + logoSize * tri.left, ly + logoSize * tri.bottom);
+        ctx.lineTo(lx + logoSize * tri.right, ly + logoSize * tri.bottom);
+        ctx.closePath();
+        ctx.clip();
+        ctx.font = `${Math.max(7, Math.floor(9 * dpr))}px "JetBrains Mono", ui-monospace, monospace`;
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        const spacing = 8;
+        const cols = Math.min(maxAsciiCols, Math.floor(logoSize / spacing) + 4);
+        const rows = Math.min(maxAsciiRows, Math.floor(logoSize / spacing) + 4);
+        for (let i = 0; i < cols; i++) {
+          for (let j = 0; j < rows; j++) {
+            const x = lx + (i + 0.5) * (logoSize / cols);
+            const y = ly + (j + 0.5) * (logoSize / rows);
+            if (Math.random() > 0.55) continue;
+            const dx = x - (cx + eyeOffset.x);
+            const dy = y - (cy + eyeOffset.y);
+            const dist = Math.hypot(dx, dy);
+            const z = Math.sqrt(Math.max(0, eyeR * eyeR - dx * dx - dy * dy));
+            const rotZ = dx * Math.sin(rotation) + z * Math.cos(rotation);
+            const bright = (rotZ + eyeR) / (eyeR * 2);
+            let idx = Math.floor(bright * (density.length - 1));
+            idx = Math.min(density.length - 1, Math.max(0, idx));
+            let ch = density[idx] ?? " ";
+            if (dist < eyeR * 0.55 && glitchiness > 0.8 && Math.random() < 0.3) {
+              ch = GLITCH_CHARS[Math.floor(Math.random() * GLITCH_CHARS.length)] ?? ch;
+            }
+            const alpha = Math.max(0.15, bright) * 0.4;
+            if (rgbBurst) {
+              ctx.fillStyle = `rgba(255,42,42,${alpha})`;
+              ctx.fillText(ch, x - split, y + split * 0.25);
+              ctx.fillStyle = `rgba(47,91,255,${alpha})`;
+              ctx.fillText(ch, x + split, y - split * 0.15);
+              ctx.fillStyle = `rgba(61,255,106,${alpha})`;
+              ctx.fillText(ch, x + split * 0.2, y + split * 0.7);
+            }
+            ctx.fillStyle = `rgba(255,255,255,${alpha})`;
+            ctx.fillText(ch, x, y);
+          }
+        }
+        ctx.restore();
+      }
+
+      if (logo && logo.width > 0) {
+        const size = logoSize;
         ctx.save();
         if (blurRef.current) ctx.filter = "blur(18px)";
         if (rgbBurst && tintsRef.current) {
@@ -260,10 +303,21 @@ export function GlitchingTechEye({
           ctx.drawImage(blue, lx + split, ly - split * 0.15, size, size);
           ctx.drawImage(green, lx + split * 0.2, ly + split * 0.7, size, size);
         }
+        // Soft white bloom so the mark (especially the inner 7) reads brighter.
+        ctx.shadowColor = "rgba(255,255,255,0.95)";
+        ctx.shadowBlur = size * 0.1;
         ctx.drawImage(logo, lx, ly, size, size);
+        ctx.shadowBlur = 0;
+        ctx.globalCompositeOperation = "lighter";
+        ctx.globalAlpha = 0.28;
+        ctx.drawImage(logo, lx, ly, size, size);
+        ctx.globalAlpha = 1;
+        ctx.globalCompositeOperation = "source-over";
         ctx.restore();
       }
+      ctx.restore();
 
+      // Grain only where the mark was drawn — no circular disc.
       gctx.clearRect(0, 0, gw, gh);
       const img = gctx.createImageData(gw, gh);
       const data = img.data;
@@ -279,21 +333,24 @@ export function GlitchingTechEye({
       gctx.putImageData(img, 0, 0);
       if (glitchiness > 0.5) {
         gctx.globalCompositeOperation = "screen";
-        for (let i = 0; i < 100; i++) {
+        for (let i = 0; i < 60; i++) {
           const x = Math.random() * gw;
           const y = Math.random() * gh;
           const r = Math.random() * 2 + 0.5;
-          gctx.fillStyle = `rgba(255,255,255,${Math.random() * 0.4 * glitchiness})`;
+          gctx.fillStyle = `rgba(255,255,255,${Math.random() * 0.35 * glitchiness})`;
           gctx.beginPath();
           gctx.arc(x, y, r, 0, Math.PI * 2);
           gctx.fill();
         }
         gctx.globalCompositeOperation = "source-over";
       }
-      ctx.globalAlpha = 0.4 + grainStrength * 0.6;
-      ctx.imageSmoothingEnabled = true;
+      ctx.save();
+      ctx.globalCompositeOperation = "source-atop";
+      ctx.globalAlpha = 0.35 + grainStrength * 0.45;
       ctx.drawImage(grainCanvas, 0, 0, wCss, hCss);
+      ctx.globalCompositeOperation = "source-over";
       ctx.globalAlpha = 1;
+      ctx.restore();
       ctx.restore();
       frame = requestAnimationFrame(render);
     };
@@ -313,19 +370,14 @@ export function GlitchingTechEye({
       style={{
         background: "transparent",
         position: "relative",
-        overflow: "hidden",
+        overflow: "visible",
         filter: logoBlur ? "blur(18px)" : "none",
         transition: "filter 700ms ease-out",
       }}
     >
       <style>{"@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap');"}</style>
-      <canvas ref={canvasRef} className="absolute inset-0 h-full w-full" />
-      <canvas
-        ref={grainCanvasRef}
-        aria-hidden
-        className="pointer-events-none absolute inset-0 h-full w-full"
-        style={{ mixBlendMode: "overlay" }}
-      />
+      <canvas ref={canvasRef} className="pointer-events-none absolute inset-0 h-full w-full" />
+      <canvas ref={grainCanvasRef} aria-hidden className="hidden" />
     </div>
   );
 }

@@ -156,7 +156,7 @@ export const MUSIC = { bpm: 128 };
 
 // Dancers: `count` (quality 'high') / `lowCount` (quality 'low'); denser near the booth (front of z range),
 // `spacing` = min distance between dancers at the front / back of the floor.
-export const CROWD = { enabled: true, count: 300, lowCount: 120, x: [-7.8, 7.8], z: [-14.8, 5.5], spacing: [0.52, 0.85] };
+export const CROWD = { enabled: true, count: 460, lowCount: 200, x: [-7.8, 7.8], z: [-16.2, 5.5], spacing: [0.46, 0.72] };
 
 // Camera presets. `intro` is the fly-through path; it ends on `dancefloor`.
 export const CAMERA = {

@@ -116,8 +116,8 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         rel: "stylesheet",
         href: "https://fonts.googleapis.com/css2?family=Funnel+Display:wght@400;500;600&family=Fragment+Mono:ital@0;1&display=swap",
       },
-      { rel: "icon", href: "/favicon.png", type: "image/png", sizes: "64x64" },
-      { rel: "apple-touch-icon", href: "/apple-touch-icon.png", sizes: "180x180" },
+      { rel: "icon", href: "/favicon.png?v=6", type: "image/png", sizes: "32x32" },
+      { rel: "apple-touch-icon", href: "/apple-touch-icon.png?v=6", sizes: "180x180" },
     ],
   }),
   shellComponent: RootShell,
@@ -183,8 +183,10 @@ function RootComponent() {
 /** Remount route content when locale changes so all copy picks up the new language. */
 function LocalizedOutlet() {
   const { locale } = useI18n();
+  const pathname = useRouterState({ select: (state) => state.location.pathname });
+  const privateArea = pathname === "/auth" || pathname.startsWith("/admin");
   return (
-    <div className="page-enter pb-28 md:pb-32" key={locale}>
+    <div className={privateArea ? "page-enter pb-28 md:pb-32" : "page-enter pt-[var(--site-header-h,8.15rem)] md:pt-[9.2rem]"} key={locale}>
       <Outlet />
     </div>
   );

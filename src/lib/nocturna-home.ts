@@ -34,7 +34,7 @@ const copy = {
     f3title: "Foto e vídeo da cabine ao floor",
     f3body:
       "Galeria por festa e data. Download quando liberado. Presskit com rider para booking.",
-    stepsEyebrow: "Fluxo",
+    stepsEyebrow: "Jornada",
     stepsTitle: "Da cabine ao booking.",
     step1n: "01",
     step1t: "Ouça um set",
@@ -107,7 +107,7 @@ const copy = {
     f3label: "Visual",
     f3title: "From booth to dancefloor",
     f3body: "Gallery by party and date. Downloads when enabled. Presskit and rider for booking.",
-    stepsEyebrow: "Flow",
+    stepsEyebrow: "Journey",
     stepsTitle: "From booth to booking.",
     step1n: "01",
     step1t: "Play a set",

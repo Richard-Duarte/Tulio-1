@@ -146,47 +146,44 @@ export function humanParts(armsUp, withHead = true) {
 }
 
 // Dancers: instanced bodies + separately instanced arms (so arms can pump / wave per person).
-// Dense near the booth, thinning towards the back; kept out of camera positions, the intro path,
-// the embed orbit path and the sightlines of the low cameras to the DJ.
+// Dense near the booth and across the middle of the floor. A pocket stays clear only right
+// at the camera, so the old sightline corridor does not open a hole in the crowd.
 function crowdSpots(count) {
   const [xa, xb] = CROWD.x, [za, zb] = CROWD.z, [sp0, sp1] = CROWD.spacing;
   const dj = V(0, 2.15, -17.7);
-  // low cameras: [pos, target]; sightline to the DJ (or the shot target) must stay mostly free
-  const cams = Object.values(CAMERA.shots).filter((c) => c.pos[1] < 2.6).map((c) => [V(...c.pos), c.target ? V(...c.target) : dj]);
-  cams.push([V(...CAMERA.dancefloor.pos), dj]);
-  const nShot = cams.length;                       // hand-placed shot cameras get a wider clear zone than the embed orbit samples
+  const cams = [[V(...CAMERA.dancefloor.pos), dj]];
+  if (CAMERA.embed) cams.push([V(...CAMERA.embed.center), V(...CAMERA.embed.target)]);
   const pathPts = [];
   const intro = new THREE.CatmullRomCurve3(CAMERA.intro.path.map((p) => V(...p)), false, 'centripetal');
-  for (let i = 0; i <= 80; i++) { const p = intro.getPointAt(i / 80); if (p.y < 2.8) pathPts.push(p); }
-  if (CAMERA.embed) for (let i = 0; i < 48; i++) { const p = embedCameraPos(CAMERA.embed, i * 9.7); pathPts.push(p); cams.push([p, V(...CAMERA.embed.target)]); }
-  const blocks = (x, z, top) => cams.some(([c, t]) => {
-    const dx = t.x - c.x, dz = t.z - c.z, L2 = dx * dx + dz * dz;
-    const u = ((x - c.x) * dx + (z - c.z) * dz) / L2;
-    if (u < 0 || u > 1) return false;
-    const d = Math.hypot(c.x + dx * u - x, c.z + dz * u - z);
-    if (d > 0.42) return false;
-    const h = c.y + (t.y - c.y) * u;          // sightline height above this dancer
-    return top > h - 0.12;
-  });
+  for (let i = 0; i <= 40; i++) { const p = intro.getPointAt(i / 40); if (p.y < 2.2) pathPts.push(p); }
+  const nearLens = (x, z) => cams.some(([c]) => Math.hypot(c.x - x, c.z - z) < 1.05)
+    || pathPts.some((p) => Math.hypot(p.x - x, p.z - z) < 0.65);
   const people = [];
-  let tries = 0;
-  while (people.length < count && tries++ < 40000) {
-    const x = xa + rand() * (xb - xa), f = Math.pow(rand(), 1.7), z = za + f * (zb - za);
+  const place = (x, z) => {
+    const f = Math.min(1, Math.max(0, (z - za) / (zb - za)));
     const spacing = sp0 + (sp1 - sp0) * f;
-    if (Math.abs(x) < 1.0 && z < -15.2) continue;                                  // front subs + riser apron
-    if (people.some((p) => (p.x - x) ** 2 + (p.z - z) ** 2 < spacing * spacing)) continue;
-    if (cams.some(([c, t], ci) => {                                                     // not inside / right in front of a camera
-      const d = Math.hypot(c.x - x, c.z - z); if (d < 1.1) return true;
-      const fx = t.x - c.x, fz = t.z - c.z, cos = ((x - c.x) * fx + (z - c.z) * fz) / (d * Math.hypot(fx, fz));
-      return ci < nShot ? d < 3.3 && cos > 0.72 : d < 2.4 && cos > 0.8;
-    })) continue;
-    if (pathPts.some((p) => Math.hypot(p.x - x, p.z - z) < 0.9)) continue;         // intro fly-through / embed orbit
+    if (x < xa || x > xb || z < za || z > zb) return false;
+    if (Math.abs(x) < 1.0 && z < -15.2) return false; // front subs + riser apron
+    if (people.some((p) => (p.x - x) ** 2 + (p.z - z) ** 2 < spacing * spacing)) return false;
+    if (nearLens(x, z)) return false;
     const s = 0.92 + rand() * 0.16;
-    const r = rand(), arms = r < 0.16 ? 'pump' : r < 0.27 ? 'both' : r < 0.45 ? 'fwd' : 'down';
-    const top = (arms === 'down' || arms === 'fwd' ? 1.75 : 2.2) * s;
-    if (blocks(x, z, top)) continue;
     const ry = Math.atan2(dj.x - x, dj.z - z) + (rand() - 0.5) * 0.7;
+    const r = rand(), arms = r < 0.16 ? 'pump' : r < 0.27 ? 'both' : r < 0.45 ? 'fwd' : 'down';
     people.push({ x, z, ry, s, w: 0.9 + rand() * 0.2, ph: rand(), amp: 0.5 + rand(), arms, style: rand() < 0.12 ? 'jump' : rand() < 0.5 ? 'sway' : 'bob', side: rand() < 0.5 ? 1 : -1 });
+    return true;
+  };
+  let tries = 0;
+  while (people.length < count && tries++ < 50000) {
+    const x = xa + rand() * (xb - xa), f = Math.pow(rand(), 1.25), z = za + f * (zb - za);
+    place(x, z);
+  }
+  // The old camera corridor sat in the middle of the floor. Seed that band until it is full.
+  const fillTarget = people.length + Math.round(count * 0.22);
+  let fillTries = 0;
+  while (people.length < fillTarget && fillTries++ < 16000) {
+    const x = (rand() - 0.5) * 7.2;
+    const z = -15.8 + rand() * 11.2;
+    place(x, z);
   }
   return people;
 }

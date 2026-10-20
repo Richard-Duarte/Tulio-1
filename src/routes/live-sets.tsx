@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { Play } from "lucide-react";
 import { useState } from "react";
 import { PageIntro } from "@/components/jula/PageIntro";
+import { GlyphHover, TITLE_STEP_MS } from "@/components/tulio/GlyphHover";
 import { VideoLightbox } from "@/components/jula/VideoLightbox";
 import { getPublicLiveSets } from "@/lib/public.functions";
 import { formatDuration, formatSetDate } from "@/lib/format";
@@ -93,7 +94,9 @@ function LiveSets() {
                         {meta.join(" · ")}
                       </p>
                     )}
-                    <h2 className="mt-2 break-words text-2xl uppercase">{item.title}</h2>
+                    <h2 className="mt-2 break-words text-2xl uppercase">
+                      <GlyphHover text={item.title} stepMs={TITLE_STEP_MS} />
+                    </h2>
                   </div>
                 </div>
               </article>

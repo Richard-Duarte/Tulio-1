@@ -2,13 +2,16 @@ import { useEffect } from "react";
 
 /** Fraction of each wheel delta that reaches the page. */
 const WHEEL_GAIN = 0.5;
-/** Fraction of each touch delta. Higher than wheel so a finger still tracks. */
-const TOUCH_GAIN = 0.62;
 /** Seconds for the scroll position to catch the wheel target. */
 const EASE_SECONDS = 0.12;
 
+/** Pure helper — kept testable so footer/layout regressions cannot hide under max scroll. */
+export function pageScrollMax(scrollHeight: number, viewportHeight: number) {
+  return Math.max(0, scrollHeight - viewportHeight);
+}
+
 function maxScroll() {
-  return Math.max(0, document.documentElement.scrollHeight - window.innerHeight);
+  return pageScrollMax(document.documentElement.scrollHeight, window.innerHeight);
 }
 
 function clampScroll(value: number) {
@@ -47,18 +50,20 @@ function nestedScrollable(start: EventTarget | null, deltaY: number) {
   return false;
 }
 
-function bindDampedScroll() {
+/**
+ * Wheel/trackpad only. Touch stays fully native: driving iOS scroll from JS (preventDefault +
+ * scrollTo) fights Safari's momentum and bottom bounce, which shakes fixed layers like the player.
+ */
+export function bindDampedScroll() {
   let target = window.scrollY;
   let lastWritten = window.scrollY;
   let raf = 0;
   let lastFrame = 0;
-  let touching = false;
-  let gesture: "undecided" | "vertical" | "horizontal" = "undecided";
-  let originX = 0;
-  let originY = 0;
-  let lastTouchY = 0;
-  let touchTime = 0;
-  let touchVelocity = 0;
+
+  const stop = () => {
+    if (raf) cancelAnimationFrame(raf);
+    raf = 0;
+  };
 
   const write = (value: number) => {
     window.scrollTo(0, clampScroll(value));
@@ -69,11 +74,15 @@ function bindDampedScroll() {
     const dt = lastFrame ? Math.min(0.05, (now - lastFrame) / 1000) : 0.016;
     lastFrame = now;
     const current = window.scrollY;
+    // External scroll (scrollbar / anchoring): adopt it, but keep easing if we still
+    // have a farther target — otherwise late layout aborts the wheel short of the bottom.
     if (Math.abs(current - lastWritten) > 1.5) {
-      target = current;
       lastWritten = current;
-      raf = 0;
-      return;
+      if (Math.abs(target - current) <= 1.5) {
+        target = current;
+        raf = 0;
+        return;
+      }
     }
     target = clampScroll(target);
     const diff = target - current;
@@ -94,7 +103,7 @@ function bindDampedScroll() {
   };
 
   const onWheel = (event: WheelEvent) => {
-    if (touching || scrollLocked()) return;
+    if (scrollLocked()) return;
     if (event.ctrlKey || event.metaKey || event.shiftKey) return;
     if (event.defaultPrevented) return;
     if (Math.abs(event.deltaX) > Math.abs(event.deltaY)) return;
@@ -102,6 +111,8 @@ function bindDampedScroll() {
     const delta = event.deltaY * unit;
     if (!delta || nestedScrollable(event.target, delta)) return;
     event.preventDefault();
+    if (!raf) target = window.scrollY;
+    // Re-read scrollHeight every wheel so late images/footer don't cap the journey short.
     target = clampScroll(target + delta * WHEEL_GAIN);
     kick();
   };
@@ -109,96 +120,37 @@ function bindDampedScroll() {
   const onScroll = () => {
     const next = window.scrollY;
     if (Math.abs(next - lastWritten) <= 1.5) return;
-    target = next;
     lastWritten = next;
-    if (raf) cancelAnimationFrame(raf);
-    raf = 0;
+    if (!raf) target = next;
   };
 
-  const onTouchStart = (event: TouchEvent) => {
-    if (event.touches.length !== 1 || scrollLocked()) {
-      touching = false;
-      return;
-    }
-    const touch = event.touches[0];
-    if (!touch) return;
-    gesture = "undecided";
-    touching = true;
-    originX = touch.clientX;
-    originY = touch.clientY;
-    lastTouchY = touch.clientY;
-    touchTime = performance.now();
-    touchVelocity = 0;
+  // A finger on a hybrid device hands control back to native scrolling immediately.
+  const onTouchStart = () => {
+    stop();
     target = window.scrollY;
     lastWritten = target;
-    if (raf) cancelAnimationFrame(raf);
-    raf = 0;
   };
 
-  const onTouchMove = (event: TouchEvent) => {
-    if (!touching || event.touches.length !== 1) return;
-    const touch = event.touches[0];
-    if (!touch) return;
-    const travelX = touch.clientX - originX;
-    const travelY = touch.clientY - originY;
-    if (gesture === "undecided") {
-      if (Math.hypot(travelX, travelY) < 3) return;
-      gesture = Math.abs(travelY) >= Math.abs(travelX) ? "vertical" : "horizontal";
-    }
-    if (gesture !== "vertical") return;
-    const step = lastTouchY - touch.clientY;
-    lastTouchY = touch.clientY;
-    if (!step) return;
-    if (nestedScrollable(event.target, step)) {
-      touching = false;
-      gesture = "undecided";
-      return;
-    }
-    event.preventDefault();
-    const now = performance.now();
-    const elapsed = Math.max(8, now - touchTime);
-    const scaled = step * TOUCH_GAIN;
-    touchVelocity = scaled / elapsed;
-    touchTime = now;
-    target = clampScroll(target + scaled);
-    write(target);
-  };
-
-  const onTouchEnd = () => {
-    if (!touching) return;
-    const coast = gesture === "vertical";
-    touching = false;
-    gesture = "undecided";
-    if (!coast || Math.abs(touchVelocity) < 0.02) return;
-    target = clampScroll(target + touchVelocity * 140);
-    kick();
-  };
-
+  // Only clamp: re-kicking here would chase the iOS toolbar resize mid-scroll.
   const onResize = () => {
-    target = clampScroll(target);
+    target = clampScroll(raf ? target : window.scrollY);
   };
 
   window.addEventListener("wheel", onWheel, { passive: false });
   window.addEventListener("scroll", onScroll, { passive: true });
   window.addEventListener("touchstart", onTouchStart, { passive: true });
-  window.addEventListener("touchmove", onTouchMove, { passive: false });
-  window.addEventListener("touchend", onTouchEnd, { passive: true });
-  window.addEventListener("touchcancel", onTouchEnd, { passive: true });
   window.addEventListener("resize", onResize);
 
   return () => {
-    if (raf) cancelAnimationFrame(raf);
+    stop();
     window.removeEventListener("wheel", onWheel);
     window.removeEventListener("scroll", onScroll);
     window.removeEventListener("touchstart", onTouchStart);
-    window.removeEventListener("touchmove", onTouchMove);
-    window.removeEventListener("touchend", onTouchEnd);
-    window.removeEventListener("touchcancel", onTouchEnd);
     window.removeEventListener("resize", onResize);
   };
 }
 
-/** Slower wheel, trackpad, and touch scrolling with a short ease. The scrollbar stays native. */
+/** Slower wheel and trackpad scrolling with a short ease. Touch and the scrollbar stay native. */
 export function useDampedScroll() {
   useEffect(() => {
     const media = window.matchMedia("(prefers-reduced-motion: reduce)");

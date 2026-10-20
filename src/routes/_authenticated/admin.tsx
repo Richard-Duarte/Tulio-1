@@ -16,20 +16,22 @@ import {
   saveSettings,
   saveSocialLinks,
   saveSetsDescription,
+  saveTulioHome,
   setPanelPassword,
   setPresskitPassword,
 } from "@/lib/admin.functions";
 import { supabase } from "@/integrations/supabase/client";
+import { uploadSiteMediaFile } from "@/lib/storage-upload";
 import { LinkSetEditor } from "@/components/jula/admin/LinkSetEditor";
 import { UpcomingDatesAdmin } from "@/components/jula/admin/UpcomingDatesAdmin";
 import { MediaLibrary } from "@/components/jula/admin/MediaLibrary";
 import { ReleaseEditor } from "@/components/jula/admin/ReleaseEditor";
-import { ReleaseSectionsEditor } from "@/components/jula/admin/ReleaseSectionsEditor";
 import { TrackEditor } from "@/components/jula/admin/TrackEditor";
+import { siteParties } from "@/lib/site-photos";
 export const Route = createFileRoute("/_authenticated/admin")({
   head: () => ({
     meta: [
-      { title: "Painel — JULA" },
+      { title: "Painel — TULIO" },
       { name: "description", content: "Gerenciamento de conteúdo do site de Tulio." },
       { property: "og:title", content: "Painel — JULA" },
       { property: "og:description", content: "Área administrativa." },
@@ -40,6 +42,22 @@ export const Route = createFileRoute("/_authenticated/admin")({
   }),
   component: Admin,
 });
+function mediaParties(items: { party_id?: string | null }[]) {
+  const list = siteParties.map((party) => ({
+    id: party.id,
+    name: party.name,
+    happened_at: party.happened_at,
+  }));
+  const known = new Set(list.map((party) => party.id));
+  for (const item of items) {
+    if (item.party_id && !known.has(item.party_id)) {
+      known.add(item.party_id);
+      list.push({ id: item.party_id, name: item.party_id, happened_at: "" });
+    }
+  }
+  return list;
+}
+
 function Admin() {
   const fn = useServerFn(getAdminData);
   const save = useServerFn(saveAdminItem);
@@ -48,6 +66,7 @@ function Admin() {
   const saveSocial = useServerFn(saveSocialLinks);
   const saveSetsDesc = useServerFn(saveSetsDescription);
   const [setsDescription, setSetsDescription] = useState("");
+  const saveHome = useServerFn(saveTulioHome);
   const query = useQueryClient();
   const nav = useNavigate();
   const { data, isLoading, error } = useQuery({ queryKey: ["admin-content"], queryFn: fn });
@@ -57,13 +76,27 @@ function Admin() {
   const [playerShuffle, setPlayerShuffle] = useState(false);
   const [setsShuffle, setSetsShuffle] = useState(false);
   const [party, setParty] = useState({ name: "", happened_at: "" });
-  const [social, setSocial] = useState({
-    instagram_url: "",
-    soundcloud_url: "",
-    spotify_url: "",
+  const emptyHome = {
+    section1_image_url: "/brand/tulio-session.jpg",
+    section1_right_image_url: "/brand/tulio-booth.jpg",
+    section1_image_alt: "Tulio no set",
+    booking_email: "soniccdrivebookings@gmail.com",
+    facebook_url: "",
+    x_url: "",
+    tiktok_url: "",
     youtube_url: "",
+    soundcloud_url: "",
     bandcamp_url: "",
-  });
+    instagram_url: "",
+    spotify_url: "",
+    beatport_url: "",
+  };
+  const [home, setHome] = useState(emptyHome);
+  const [homeUploading, setHomeUploading] = useState(false);
+  const [heroTitle, setHeroTitle] = useState("Trajetória");
+  const [heroBody, setHeroBody] = useState("");
+  const [heroImage, setHeroImage] = useState("/brand/tulio-n26.jpg");
+  const [heroUploading, setHeroUploading] = useState(false);
   const savePass = useServerFn(setPresskitPassword);
   const savePanel = useServerFn(setPanelPassword);
   const [presskitPass, setPresskitPass] = useState("");
@@ -72,13 +105,6 @@ function Admin() {
   const [panelPass2, setPanelPass2] = useState("");
   useEffect(() => {
     if (data?.settings) {
-      setSocial({
-        instagram_url: data.settings.instagram_url ?? "",
-        soundcloud_url: data.settings.soundcloud_url ?? "",
-        spotify_url: data.settings.spotify_url ?? "",
-        youtube_url: data.settings.youtube_url ?? "",
-        bandcamp_url: data.settings.bandcamp_url ?? "",
-      });
       setReleaseTitle(data.settings.release_title);
       setReleaseBody(data.settings.release_body);
       setPlayerEnabled(data.settings.player_enabled);
@@ -87,6 +113,27 @@ function Admin() {
       setSetsDescription(
         (data.settings as { sets_description?: string | null }).sets_description ?? "",
       );
+    }
+    if (data?.home) {
+      const row = data.home;
+      setHome({
+        section1_image_url: row.section1_image_url ?? "",
+        section1_right_image_url: row.section1_right_image_url || "/brand/tulio-booth.jpg",
+        section1_image_alt: row.section1_image_alt ?? "",
+        booking_email: row.booking_email ?? "",
+        facebook_url: row.facebook_url ?? "",
+        x_url: row.x_url ?? "",
+        tiktok_url: row.tiktok_url ?? "",
+        youtube_url: row.youtube_url ?? "",
+        soundcloud_url: row.soundcloud_url ?? "",
+        bandcamp_url: row.bandcamp_url ?? "",
+        instagram_url: row.instagram_url ?? "",
+        spotify_url: row.spotify_url ?? "",
+        beatport_url: row.beatport_url ?? "",
+      });
+      setHeroTitle(row.hero_title?.trim() || "Trajetória");
+      setHeroBody(row.hero_body ?? "");
+      setHeroImage(row.hero_image_url || "/brand/tulio-n26.jpg");
     }
   }, [data]);
   async function refresh() {
@@ -189,34 +236,71 @@ function Admin() {
           <TabsTrigger value="live_sets">Live Sets</TabsTrigger>
           <TabsTrigger value="releases">Releases</TabsTrigger>
           <TabsTrigger value="tracks">Player</TabsTrigger>
-          <TabsTrigger value="release">Release</TabsTrigger>
           <TabsTrigger value="media">Mídia</TabsTrigger>
-          <TabsTrigger value="redes">Redes</TabsTrigger>
+          <TabsTrigger value="redes">Sessão 1</TabsTrigger>
           <TabsTrigger value="acesso">Acesso</TabsTrigger>
           <TabsTrigger value="parties">Festas</TabsTrigger>
           <TabsTrigger value="datas">Próximas datas</TabsTrigger>
         </TabsList>
         <TabsContent value="site">
-          <Panel title="Texto da Home">
-            <Input value={releaseTitle} onChange={(e) => setReleaseTitle(e.target.value)} />
-            <Textarea
-              className="mt-3 min-h-72"
-              value={releaseBody}
-              onChange={(e) => setReleaseBody(e.target.value)}
-            />
-            <label className="mt-5 flex items-center gap-3 text-sm">
-              <Switch checked={playerEnabled} onCheckedChange={setPlayerEnabled} /> Exibir player
+          <Panel title="Texto da home">
+            <p className="-mt-3 mb-5 text-sm text-muted-foreground">
+              O texto e a foto que aparecem juntos na home.
+            </p>
+            {heroImage && (
+              <img src={heroImage} alt="" className="mb-4 aspect-[4/5] w-40 object-cover" />
+            )}
+            <label className="block text-xs uppercase tracking-[.15em] text-muted-foreground">
+              Foto ao lado do texto
+              <Input
+                className="mt-1"
+                type="file"
+                accept="image/*"
+                disabled={heroUploading}
+                onChange={async (e) => {
+                  const file = e.target.files?.[0];
+                  e.target.value = "";
+                  if (!file) return;
+                  setHeroUploading(true);
+                  try {
+                    const ext = file.name.split(".").pop()?.toLowerCase() || "jpg";
+                    const path = `home/hero-${Date.now()}.${ext}`;
+                    await uploadSiteMediaFile(file, path);
+                    const url = supabase.storage.from("site-media").getPublicUrl(path).data.publicUrl;
+                    setHeroImage(url);
+                    toast.success("Foto enviada. Salve para publicar.");
+                  } catch {
+                    toast.error("Não foi possível enviar a foto.");
+                  } finally {
+                    setHeroUploading(false);
+                  }
+                }}
+              />
             </label>
+            <label className="mt-4 block text-xs uppercase tracking-[.15em] text-muted-foreground">
+              Trajetória
+              <Input
+                className="mt-1"
+                value={heroTitle}
+                onChange={(e) => setHeroTitle(e.target.value)}
+                placeholder="Trajetória"
+              />
+            </label>
+            <Textarea
+              className="mt-4 min-h-72"
+              value={heroBody}
+              onChange={(e) => setHeroBody(e.target.value)}
+            />
             <Button
               className="mt-6"
+              disabled={heroUploading}
               onClick={async () => {
-                await saveSite({
+                await saveHome({
                   data: {
-                    release_title: releaseTitle,
-                    release_body: releaseBody,
-                    player_enabled: playerEnabled,
-                    player_shuffle: playerShuffle,
-                    sets_shuffle: setsShuffle,
+                    ...home,
+                    hero_title: heroTitle,
+                    hero_body: heroBody,
+                    hero_image_url: heroImage,
                   },
                 });
                 toast.success("Site atualizado.");
@@ -300,22 +384,88 @@ function Admin() {
           />
         </TabsContent>
         <TabsContent value="media">
-          <MediaLibrary media={data.media} parties={data.parties} onChanged={refresh} />
+          <MediaLibrary
+            library="tulio"
+            media={data.media}
+            parties={mediaParties(data.media)}
+            onChanged={refresh}
+          />
         </TabsContent>
         <TabsContent value="redes">
-          <Panel title="Links das redes">
+          <Panel title="Sessão 1">
             <p className="-mt-3 mb-5 text-sm text-muted-foreground">
-              Os ícones aparecem na abertura na ordem Instagram, SoundCloud, Spotify, YouTube e
-              Bandcamp. Deixe em branco para esconder.
+              As duas fotos da abertura, o texto da foto da esquerda e os links dos ícones. No
+              celular, o e-mail de bookings fica na faixa preta abaixo do carrossel.
             </p>
-            <div className="space-y-3">
+            <div className="grid gap-6 sm:grid-cols-2">
               {(
                 [
-                  ["instagram_url", "Instagram"],
-                  ["soundcloud_url", "SoundCloud"],
-                  ["spotify_url", "Spotify"],
+                  ["section1_image_url", "Foto da esquerda", "left"],
+                  ["section1_right_image_url", "Foto da direita", "right"],
+                ] as const
+              ).map(([key, label, slot]) => (
+                <div key={key}>
+                  {home[key] && (
+                    <img src={home[key]} alt="" className="mb-4 aspect-[4/5] w-40 object-cover" />
+                  )}
+                  <label className="block text-xs uppercase tracking-[.15em] text-muted-foreground">
+                    {label}
+                    <Input
+                      className="mt-1"
+                      type="file"
+                      accept="image/*"
+                      disabled={homeUploading}
+                      onChange={async (e) => {
+                        const file = e.target.files?.[0];
+                        e.target.value = "";
+                        if (!file) return;
+                        setHomeUploading(true);
+                        try {
+                          const ext = file.name.split(".").pop()?.toLowerCase() || "jpg";
+                          const path = `home/section1-${slot}-${Date.now()}.${ext}`;
+                          await uploadSiteMediaFile(file, path);
+                          const url = supabase.storage.from("site-media").getPublicUrl(path).data.publicUrl;
+                          setHome((current) => ({ ...current, [key]: url }));
+                          toast.success("Foto enviada. Salve para publicar.");
+                        } catch {
+                          toast.error("Não foi possível enviar a foto.");
+                        } finally {
+                          setHomeUploading(false);
+                        }
+                      }}
+                    />
+                  </label>
+                </div>
+              ))}
+            </div>
+            <label className="mt-3 block text-xs uppercase tracking-[.15em] text-muted-foreground">
+              Texto da foto da esquerda
+              <Input
+                className="mt-1"
+                value={home.section1_image_alt}
+                onChange={(e) => setHome((v) => ({ ...v, section1_image_alt: e.target.value }))}
+              />
+            </label>
+            <label className="mt-3 block text-xs uppercase tracking-[.15em] text-muted-foreground">
+              E-mail de bookings
+              <Input
+                className="mt-1"
+                value={home.booking_email}
+                onChange={(e) => setHome((v) => ({ ...v, booking_email: e.target.value }))}
+              />
+            </label>
+            <div className="mt-6 space-y-3">
+              {(
+                [
+                  ["facebook_url", "Facebook"],
+                  ["x_url", "X"],
+                  ["tiktok_url", "TikTok"],
                   ["youtube_url", "YouTube"],
+                  ["soundcloud_url", "SoundCloud"],
                   ["bandcamp_url", "Bandcamp"],
+                  ["instagram_url", "Instagram"],
+                  ["spotify_url", "Spotify"],
+                  ["beatport_url", "Beatport"],
                 ] as const
               ).map(([key, label]) => (
                 <label
@@ -326,25 +476,26 @@ function Admin() {
                   <Input
                     className="mt-1"
                     placeholder="https://"
-                    value={social[key]}
-                    onChange={(e) => setSocial((v) => ({ ...v, [key]: e.target.value }))}
+                    value={home[key]}
+                    onChange={(e) => setHome((v) => ({ ...v, [key]: e.target.value }))}
                   />
                 </label>
               ))}
             </div>
             <Button
               className="mt-6"
+              disabled={homeUploading}
               onClick={async () => {
                 try {
-                  await saveSocial({ data: social });
+                  await saveHome({ data: home });
                   await refresh();
-                  toast.success("Links atualizados.");
+                  toast.success("Sessão 1 atualizada.");
                 } catch {
-                  toast.error("Verifique os links (use https://).");
+                  toast.error("Verifique a foto, o texto e os links (use https://).");
                 }
               }}
             >
-              <Save /> Salvar links
+              <Save /> Salvar sessão 1
             </Button>
           </Panel>
         </TabsContent>
@@ -403,9 +554,6 @@ function Admin() {
               )}
             </section>
           </div>
-        </TabsContent>
-        <TabsContent value="release">
-          <ReleaseSectionsEditor items={data.release_sections ?? []} onChanged={refresh} />
         </TabsContent>
         <TabsContent value="acesso">
           <div className="space-y-6">

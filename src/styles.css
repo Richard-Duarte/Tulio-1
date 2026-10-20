@@ -68,10 +68,17 @@
 }
 
 :root {
-  --nc-bg: #0d0d0e;
-  --nc-bg-elevated: #111113;
-  --nc-bg-alt: #0a0a0b;
+  --nc-bg: #000000;
+  --nc-bg-elevated: #000000;
+  --nc-bg-alt: #000000;
   --nc-border: #222226;
+  --nc-line: 1px solid var(--nc-border);
+  /* Equal inset from grid lines to type — same top and bottom everywhere */
+  --nc-pad-x: 1.25rem;
+  --nc-pad-x-md: 2.5rem;
+  --nc-pad-x-lg: 3.5rem;
+  --nc-pad-y: 3rem;
+  --nc-pad-y-md: 4rem;
   --nc-muted: #7a7a82;
   --nc-accent: #ffffff;
   --nc-accent-mint: #ffffff;
@@ -134,10 +141,12 @@
   --accent-foreground: oklch(0.97 0 0);
   --destructive: oklch(0.97 0 0);
   --destructive-foreground: oklch(0.08 0 0);
-  --border: oklch(1 0 0 / 16%);
-  --input: oklch(1 0 0 / 22%);
+  /* Match nocturna grid hairlines — avoid thicker/lighter oklch borders on public pages */
+  --border: #222226;
+  --input: #484851;
   --ring: oklch(0.97 0 0);
   --glow: oklch(1 0 0 / 28%);
+  --nc-border: #222226;
   --chart-1: oklch(0.97 0 0);
   --chart-2: oklch(0.72 0 0);
   --chart-3: oklch(0.5 0 0);
@@ -198,7 +207,7 @@
   padding-block: 0;
 }
 .nc-section-alt {
-  background: #050505;
+  background: #000;
 }
 .nc-page {
   background: #000;
@@ -357,32 +366,61 @@
   }
 }
 .nc-section-wipe {
-  height: 1px;
-  transform-origin: left center;
-  background: linear-gradient(
-    90deg,
-    transparent 0%,
-    rgb(255 255 255 / 35%) 18%,
-    rgb(255 255 255 / 90%) 50%,
-    rgb(255 255 255 / 35%) 82%,
-    transparent 100%
-  );
-  box-shadow: 0 0 18px rgb(255 255 255 / 25%);
+  height: 0;
+  border-bottom: var(--nc-line, 1px solid var(--nc-border));
+  background: none;
+  box-shadow: none;
 }
 .nc-grid-border-b {
-  border-bottom: 1px solid var(--nc-border);
+  border-bottom: var(--nc-line, 1px solid var(--nc-border));
 }
 .nc-grid-border-t {
-  border-top: 1px solid var(--nc-border);
+  border-top: var(--nc-line, 1px solid var(--nc-border));
 }
 .nc-grid-border-r {
-  border-right: 1px solid var(--nc-border);
+  border-right: var(--nc-line, 1px solid var(--nc-border));
+}
+.nc-pad-x {
+  padding-left: var(--nc-pad-x);
+  padding-right: var(--nc-pad-x);
+}
+.nc-pad-y {
+  padding-top: var(--nc-pad-y);
+  padding-bottom: var(--nc-pad-y);
+}
+@media (min-width: 768px) {
+  .nc-pad-x {
+    padding-left: var(--nc-pad-x-md);
+    padding-right: var(--nc-pad-x-md);
+  }
+  .nc-pad-y {
+    padding-top: var(--nc-pad-y-md);
+    padding-bottom: var(--nc-pad-y-md);
+  }
+}
+@media (min-width: 1024px) {
+  .nc-pad-x {
+    padding-left: var(--nc-pad-x-lg);
+    padding-right: var(--nc-pad-x-lg);
+  }
 }
 @media (max-width: 767px) {
   .nc-grid-border-r {
     border-right: none;
-    border-bottom: 1px solid var(--nc-border);
+    border-bottom: var(--nc-line, 1px solid var(--nc-border));
   }
+  /* Stacked cells: the section's own bottom line closes the last one */
+  .nc-grid-2 > :last-child > .nc-grid-border-r,
+  .nc-grid-2 > .nc-grid-border-r:last-child,
+  .nc-grid-3 > :last-child > .nc-grid-border-r,
+  .nc-grid-3 > .nc-grid-border-r:last-child,
+  .nc-grid-hero > .nc-hero-copy {
+    border-bottom: none;
+  }
+}
+/* Vertical divider that stays vertical on phones (horizontal strips) */
+.nc-line-r {
+  border-right: var(--nc-line, 1px solid var(--nc-border));
 }
 .nc-grid-hero {
   display: grid;
@@ -412,7 +450,7 @@
     grid-template-columns: repeat(3, 1fr);
   }
   .nc-grid-3 > *:not(:last-child) {
-    border-right: 1px solid var(--nc-border);
+    border-right: var(--nc-line, 1px solid var(--nc-border));
   }
 }
 .nc-cell-interactive {
@@ -426,6 +464,9 @@
 }
 .nc-dither-img {
   filter: grayscale(1) contrast(1.15) brightness(0.55) sepia(1) hue-rotate(95deg) saturate(2.2);
+}
+.marquee-track .nc-dither-img {
+  filter: grayscale(1) contrast(1.15) brightness(0.55) sepia(1) hue-rotate(190deg) saturate(2.2);
 }
 .nc-code-chip {
   display: inline-block;
@@ -443,6 +484,23 @@
 .nc-corner-btn:hover .nc-corner-bracket {
   border-color: var(--nc-accent-mint);
   box-shadow: 0 0 8px rgb(255 255 255 / 35%);
+}
+/* Hero CTAs: gray starts on Ouvir sets; on Ver galeria hover it moves — no other effects */
+.nc-cta-pair .nc-cta-default {
+  background: rgb(255 255 255 / 6%);
+}
+.nc-cta-pair:has(.nc-cta-alt:hover) .nc-cta-default,
+.nc-cta-pair:has(.nc-cta-alt:focus-visible) .nc-cta-default {
+  background: transparent;
+}
+.nc-cta-pair .nc-cta-alt:hover,
+.nc-cta-pair .nc-cta-alt:focus-visible {
+  background: rgb(255 255 255 / 6%);
+}
+.nc-cta-pair .nc-corner-btn:hover .nc-corner-bracket,
+.nc-cta-pair .nc-corner-btn:focus-visible .nc-corner-bracket {
+  border-color: rgb(255 255 255 / 55%);
+  box-shadow: none;
 }
 .nc-corner-bracket {
   position: absolute;

@@ -1,10 +1,10 @@
-/** Tulio as Tul + upside-down 7 + o (logo wordmark). */
+/** Official TULIO wordmark. Height follows the surrounding font size. */
 export function TulioWordmark({ className = "" }: { className?: string }) {
   return (
-    <span
-      className={`inline-block whitespace-nowrap font-semibold leading-none tracking-[-0.03em] ${className}`}
-    >
-      Tul<span className="inline-block rotate-180">7</span>o
-    </span>
+    <img
+      src="/brand/tulio-wordmark.png"
+      alt="Tulio"
+      className={`inline-block h-[1em] w-auto max-w-none ${className}`}
+    />
   );
 }

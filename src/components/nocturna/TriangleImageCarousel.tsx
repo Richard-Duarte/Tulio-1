@@ -10,7 +10,7 @@ type CarouselProps = {
 const IMAGE_SIZE = 86;
 const THUMBNAIL_SIZE = 10;
 const SPACING = 14;
-const FOCUS_WIDTH = 175;
+const FOCUS_WIDTH = 248;
 const SCATTER = 145;
 const CENTER_X = 50;
 const CENTER_Y = 50;
@@ -106,36 +106,40 @@ export function TriangleImageCarousel({ images, className = "" }: CarouselProps)
       const tiny = THUMBNAIL_SIZE * scale;
       const scatter = SCATTER * scale;
       const half = focus * 0.78;
-      const { zoom, offsetY } = readZoom();
+      const { zoom, offsetY, enter } = readZoom();
       const edge = width / 2;
       const core = Math.max(36, focus * 0.72);
+      // Straight sides: apex at the top center, base horizontal, edges are linear.
+      const apexY = scatter;
+      const baseLine = -scatter * 0.92;
 
       for (let index = 0; index < meshes.length; index++) {
         const mesh = meshes[index];
         if (!mesh) continue;
         const x = wrap(index * gap + scroll + period / 2, period) - period / 2;
-        const falloff = Math.abs(x - centerX) / focus;
-        const presence = Math.exp(-(falloff ** 4) * 2.6);
-        const varied = full * (0.64 + hash(index + 11, SEED) * 0.5);
-        const card = tiny + (varied - tiny) * presence;
-        const along = Math.min(1, Math.abs(x - centerX) / half);
-        const slant = scatter * (1 - 2 * along);
-        const baseY = -scatter * 0.92;
-        const mode = hash(index + 97, SEED);
-        let yTarget = 0;
-        if (slant >= baseY) {
-          if (mode < 0.55) yTarget = slant;
-          else if (mode < 0.82) yTarget = baseY;
-          else yTarget = baseY + (slant - baseY) * hash(index + 13, SEED);
-        }
-        const y = yTarget * Math.min(1, presence / 0.22);
+        const dx = Math.abs(x - centerX);
+        const along = Math.min(1, dx / half);
+        const past = Math.max(0, dx - half);
+        const varied = full * (0.72 + hash(index + 11, SEED) * 0.28);
+        const card = past > 0 ? tiny : Math.max(tiny, varied * (1 - along * 0.42));
         const aspect = aspects[index % sources.length] || 0.8;
+        // Top of each card sits on the straight edge measured at its outer corner,
+        // so wide cards do not bulge past the side.
+        const outer = Math.min(half, dx + (card * aspect) / 2);
+        const topY = apexY + (baseLine - apexY) * (outer / half);
+        const fill = hash(index + 97, SEED);
+        const depth = fill < 0.42 ? 0 : fill < 0.74 ? 1 : hash(index + 13, SEED);
+        const room = Math.max(0, topY - baseLine - card);
+        const y = past > 0 ? baseLine - card * 0.5 : topY - card * 0.5 - room * depth;
         const localX = x;
         const localY = centerY + y;
         const clusteredX = localX * zoom;
         const clusteredY = localY * zoom + offsetY;
-        const dist = Math.abs(localX - centerX);
-        const t = dist <= core || edge <= core + 1 ? 0 : Math.min(1, (dist - core) / (edge - core));
+        // Photos outside the triangle still arrive from the screen corners while zooming in.
+        // Cards that form the sides stay on the straight edge.
+        const travel =
+          past > 0 ? enter * Math.min(1, past / Math.max(1, edge - half)) : 0;
+        const t = travel;
         const side = localX < centerX ? -1 : 1;
         const zoomedSize = card * zoom;
         const travelSize = Math.max(zoomedSize, tiny * 2.4);
@@ -147,7 +151,7 @@ export function TriangleImageCarousel({ images, className = "" }: CarouselProps)
         const worldY = clusteredY + (cornerY - clusteredY) * t;
         mesh.position.set(worldX, worldY, 0);
         mesh.scale.set(screenSize * aspect, screenSize, 1);
-        mesh.renderOrder = Math.round(presence * 1000) + hash(index + 5, SEED);
+        mesh.renderOrder = Math.round((1 - along) * 1000) + hash(index + 5, SEED);
         const halfW = (screenSize * aspect) / 2;
         const halfH = screenSize / 2;
         mesh.visible =
@@ -173,7 +177,7 @@ export function TriangleImageCarousel({ images, className = "" }: CarouselProps)
       const section = sectionRef.current;
       if (reduced || !section) {
         if (section) section.dataset.zoomProgress = "1";
-        return { zoom: 1, offsetY: 0 };
+        return { zoom: 1, offsetY: 0, enter: 0 };
       }
       const runway = section.offsetHeight - window.innerHeight;
       const progress =
@@ -183,6 +187,7 @@ export function TriangleImageCarousel({ images, className = "" }: CarouselProps)
       return {
         zoom: ZOOM_MIN + (1 - ZOOM_MIN) * eased,
         offsetY: -(1 - eased) * height * ZOOM_DROP,
+        enter: 1 - eased,
       };
     };
 
@@ -226,9 +231,12 @@ export function TriangleImageCarousel({ images, className = "" }: CarouselProps)
       width = nextW;
       height = nextH;
       const narrow = width < 760;
-      scale = narrow
-        ? Math.max(0.9, Math.min(width / 330, height / 430))
-        : Math.max(0.1, Math.min(width / 702, height / 342));
+      // Full zoom fills the pinned viewport: height of the straight triangle, width of its base.
+      const spine = SCATTER * 1.92;
+      const baseWidth = FOCUS_WIDTH * 1.56;
+      const fitH = (height * (narrow ? 0.78 : 0.92)) / spine;
+      const fitW = (width * (narrow ? 0.96 : 0.9)) / baseWidth;
+      scale = Math.max(narrow ? 0.95 : 1.2, Math.min(fitH, fitW));
       gap = Math.max(SPACING * scale, width / 220, 1);
       const ratio = previous || 1;
       scroll *= scale / ratio;

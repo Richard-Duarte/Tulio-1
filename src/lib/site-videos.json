@@ -1,0 +1,112 @@
+{
+  "videos": [
+    {
+      "id": "tulio-01",
+      "kind": "video",
+      "title": "Tulio 01",
+      "public_url": "/videos/tulio-01.mp4",
+      "poster_url": "/videos/posters/tulio-01.webp",
+      "alt_text": "Tulio — vídeo 01",
+      "downloadable": true,
+      "presskit_enabled": false,
+      "party_id": null,
+      "sort_order": 0
+    },
+    {
+      "id": "tulio-02",
+      "kind": "video",
+      "title": "Tulio 02",
+      "public_url": "/videos/tulio-02.mp4",
+      "poster_url": "/videos/posters/tulio-02.webp",
+      "alt_text": "Tulio — vídeo 02",
+      "downloadable": true,
+      "presskit_enabled": false,
+      "party_id": null,
+      "sort_order": 1
+    },
+    {
+      "id": "tulio-03",
+      "kind": "video",
+      "title": "Tulio 03",
+      "public_url": "/videos/tulio-03.mp4",
+      "poster_url": "/videos/posters/tulio-03.webp",
+      "alt_text": "Tulio — vídeo 03",
+      "downloadable": true,
+      "presskit_enabled": false,
+      "party_id": null,
+      "sort_order": 2
+    },
+    {
+      "id": "tulio-04",
+      "kind": "video",
+      "title": "Tulio 04",
+      "public_url": "/videos/tulio-04.mp4",
+      "poster_url": "/videos/posters/tulio-04.webp",
+      "alt_text": "Tulio — vídeo 04",
+      "downloadable": true,
+      "presskit_enabled": false,
+      "party_id": null,
+      "sort_order": 3
+    },
+    {
+      "id": "tulio-05",
+      "kind": "video",
+      "title": "Tulio 05",
+      "public_url": "/videos/tulio-05.mp4",
+      "poster_url": "/videos/posters/tulio-05.webp",
+      "alt_text": "Tulio — vídeo 05",
+      "downloadable": true,
+      "presskit_enabled": false,
+      "party_id": null,
+      "sort_order": 4
+    },
+    {
+      "id": "tulio-06",
+      "kind": "video",
+      "title": "Tulio 06",
+      "public_url": "/videos/tulio-06.mp4",
+      "poster_url": "/videos/posters/tulio-06.webp",
+      "alt_text": "Tulio — vídeo 06",
+      "downloadable": true,
+      "presskit_enabled": false,
+      "party_id": null,
+      "sort_order": 5
+    },
+    {
+      "id": "tulio-07",
+      "kind": "video",
+      "title": "Tulio 07",
+      "public_url": "/videos/tulio-07.mp4",
+      "poster_url": "/videos/posters/tulio-07.webp",
+      "alt_text": "Tulio — vídeo 07",
+      "downloadable": true,
+      "presskit_enabled": false,
+      "party_id": null,
+      "sort_order": 6
+    },
+    {
+      "id": "tulio-08",
+      "kind": "video",
+      "title": "Tulio 08",
+      "public_url": "/videos/tulio-08.mp4",
+      "poster_url": "/videos/posters/tulio-08.webp",
+      "alt_text": "Tulio — vídeo 08",
+      "downloadable": true,
+      "presskit_enabled": false,
+      "party_id": null,
+      "sort_order": 7
+    },
+    {
+      "id": "tulio-09",
+      "kind": "video",
+      "title": "Tulio 09",
+      "public_url": "/videos/tulio-09.mp4",
+      "poster_url": "/videos/posters/tulio-09.webp",
+      "alt_text": "Tulio — vídeo 09",
+      "downloadable": true,
+      "presskit_enabled": false,
+      "party_id": null,
+      "sort_order": 8
+    }
+  ]
+}

@@ -1,18 +1,12 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useLayoutEffect } from "react";
 import { CornerButton } from "@/components/nocturna/CornerButton";
-import {
-  NocturnaLogoStrip,
-  NocturnaSectionHeader,
-  NocturnaStepsGrid,
-} from "@/components/nocturna/NocturnaBlocks";
+import { NocturnaSectionHeader, NocturnaStepsGrid } from "@/components/nocturna/NocturnaBlocks";
 import { TriangleGridSection } from "@/components/nocturna/TriangleGridSection";
-import { TriangleImageCarousel } from "@/components/nocturna/TriangleImageCarousel";
 import { NocturnaHero } from "@/components/nocturna/NocturnaHero";
-import { SectionWipe } from "@/components/nocturna/SectionTransition";
 import { NocturnaSection } from "@/components/nocturna/NocturnaShell";
-import { SocialBar } from "@/components/jula/SocialBar";
-import { getHomepageMedia, getReleaseSections, getSiteSettings } from "@/lib/public.functions";
+import { getHomepageMedia, getSiteSettings, getTulioHome, tulioHeroBody, tulioHomeDefaults } from "@/lib/public.functions";
+import { resolveHeroTitle } from "@/lib/hero-copy";
 import { getNocturnaHomeCopy } from "@/lib/nocturna-home";
 import { useI18n } from "@/lib/i18n";
 import { signalIntroReady } from "@/lib/intro";
@@ -27,21 +21,22 @@ export const Route = createFileRoute("/")({
       player_enabled: false,
       player_shuffle: false,
       sets_shuffle: false,
-      instagram_url: null,
-      soundcloud_url: null,
+      instagram_url: "https://www.instagram.com/tulio.music/",
+      soundcloud_url: "https://soundcloud.com/tuliomusic",
       spotify_url: null,
       youtube_url: null,
       bandcamp_url: null,
+      booking_email: "soniccdrivebookings@gmail.com",
     };
-    const [settingsResult, mediaResult, sectionsResult] = await Promise.allSettled([
+    const [settingsResult, mediaResult, homeResult] = await Promise.allSettled([
       getSiteSettings(),
       getHomepageMedia(),
-      getReleaseSections(),
+      getTulioHome(),
     ]);
     return {
       settings: settingsResult.status === "fulfilled" ? settingsResult.value : fallbackSettings,
       media: mediaResult.status === "fulfilled" ? mediaResult.value : [],
-      sections: sectionsResult.status === "fulfilled" ? sectionsResult.value : [],
+      home: homeResult.status === "fulfilled" ? homeResult.value : tulioHomeDefaults,
     };
   },
   head: () => ({
@@ -80,10 +75,9 @@ function HomeError() {
 function Home() {
   const { locale } = useI18n();
   const nc = getNocturnaHomeCopy(locale);
-  const { settings, media } = Route.useLoaderData();
+  const { settings, media, home } = Route.useLoaderData();
   const photos = media.filter((item) => item.kind === "image");
   const carousel = photos.slice(0, 14);
-  const heroImage = carousel[0]?.public_url ?? null;
   const carouselUrls = carousel.map((item) => item.public_url ?? "").join("\n");
 
   useLayoutEffect(() => {
@@ -101,12 +95,33 @@ function Home() {
 
   return (
     <main className="nc-page bg-black">
-      <TriangleGridSection links={settings} />
-
-      <TriangleImageCarousel images={carousel.map((item) => item.public_url ?? "").filter(Boolean)} />
+      <TriangleGridSection
+        links={home}
+        imageUrl={home.section1_image_url}
+        rightImageUrl={home.section1_right_image_url}
+        imageAlt={home.section1_image_alt}
+      />
 
       <NocturnaSection alt className="nc-section-alt">
         <NocturnaSectionHeader eyebrow={nc.stepsEyebrow} title={nc.stepsTitle} />
+        {carousel.length > 1 && (
+          // Repeated clicks would select the photos and the selection color washes them out.
+          <div className="nc-grid-border-t overflow-hidden select-none">
+            <div className="marquee-track flex w-max gap-0">
+              {[...carousel, ...carousel].map((item, i) => (
+                <img
+                  key={`${item.id}-${i}`}
+                  src={item.public_url ?? ""}
+                  alt={item.alt_text}
+                  draggable={false}
+                  className="nc-dither-img nc-line-r h-44 w-auto object-cover [-webkit-touch-callout:none] [-webkit-user-drag:none] md:h-52"
+                  loading={i < carousel.length ? "eager" : "lazy"}
+                  decoding="async"
+                />
+              ))}
+            </div>
+          </div>
+        )}
         <NocturnaStepsGrid
           steps={[
             { n: nc.step1n, title: nc.step1t, body: nc.step1b },
@@ -117,41 +132,22 @@ function Home() {
       </NocturnaSection>
 
       <NocturnaHero
-        paragraphs={nc.heroParagraphs}
-        imageUrl="/brand/tulio-n26.jpg"
+        title={resolveHeroTitle(home.hero_title)}
+        paragraphs={(home.hero_body && (locale === "pt" || home.hero_body.trim() !== tulioHeroBody)
+          ? home.hero_body.split(/\n\n+/).map((paragraph) => paragraph.trim()).filter(Boolean)
+          : [...nc.heroParagraphs])}
+        imageUrl={home.hero_image_url || "/brand/tulio-n26.jpg"}
         actions={
-          <>
-            <CornerButton to="/sets" variant="primary">
+          <div className="nc-cta-pair flex flex-wrap items-center gap-4 max-md:justify-center">
+            <CornerButton to="/sets" variant="primary" className="nc-cta-default">
               {nc.ctaPrimary}
             </CornerButton>
-            <CornerButton to="/galeria">{nc.ctaSecondary}</CornerButton>
-          </>
+            <CornerButton to="/galeria" className="nc-cta-alt">
+              {nc.ctaSecondary}
+            </CornerButton>
+          </div>
         }
       />
-
-      <SectionWipe />
-
-      <NocturnaLogoStrip label={nc.trusted}>
-        <SocialBar links={settings} />
-      </NocturnaLogoStrip>
-
-      {carousel.length > 1 && (
-        <div className="overflow-hidden nc-grid-border-b py-6">
-          <div className="marquee-track flex w-max gap-0">
-            {[...carousel, ...carousel].map((item, i) => (
-              <img
-                key={`${item.id}-${i}`}
-                src={item.public_url ?? ""}
-                alt={item.alt_text}
-                className="nc-dither-img h-44 w-auto border-r border-[var(--nc-border)] object-cover md:h-52"
-                loading={i < carousel.length ? "eager" : "lazy"}
-                decoding="async"
-              />
-            ))}
-          </div>
-        </div>
-      )}
-
     </main>
   );
 }

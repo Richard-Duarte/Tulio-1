@@ -14,7 +14,7 @@ import { cn } from "@/lib/utils";
 
 const BARS = 48;
 const glass =
-  "border border-border/50 bg-background/40 shadow-[0_10px_30px_-12px_rgb(0_0_0/0.65)] backdrop-blur-sm";
+  "border border-border/50 bg-black/90 shadow-[0_10px_30px_-12px_rgb(0_0_0/0.65)] backdrop-blur-sm";
 const panel = "rounded-lg border border-border/40 bg-background/35";
 const iconBtn =
   "inline-flex shrink-0 items-center justify-center rounded-full text-foreground/75 transition-[color,background-color,transform,opacity] duration-150 hover:text-foreground active:scale-90 disabled:pointer-events-none disabled:opacity-30";

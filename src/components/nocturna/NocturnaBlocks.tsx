@@ -9,18 +9,20 @@ export function NocturnaSectionHeader({
   eyebrow,
   title,
   description,
+  className,
 }: {
   eyebrow: string;
   title: string;
   description?: string;
+  className?: string;
 }) {
   return (
-    <div className="px-5 py-12 md:px-10 md:py-16 lg:px-14">
+    <div className={className ?? "nc-pad-x nc-pad-y max-md:text-center"}>
       <NocturnaEyebrow>{eyebrow}</NocturnaEyebrow>
-      <SpacedHeading as="h2" className="mt-5 max-w-3xl text-[clamp(1.85rem,4vw,2.85rem)]">
+      <SpacedHeading as="h2" className="mt-5 max-w-3xl text-[clamp(1.85rem,4vw,2.85rem)] max-md:mx-auto">
         {title}
       </SpacedHeading>
-      {description ? <p className="nc-lead mt-5 max-w-2xl">{description}</p> : null}
+      {description ? <p className="nc-lead mt-5 max-w-2xl max-md:mx-auto">{description}</p> : null}
     </div>
   );
 }
@@ -43,7 +45,7 @@ export function NocturnaFeatureRow({
   visual?: ReactNode;
 }) {
   const text = (
-    <HoverCell className="flex flex-col justify-center px-5 py-10 md:px-10 md:py-14 lg:px-14">
+    <HoverCell className="nc-pad-x nc-pad-y flex flex-col justify-center max-md:items-center max-md:text-center">
       <p className="font-mono text-xs uppercase tracking-[0.14em] text-[var(--nc-accent-mint)]">
         {index} — {label}
       </p>
@@ -89,11 +91,8 @@ export function NocturnaStepsGrid({
     <Stagger className="nc-grid-3 nc-grid-border-t">
       {steps.map((step) => (
         <StaggerItem key={step.n}>
-          <HoverCell className="relative h-full px-5 py-8 md:px-8 md:py-10 nc-grid-border-r last:border-r-0">
-            <span className="absolute right-5 top-6 font-mono text-lg text-[var(--nc-muted)] md:right-8">
-              ⋯
-            </span>
-            <p className="font-mono text-sm text-[var(--nc-accent-mint)]">{step.n}</p>
+          <HoverCell className="nc-pad-x nc-pad-y relative h-full nc-grid-border-r last:border-r-0 max-md:text-center">
+            <p className="font-mono text-2xl tracking-[0.06em] text-white md:text-3xl">{step.n}</p>
             <SpacedHeading as="h3" className="mt-6 text-lg md:text-xl">
               {step.title}
             </SpacedHeading>
@@ -114,9 +113,9 @@ export function NocturnaQuotesGrid({
     <div className="nc-grid-2">
       {quotes.map((q) => (
         <Reveal key={q.name}>
-          <HoverCell className="h-full px-5 py-10 md:px-10 md:py-12 nc-grid-border-r">
+          <HoverCell className="nc-pad-x nc-pad-y h-full nc-grid-border-r max-md:text-center">
             <p className="text-base leading-relaxed text-white md:text-lg">{q.quote}</p>
-            <footer className="mt-8 border-t border-[var(--nc-border)] pt-5">
+            <footer className="nc-grid-border-t mt-8 pt-5">
               <p className="font-mono text-sm text-white">{q.name}</p>
               <p className="nc-muted mt-1 font-mono text-xs">{q.role}</p>
             </footer>
@@ -134,7 +133,7 @@ function FaqItem({ q, a }: { q: string; a: string }) {
     <div className="nc-grid-border-b">
       <button
         type="button"
-        className="flex w-full items-center justify-between gap-4 px-5 py-5 text-left md:px-10"
+        className="nc-pad-x flex w-full items-center justify-between gap-4 py-5 text-left"
         onClick={() => setOpen((v) => !v)}
         aria-expanded={open}
       >
@@ -156,7 +155,7 @@ function FaqItem({ q, a }: { q: string; a: string }) {
             transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
             className="overflow-hidden"
           >
-            <p className="nc-muted px-5 pb-6 font-mono text-sm leading-relaxed md:px-10">{a}</p>
+            <p className="nc-muted nc-pad-x pb-6 font-mono text-sm leading-relaxed">{a}</p>
           </motion.div>
         ) : null}
       </AnimatePresence>
@@ -178,12 +177,12 @@ export function NocturnaFaqSection({
   return (
     <NocturnaSection>
       <div className="nc-grid-2 nc-grid-border-b">
-        <div className="px-5 py-12 md:px-10 md:py-16 lg:px-14 nc-grid-border-r">
+        <div className="nc-pad-x nc-pad-y nc-grid-border-r max-md:text-center">
           <NocturnaEyebrow>{eyebrow}</NocturnaEyebrow>
-          <SpacedHeading as="h2" className="mt-5 max-w-md text-[clamp(1.75rem,3.5vw,2.5rem)]">
+          <SpacedHeading as="h2" className="mt-5 max-w-md text-[clamp(1.75rem,3.5vw,2.5rem)] max-md:mx-auto">
             {title}
           </SpacedHeading>
-          <p className="nc-lead mt-5 max-w-sm text-sm">{description}</p>
+          <p className="nc-lead mt-5 max-w-sm text-sm max-md:mx-auto">{description}</p>
         </div>
         <div>
           {items.map((item) => (
@@ -206,7 +205,7 @@ export function NocturnaCtaBand({
 }) {
   return (
     <NocturnaSection>
-      <div className="px-5 py-16 text-center md:px-10 md:py-20">
+      <div className="nc-pad-x nc-pad-y text-center">
         <SpacedHeading as="h2" className="text-[clamp(1.65rem,3.5vw,2.65rem)]">
           {title}
         </SpacedHeading>
@@ -217,13 +216,15 @@ export function NocturnaCtaBand({
   );
 }
 
-export function NocturnaLogoStrip({ label, children }: { label: string; children: ReactNode }) {
+export function NocturnaLogoStrip({ label, children }: { label?: string; children: ReactNode }) {
   return (
-    <div className="nc-grid-border-b py-8">
+    <div className="nc-grid-border-b nc-pad-y">
       <NocturnaContainer>
-        <p className="nc-muted mb-6 text-center font-mono text-[10px] uppercase tracking-[0.22em]">
-          {label}
-        </p>
+        {label ? (
+          <p className="nc-muted mb-6 text-center font-mono text-[10px] uppercase tracking-[0.22em]">
+            {label}
+          </p>
+        ) : null}
         <div className="flex flex-wrap items-center justify-center gap-x-12 gap-y-4">{children}</div>
       </NocturnaContainer>
     </div>
