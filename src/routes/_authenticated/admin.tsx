@@ -14,6 +14,8 @@ import {
   getAdminData,
   saveAdminItem,
   saveSettings,
+  saveSocialLinks,
+  saveSetsDescription,
   saveTulioHome,
   setPanelPassword,
   setPresskitPassword,
@@ -61,6 +63,9 @@ function Admin() {
   const save = useServerFn(saveAdminItem);
   const remove = useServerFn(deleteAdminItem);
   const saveSite = useServerFn(saveSettings);
+  const saveSocial = useServerFn(saveSocialLinks);
+  const saveSetsDesc = useServerFn(saveSetsDescription);
+  const [setsDescription, setSetsDescription] = useState("");
   const saveHome = useServerFn(saveTulioHome);
   const query = useQueryClient();
   const nav = useNavigate();
@@ -105,6 +110,9 @@ function Admin() {
       setPlayerEnabled(data.settings.player_enabled);
       setPlayerShuffle(data.settings.player_shuffle);
       setSetsShuffle(data.settings.sets_shuffle ?? false);
+      setSetsDescription(
+        (data.settings as { sets_description?: string | null }).sets_description ?? "",
+      );
     }
     if (data?.home) {
       const row = data.home;
@@ -303,6 +311,30 @@ function Admin() {
           </Panel>
         </TabsContent>
         <TabsContent value="sets">
+          <Panel title="Texto da página Sets">
+            <Textarea
+              value={setsDescription}
+              placeholder="Sets de techno, secos e noturnos, feitos para a pista."
+              onChange={(e) => setSetsDescription(e.target.value)}
+            />
+            <p className="mt-2 text-xs text-muted-foreground">
+              Em branco = texto padrão (traduzido automaticamente nos outros idiomas).
+            </p>
+            <Button
+              className="mt-4"
+              onClick={async () => {
+                try {
+                  await saveSetsDesc({ data: { sets_description: setsDescription } });
+                  await refresh();
+                  toast.success("Texto da página Sets atualizado.");
+                } catch {
+                  toast.error("Não foi possível salvar o texto.");
+                }
+              }}
+            >
+              <Save /> Salvar texto
+            </Button>
+          </Panel>
           <LinkSetEditor
             kind="sets"
             items={data.sets}

@@ -45,12 +45,12 @@ const messages = {
     setsEyebrow: "02 · Escuta",
     setsDescription: "Sets de techno, secos e noturnos, feitos para a pista.",
     setsSoon: "Novos sets em breve.",
-    releasesEyebrow: "03 · Discografia",
+    releasesEyebrow: "04 · Discografia",
     releasesDescription:
       "Música autoral, colaborações e lançamentos disponíveis nas principais plataformas.",
     releasesSoon: "Primeiros lançamentos em breve.",
     coverOf: "Capa de",
-    presskitEyebrow: "04 · Profissional",
+    presskitEyebrow: "05 · Profissional",
     presskitDescription: "Material oficial para imprensa, curadoria e contratação.",
     unavailable: "Presskit indisponível.",
     technicalRider: "Rider técnico",
@@ -92,7 +92,7 @@ const messages = {
     loadingMaterials: "Carregando materiais…",
     materialsError: "Não foi possível carregar os materiais do presskit.",
     liveSets: "Live Sets",
-    liveSetsEyebrow: "02.1 · Ao vivo",
+    liveSetsEyebrow: "03 · Ao vivo",
     liveSetsDescription:
       "Sets gravados ao vivo em vídeo — a pista, a cabine e a energia de cada noite.",
     liveSetsSoon: "Novos live sets em breve.",
@@ -159,12 +159,12 @@ const messages = {
     setsDescription:
       "Grabaciones que atraviesan House, Minimal, Electro y Trance, creadas para distintas pistas y atmósferas.",
     setsSoon: "Nuevos sets próximamente.",
-    releasesEyebrow: "03 · Discografía",
+    releasesEyebrow: "04 · Discografía",
     releasesDescription:
       "Música original, colaboraciones y lanzamientos disponibles en las principales plataformas.",
     releasesSoon: "Primeros lanzamientos próximamente.",
     coverOf: "Portada de",
-    presskitEyebrow: "04 · Profesional",
+    presskitEyebrow: "05 · Profesional",
     presskitDescription: "Material oficial para prensa, curaduría y contratación.",
     unavailable: "Presskit no disponible.",
     technicalRider: "Rider técnico",
@@ -206,7 +206,7 @@ const messages = {
     loadingMaterials: "Cargando materiales…",
     materialsError: "No se pudieron cargar los materiales del presskit.",
     liveSets: "Live Sets",
-    liveSetsEyebrow: "02.1 · En vivo",
+    liveSetsEyebrow: "03 · En vivo",
     liveSetsDescription:
       "Sets grabados en vivo en video: la pista, la cabina y la energía de cada noche.",
     liveSetsSoon: "Nuevos live sets próximamente.",
@@ -273,12 +273,12 @@ const messages = {
     setsDescription:
       "Recordings spanning House, Minimal, Electro and Trance, built for different dance floors and atmospheres.",
     setsSoon: "New sets coming soon.",
-    releasesEyebrow: "03 · Discography",
+    releasesEyebrow: "04 · Discography",
     releasesDescription:
       "Original music, collaborations and releases available on major platforms.",
     releasesSoon: "First releases coming soon.",
     coverOf: "Cover of",
-    presskitEyebrow: "04 · Professional",
+    presskitEyebrow: "05 · Professional",
     presskitDescription: "Official material for press, curators and bookings.",
     unavailable: "Presskit unavailable.",
     technicalRider: "Technical rider",
@@ -320,7 +320,7 @@ const messages = {
     loadingMaterials: "Loading materials…",
     materialsError: "Couldn't load the presskit materials.",
     liveSets: "Live Sets",
-    liveSetsEyebrow: "02.1 · Live",
+    liveSetsEyebrow: "03 · Live",
     liveSetsDescription:
       "Sets recorded live on video — the floor, the booth and the energy of each night.",
     liveSetsSoon: "New live sets coming soon.",
@@ -387,12 +387,12 @@ const messages = {
     setsDescription:
       "Des enregistrements entre House, Minimal, Electro et Trance, conçus pour différentes pistes et atmosphères.",
     setsSoon: "Nouveaux sets bientôt disponibles.",
-    releasesEyebrow: "03 · Discographie",
+    releasesEyebrow: "04 · Discographie",
     releasesDescription:
       "Musiques originales, collaborations et sorties disponibles sur les principales plateformes.",
     releasesSoon: "Premières sorties bientôt disponibles.",
     coverOf: "Pochette de",
-    presskitEyebrow: "04 · Professionnel",
+    presskitEyebrow: "05 · Professionnel",
     presskitDescription: "Matériel officiel pour la presse, les programmateurs et les bookings.",
     unavailable: "Presskit indisponible.",
     technicalRider: "Fiche technique",
@@ -434,7 +434,7 @@ const messages = {
     loadingMaterials: "Chargement des contenus…",
     materialsError: "Impossible de charger les contenus du presskit.",
     liveSets: "Live Sets",
-    liveSetsEyebrow: "02.1 · En live",
+    liveSetsEyebrow: "03 · En live",
     liveSetsDescription:
       "Des sets filmés en live : la piste, la cabine et l’énergie de chaque nuit.",
     liveSetsSoon: "De nouveaux live sets bientôt.",
@@ -501,12 +501,12 @@ const messages = {
     setsDescription:
       "Aufnahmen zwischen House, Minimal, Electro und Trance, geschaffen für unterschiedliche Floors und Atmosphären.",
     setsSoon: "Neue Sets folgen in Kürze.",
-    releasesEyebrow: "03 · Diskografie",
+    releasesEyebrow: "04 · Diskografie",
     releasesDescription:
       "Eigene Musik, Kollaborationen und Releases auf den wichtigsten Plattformen.",
     releasesSoon: "Erste Releases folgen in Kürze.",
     coverOf: "Cover von",
-    presskitEyebrow: "04 · Professionell",
+    presskitEyebrow: "05 · Professionell",
     presskitDescription: "Offizielles Material für Presse, Kuratoren und Bookings.",
     unavailable: "Presskit nicht verfügbar.",
     technicalRider: "Technical Rider",
@@ -548,7 +548,7 @@ const messages = {
     loadingMaterials: "Materialien werden geladen…",
     materialsError: "Die Presskit-Materialien konnten nicht geladen werden.",
     liveSets: "Live Sets",
-    liveSetsEyebrow: "02.1 · Live",
+    liveSetsEyebrow: "03 · Live",
     liveSetsDescription:
       "Live aufgezeichnete Sets im Video – der Floor, das DJ-Pult und die Energie jeder Nacht.",
     liveSetsSoon: "Neue Live Sets folgen bald.",
@@ -614,12 +614,12 @@ const messages = {
     setsDescription:
       "Opnames van House, Minimal, Electro en Trance, gemaakt voor verschillende dansvloeren en sferen.",
     setsSoon: "Nieuwe sets binnenkort beschikbaar.",
-    releasesEyebrow: "03 · Discografie",
+    releasesEyebrow: "04 · Discografie",
     releasesDescription:
       "Originele muziek, samenwerkingen en releases op de belangrijkste platforms.",
     releasesSoon: "Eerste releases binnenkort beschikbaar.",
     coverOf: "Cover van",
-    presskitEyebrow: "04 · Professioneel",
+    presskitEyebrow: "05 · Professioneel",
     presskitDescription: "Officieel materiaal voor pers, curatoren en boekingen.",
     unavailable: "Presskit niet beschikbaar.",
     technicalRider: "Technische rider",
@@ -661,7 +661,7 @@ const messages = {
     loadingMaterials: "Materiaal laden…",
     materialsError: "Het presskit-materiaal kon niet worden geladen.",
     liveSets: "Live Sets",
-    liveSetsEyebrow: "02.1 · Live",
+    liveSetsEyebrow: "03 · Live",
     liveSetsDescription:
       "Live opgenomen sets op video — de dansvloer, de booth en de energie van elke nacht.",
     liveSetsSoon: "Binnenkort nieuwe live sets.",

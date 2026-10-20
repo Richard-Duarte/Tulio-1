@@ -83,7 +83,17 @@ export const getSiteSettings = createServerFn({ method: "GET" }).handler(async (
       )
       .limit(1)
       .maybeSingle();
-    if (error || !data) return tulioSettings;
+    if (error || !data) return { ...tulioSettings, sets_description: null as string | null };
+    // Separate query so a missing column (before ajustes.sql is applied) never breaks the settings.
+    const extra = await publicSupabase()
+      .from("site_settings")
+      .select("sets_description" as "id")
+      .limit(1)
+      .maybeSingle();
+    const sets_description =
+      ((extra.data as unknown as { sets_description?: string | null } | null)?.sets_description ??
+        null) as string | null;
+
     // The shared settings row still belongs to another artist. Keep Tulio's
     // public links and booking address on this site.
     return {
@@ -98,9 +108,10 @@ export const getSiteSettings = createServerFn({ method: "GET" }).handler(async (
       youtube_url: tulioSettings.youtube_url,
       bandcamp_url: tulioSettings.bandcamp_url,
       booking_email: tulioSettings.booking_email,
+      sets_description,
     };
   } catch {
-    return tulioSettings;
+    return { ...tulioSettings, sets_description: null as string | null };
   }
 });
 const emptyMusic = () => ({
