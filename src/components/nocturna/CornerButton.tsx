@@ -18,7 +18,7 @@ function CornerFrame({
     <button
       type="button"
       className={cn(
-        "nc-corner-btn group relative inline-flex items-center justify-center px-5 py-2.5 font-mono text-xs uppercase tracking-[0.12em]",
+        "nc-corner-btn group relative inline-flex items-center justify-center px-5 py-2.5 font-mono text-xs uppercase tracking-[0.12em] transition-colors",
         variant === "primary" && "nc-corner-btn-primary",
         className,
       )}
