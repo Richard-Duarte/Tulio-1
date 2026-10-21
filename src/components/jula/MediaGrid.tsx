@@ -296,9 +296,10 @@ export function MediaGrid({
 
   return (
     <>
-      <div className="mb-10 flex flex-wrap items-center gap-4 px-5 md:px-10">
+      <div className="nc-cta-pair mb-12 flex flex-wrap items-center gap-4 px-5 pt-12 md:mb-16 md:px-10 md:pt-16">
         <CornerButton
           variant={tab === "photos" ? "primary" : "ghost"}
+          className={tab === "photos" ? "nc-cta-default" : "nc-cta-alt"}
           onClick={() => setTab("photos")}
         >
           {t("photos")}
@@ -306,6 +307,7 @@ export function MediaGrid({
         {allowVideos && (
           <CornerButton
             variant={tab === "videos" ? "primary" : "ghost"}
+            className={tab === "videos" ? "nc-cta-default" : "nc-cta-alt"}
             onClick={() => setTab("videos")}
           >
             {t("videos")}
