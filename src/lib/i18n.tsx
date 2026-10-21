@@ -705,12 +705,24 @@ type I18nValue = {
   t: (key: MessageKey, vars?: Record<string, string | number>) => string;
 };
 const I18nContext = createContext<I18nValue | undefined>(undefined);
-const STORAGE_KEY = "jula-language";
+const STORAGE_KEY = "tulio-language";
+const LEGACY_STORAGE_KEY = "jula-language";
 
 function readStoredLocale(): Locale {
   if (typeof window === "undefined") return "pt";
-  const stored = window.localStorage.getItem(STORAGE_KEY);
-  return locales.some((item) => item === stored) ? (stored as Locale) : "pt";
+  try {
+    let stored = window.localStorage.getItem(STORAGE_KEY);
+    if (stored === null) {
+      stored = window.localStorage.getItem(LEGACY_STORAGE_KEY);
+      if (stored !== null) {
+        window.localStorage.setItem(STORAGE_KEY, stored);
+        window.localStorage.removeItem(LEGACY_STORAGE_KEY);
+      }
+    }
+    return locales.some((item) => item === stored) ? (stored as Locale) : "pt";
+  } catch {
+    return "pt";
+  }
 }
 
 function translate(locale: Locale, key: MessageKey, vars?: Record<string, string | number>) {
@@ -721,7 +733,12 @@ function translate(locale: Locale, key: MessageKey, vars?: Record<string, string
 }
 
 export function I18nProvider({ children }: { children: ReactNode }) {
-  const [locale, setLocaleState] = useState<Locale>(readStoredLocale);
+  // Start with the SSR locale so hydration matches; apply the saved choice after mount.
+  const [locale, setLocaleState] = useState<Locale>("pt");
+  useEffect(() => {
+    const stored = readStoredLocale();
+    if (stored !== "pt") setLocaleState(stored);
+  }, []);
   useEffect(() => {
     document.documentElement.lang = locale === "pt" ? "pt-BR" : locale;
   }, [locale]);
@@ -731,7 +748,11 @@ export function I18nProvider({ children }: { children: ReactNode }) {
       setLocale: (next) => {
         if (next === locale) return;
         setLocaleState(next);
-        window.localStorage.setItem(STORAGE_KEY, next);
+        try {
+          window.localStorage.setItem(STORAGE_KEY, next);
+        } catch {
+          // Storage unavailable; keep the choice for this visit only.
+        }
       },
       t: (key, vars) => translate(locale, key, vars),
     }),
