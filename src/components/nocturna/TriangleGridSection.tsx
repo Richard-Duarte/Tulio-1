@@ -7,15 +7,18 @@ const BOOTH_PHOTO = "/brand/tulio-booth.jpg";
 /** Section 1 — session photo on the left, booth photo on the right, small eye centered at the top. */
 export function TriangleGridSection({
   links,
-  imageUrl = "/brand/tulio-session.jpg",
-  imageAlt = "Tulio no set",
+  imageUrl: imageUrlProp,
+  imageAlt: imageAltProp,
   rightImageUrl = BOOTH_PHOTO,
 }: {
   links: SocialUrls;
-  imageUrl?: string;
-  imageAlt?: string;
-  rightImageUrl?: string;
+  imageUrl?: string | null;
+  imageAlt?: string | null;
+  rightImageUrl?: string | null;
 }) {
+  // DB columns can be null; defaults only cover undefined.
+  const imageUrl = imageUrlProp || "/brand/tulio-session.jpg";
+  const imageAlt = imageAltProp || "Tulio no set";
   const sessionSrc =
     imageUrl.includes("tulio-session.jpg") && !imageUrl.includes("v=")
       ? `${imageUrl}${imageUrl.includes("?") ? "&" : "?"}v=3`

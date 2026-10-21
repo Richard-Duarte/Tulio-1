@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useLayoutEffect } from "react";
+import { useEffect, useLayoutEffect } from "react";
+import { SectionBoundary } from "@/components/common/SectionBoundary";
 import { CornerButton } from "@/components/nocturna/CornerButton";
 import { NocturnaSectionHeader, NocturnaStepsGrid } from "@/components/nocturna/NocturnaBlocks";
 import { TriangleGridSection } from "@/components/nocturna/TriangleGridSection";
@@ -60,13 +61,18 @@ export const Route = createFileRoute("/")({
   notFoundComponent: () => null,
 });
 
-function HomeError() {
+function HomeError({ error }: { error: unknown }) {
   const { t } = useI18n();
+  useEffect(() => {
+    console.error("[home] render failed", error);
+  }, [error]);
+  const detail = error instanceof Error ? error.message : String(error ?? "");
   return (
     <main className="grid min-h-screen place-items-center px-6 text-center">
       <div>
         <h1 className="nc-display text-5xl">TULIO</h1>
         <p className="nc-muted mt-4">{t("preparing")}</p>
+        {detail && <p className="nc-muted mt-2 text-xs opacity-50">{detail}</p>}
       </div>
     </main>
   );
@@ -95,13 +101,16 @@ function Home() {
 
   return (
     <main className="nc-page bg-black">
+      <SectionBoundary name="abertura">
       <TriangleGridSection
         links={home}
         imageUrl={home.section1_image_url}
         rightImageUrl={home.section1_right_image_url}
         imageAlt={home.section1_image_alt}
       />
+      </SectionBoundary>
 
+      <SectionBoundary name="jornada">
       <NocturnaSection alt className="nc-section-alt">
         <NocturnaSectionHeader eyebrow={nc.stepsEyebrow} title={nc.stepsTitle} />
         {carousel.length > 1 && (
@@ -130,7 +139,9 @@ function Home() {
           ]}
         />
       </NocturnaSection>
+      </SectionBoundary>
 
+      <SectionBoundary name="trajetoria">
       <NocturnaHero
         title={resolveHeroTitle(home.hero_title)}
         paragraphs={(home.hero_body && (locale === "pt" || home.hero_body.trim() !== tulioHeroBody)
@@ -148,6 +159,7 @@ function Home() {
           </div>
         }
       />
+      </SectionBoundary>
     </main>
   );
 }
