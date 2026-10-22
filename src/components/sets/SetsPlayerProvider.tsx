@@ -74,7 +74,7 @@ class SoundCloudController {
   constructor(
     private store: PlayerStore,
     private setSrc: (src: string) => void,
-    private shuffle: boolean,
+    public shuffle: boolean,
     private storageKey: string,
   ) {}
 
@@ -350,12 +350,15 @@ export function SetsPlayerProvider({
   initialMinimized = false,
   shuffle = false,
   storageKey = MIN_KEY,
+  ready = true,
 }: {
   tracks: PlayerTrack[];
   children: ReactNode;
   initialMinimized?: boolean;
   shuffle?: boolean;
   storageKey?: string;
+  /** false while the queue/settings are still loading (no autoplay yet) */
+  ready?: boolean;
 }) {
   const [iframeSrc, setIframeSrc] = useState<string | null>(null);
   const store = useMemo(
@@ -385,6 +388,10 @@ export function SetsPlayerProvider({
   useEffect(() => {
     store.set({ tracks });
   }, [store, tracks]);
+  useEffect(() => {
+    controller.shuffle = shuffle;
+  }, [controller, shuffle]);
+  const canStart = ready && tracks.length > 0;
 
   // Initial minimized state: remembered for the session, otherwise expanded — the player and its
   // queue are the whole /sets page, on phones too.
@@ -400,9 +407,11 @@ export function SetsPlayerProvider({
 
   // Something is always playing on /sets: a random set, started as soon as the browser allows.
   useEffect(() => {
+    if (!canStart) return;
     const { tracks: list } = store.get();
-    if (list.length > 0) controller.autoplay(shuffle ? Math.floor(Math.random() * list.length) : 0);
-  }, [store, controller, shuffle]);
+    if (list.length > 0)
+      controller.autoplay(controller.shuffle ? Math.floor(Math.random() * list.length) : 0);
+  }, [store, controller, canStart]);
 
   useEffect(() => () => controller.dispose(), [controller]);
 
