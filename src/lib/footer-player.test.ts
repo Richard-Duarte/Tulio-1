@@ -14,7 +14,7 @@ test("social icons carry no CSS filter or lazy pop-in (iOS paints filtered layer
 });
 
 test("player glass is near-opaque so footer icons never read through it", () => {
-  for (const file of ["components/sets/SetsPlayer.tsx", "components/jula/AudioPlayer.tsx"]) {
+  for (const file of ["components/sets/SetsPlayer.tsx", "components/sets/ScenePreview.tsx"]) {
     const glass = read(file).match(/const glass =\s*"([^"]+)"/);
     assert.ok(glass, `glass missing in ${file}`);
     assert.doesNotMatch(glass[1]!, /bg-background\/40/);

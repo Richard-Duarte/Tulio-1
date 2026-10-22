@@ -1,5 +1,5 @@
 // Types for Keta's vendored embed API (embed.js). See README.md in this folder.
-export type SceneQuality = "high" | "low";
+export type SceneQuality = "high" | "low" | "preview";
 
 export interface SceneApi {
   dispose(): void;
