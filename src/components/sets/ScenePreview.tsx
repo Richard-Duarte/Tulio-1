@@ -7,7 +7,8 @@ import { cn } from "@/lib/utils";
 
 /*
  * Small live thumbnail of the /sets 3D scene inside the global player.
- *  - single click: hint overlay (expand + click icons); double click: go to /sets
+ *  - single click: hint overlay (expand + click icons); a tap on that icon, or a double click
+ *    anywhere on the rectangle, goes to /sets
  *  - minimize/restore, remembered in localStorage; phones/touch start minimized and the 3D is
  *    not even imported until the visitor restores it
  *  - "preview" quality (DPR 1, no MSAA/shadows, tiny crowd); unmounted (GPU freed) when minimized;
@@ -106,17 +107,20 @@ function PreviewBox({ onMinimize }: { onMinimize: () => void }) {
     };
   }, []);
 
+  const openSets = () => {
+    lastClick.current = 0;
+    window.clearTimeout(hintTimer.current);
+    setHint(false);
+    void navigate({ to: "/sets" });
+  };
+
   const onClick = () => {
     const now = performance.now();
-    if (now - lastClick.current < DOUBLE_MS) {
-      lastClick.current = 0;
-      void navigate({ to: "/sets" });
-      return;
-    }
+    if (now - lastClick.current < DOUBLE_MS) return openSets();
     lastClick.current = now;
     setHint(true);
     window.clearTimeout(hintTimer.current);
-    hintTimer.current = window.setTimeout(() => setHint(false), 1800);
+    hintTimer.current = window.setTimeout(() => setHint(false), 2600);
   };
 
   return (
@@ -132,6 +136,7 @@ function PreviewBox({ onMinimize }: { onMinimize: () => void }) {
         onClick={onClick}
         aria-label={t("previewOpenSets")}
         title={t("previewOpenSets")}
+        tabIndex={hint ? -1 : 0}
         className="absolute inset-0 block size-full cursor-pointer outline-none focus-visible:outline-2 focus-visible:outline-primary"
       >
         <img
@@ -145,20 +150,36 @@ function PreviewBox({ onMinimize }: { onMinimize: () => void }) {
           className="pointer-events-none absolute inset-0 transition-opacity duration-700"
           style={{ opacity: ready ? 1 : 0 }}
         />
-        <span
-          data-preview-hint={hint ? "" : undefined}
-          className={cn(
-            "pointer-events-none absolute inset-0 flex items-center justify-center gap-2 bg-black/55 text-foreground transition-opacity duration-200",
-            hint ? "opacity-100" : "opacity-0",
-          )}
+      </button>
+      {/* hint overlay: the dimmed area still counts as the rectangle (double click), the icon
+          itself is a real button — one tap on it opens /sets */}
+      <div
+        data-preview-hint={hint ? "" : undefined}
+        aria-hidden={hint ? undefined : true}
+        onClick={onClick}
+        className={cn(
+          "absolute inset-0 flex items-center justify-center bg-black/55 text-foreground transition-opacity duration-200",
+          hint ? "pointer-events-auto opacity-100" : "pointer-events-none opacity-0",
+        )}
+      >
+        <button
+          type="button"
+          data-preview-open=""
+          tabIndex={hint ? 0 : -1}
+          onClick={(e) => {
+            e.stopPropagation();
+            openSets();
+          }}
+          aria-label={t("previewOpenSets")}
+          title={t("previewOpenSets")}
+          className="relative flex size-14 cursor-pointer items-center justify-center rounded-lg outline-none focus-visible:outline-2 focus-visible:outline-primary"
         >
-          <span className="relative flex size-11 items-center justify-center rounded-md border border-foreground/70">
+          <span className="relative flex size-11 items-center justify-center rounded-md border border-foreground/70 transition-colors hover:bg-foreground/10">
             <Maximize2 className="size-4" />
             <MousePointerClick className="absolute -bottom-2.5 -right-3 size-5 drop-shadow" />
           </span>
-          <span className="sr-only">{t("previewOpenSets")}</span>
-        </span>
-      </button>
+        </button>
+      </div>
       <button
         type="button"
         data-preview-minimize=""
