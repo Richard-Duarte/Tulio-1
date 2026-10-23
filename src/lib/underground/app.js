@@ -26,6 +26,8 @@ export const CREDITS = [
 // ── quality presets ──
 export const QUALITY = {
   high: { maxDpr: 1.5, samples: 4, bloom: 'full', shadows: true, maxMovers: 6, crowd: CROWD.count, haze: 70 },
+  // tiny player thumbnail: DPR 1, no MSAA/shadows, minimal crowd/haze
+  preview: { maxDpr: 1, samples: 0, bloom: 'half', shadows: false, maxMovers: 3, crowd: Math.min(CROWD.lowCount, 80), haze: 12 },
   low: { maxDpr: 1, samples: 0, bloom: 'half', shadows: false, maxMovers: 4, crowd: CROWD.lowCount, haze: 35 },
 };
 export function detectQuality() {

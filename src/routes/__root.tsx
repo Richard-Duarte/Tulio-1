@@ -11,7 +11,7 @@ import {
 import { useEffect, type ReactNode } from "react";
 import { Toaster } from "@/components/ui/sonner";
 import { SiteHeader } from "@/components/jula/SiteHeader";
-import { AudioPlayer } from "@/components/jula/AudioPlayer";
+import { AudioPlayer, GlobalPlayerProvider } from "@/components/jula/AudioPlayer";
 import { Footer } from "@/components/jula/Footer";
 import { LoadingExperience } from "@/components/jula/LoadingExperience";
 import { PageCurtain } from "@/components/jula/PageCurtain";
@@ -169,6 +169,7 @@ function RootComponent() {
 
   return (
     <QueryClientProvider client={queryClient}>
+      <GlobalPlayerProvider>
       {!privateArea && <LoadingExperience />}
       {!privateArea && <SiteHeader />}
       <LocalizedOutlet />
@@ -176,6 +177,7 @@ function RootComponent() {
       {!privateArea && <AudioPlayer />}
       <PageCurtain />
       <Toaster theme="dark" />
+      </GlobalPlayerProvider>
     </QueryClientProvider>
   );
 }

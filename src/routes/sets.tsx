@@ -3,12 +3,11 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useMemo } from "react";
 import { PageIntro } from "@/components/jula/PageIntro";
 import { TitleMetal } from "@/components/tulio/TitleMetal";
-import { SetsPlayer } from "@/components/sets/SetsPlayer";
-import { SetsPlayerProvider, useSetsPlayer } from "@/components/sets/SetsPlayerProvider";
+import { useSetsPlayer } from "@/components/sets/SetsPlayerProvider";
+import { setsToTracks } from "@/components/jula/AudioPlayer";
 import { UndergroundScene } from "@/components/sets/UndergroundScene";
-import { useStoreSelector, type PlayerTrack } from "@/components/sets/player-store";
+import { useStoreSelector } from "@/components/sets/player-store";
 import { getPublicMusic, getSiteSettings } from "@/lib/public.functions";
-import { formatSetDate } from "@/lib/format";
 import { useI18n } from "@/lib/i18n";
 
 export const Route = createFileRoute("/sets")({
@@ -49,21 +48,8 @@ function Empty() {
  * The page itself only carries the heading.
  */
 function Sets() {
-  const { sets, sets_shuffle: setsShuffle } = Route.useLoaderData();
-  const tracks = useMemo<PlayerTrack[]>(
-    () =>
-      sets
-        .filter((set) => set.soundcloud_url)
-        .map((set) => ({
-          id: set.id,
-          title: set.title,
-          url: set.soundcloud_url as string,
-          cover: set.cover_url,
-          date: formatSetDate(set.played_at),
-          durationMs: (set.duration_seconds ?? 0) * 1000,
-        })),
-    [sets],
-  );
+  const { sets } = Route.useLoaderData();
+  const tracks = useMemo(() => setsToTracks(sets), [sets]);
   if (tracks.length === 0) {
     return (
       <>
@@ -73,11 +59,11 @@ function Sets() {
     );
   }
   return (
-    <SetsPlayerProvider tracks={tracks} shuffle={setsShuffle}>
+    // the player itself is the global one (root layout): it keeps playing across pages
+    <>
       <UndergroundScene />
       <SetsStage empty={false} />
-      <SetsPlayer />
-    </SetsPlayerProvider>
+    </>
   );
 }
 

@@ -23,6 +23,8 @@ import {
   type PlayerTrack,
 } from "./player-store";
 import { WAVE_BARS, useSetsPlayer } from "./SetsPlayerProvider";
+import { ScenePreview } from "./ScenePreview";
+import { useRouterState } from "@tanstack/react-router";
 
 /*
  * Floating /sets player — a dark take on the "Tonearm" Framer component (now-playing panel with
@@ -75,6 +77,8 @@ export function SetsPlayer() {
   const minimized = useStoreSelector(store, (s) => s.minimized);
   const blocked = useStoreSelector(store, (s) => s.status === "blocked");
   const hasTracks = useStoreSelector(store, (s) => s.tracks.length > 0);
+  // the 3D preview is the /sets background already: hidden there
+  const onSets = useRouterState({ select: (s) => s.location.pathname === "/sets" });
   // Portal to <body>: the route content sits in a transformed `.page-enter` wrapper, which would
   // otherwise turn `position: fixed` into "fixed to that wrapper". Client-only, so no hydration diff.
   const [host, setHost] = useState<HTMLElement | null>(null);
@@ -115,6 +119,7 @@ export function SetsPlayer() {
             />
           </div>
         )}
+        {!onSets && <ScenePreview />}
         <AnimatePresence mode="wait" initial={false}>
           {minimized ? <MiniPlayer key="mini" /> : <FullPlayer key="full" />}
         </AnimatePresence>
