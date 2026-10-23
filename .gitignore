@@ -37,3 +37,5 @@ dist-ssr
 
 # Vercel
 .vercel
+
+public/og-tulio.jpg
