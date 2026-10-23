@@ -223,10 +223,13 @@ export function UndergroundScene() {
       <div className="pointer-events-none absolute inset-0 hidden bg-[linear-gradient(90deg,color-mix(in_oklab,var(--color-background)_55%,transparent)_0%,transparent_65%)] md:block" />
       <div
         ref={containerRef}
-        className={`absolute inset-0 transition-opacity duration-1000 ${interactive ? "pointer-events-auto touch-none" : "pointer-events-none"}`}
+        className={`sets-dark-scene absolute inset-0 transition-opacity duration-1000 ${interactive ? "pointer-events-auto touch-none" : "pointer-events-none"}`}
         data-scene-controls={interactive ? "" : undefined}
         style={{ opacity: ready && mode === "live" ? 1 : 0 }}
       />
+      {/* dark atmosphere (vignette + grain lines) and occasional glitch bursts — /sets only */}
+      <div className="sets-dark-vignette pointer-events-none absolute inset-0" />
+      <div className="sets-glitch pointer-events-none absolute inset-0" data-sets-glitch="" />
     </div>,
     host,
   );
