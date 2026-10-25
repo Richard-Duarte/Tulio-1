@@ -15,6 +15,7 @@ import {
   type SCProgress,
   type SCWidget,
 } from "@/lib/soundcloud-widget";
+import { nextIndex } from "@/lib/sets-order";
 import {
   createPlayerStore,
   type PlayerState,
@@ -142,11 +143,7 @@ class SoundCloudController {
   private onFinish() {
     const { index, tracks } = this.s;
     if (tracks.length === 0) return;
-    const next =
-      this.shuffle && tracks.length > 1
-        ? (index + 1 + Math.floor(Math.random() * (tracks.length - 1))) % tracks.length
-        : (index + 1) % tracks.length;
-    this.playIndex(next);
+    this.playIndex(nextIndex(index, tracks.length, this.shuffle));
   }
 
   private fetchSoundInfo() {
@@ -365,7 +362,7 @@ export function SetsPlayerProvider({
     () =>
       createPlayerStore({
         tracks,
-        // first set on the server render; a random one is picked on the client (see below)
+        // track 0 = the latest upload (see setsToTracks)
         index: 0,
         status: "idle",
         position: 0,
@@ -405,12 +402,11 @@ export function SetsPlayerProvider({
     store.set({ minimized: saved ? saved === "1" : initialMinimized });
   }, [store, initialMinimized, storageKey]);
 
-  // Something is always playing on /sets: a random set, started as soon as the browser allows.
+  // Always opens on the latest upload (track 0), shuffle or not; shuffle only picks what follows.
   useEffect(() => {
     if (!canStart) return;
     const { tracks: list } = store.get();
-    if (list.length > 0)
-      controller.autoplay(controller.shuffle ? Math.floor(Math.random() * list.length) : 0);
+    if (list.length > 0) controller.autoplay(0);
   }, [store, controller, canStart]);
 
   useEffect(() => () => controller.dispose(), [controller]);

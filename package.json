@@ -14,7 +14,7 @@
     "preview": "vite preview",
     "lint": "eslint .",
     "format": "prettier --write .",
-    "test": "node --experimental-strip-types --test src/lib/hero-copy.test.ts src/lib/nocturna-home.test.ts src/lib/damped-scroll.test.ts src/lib/brand-assets.test.ts src/lib/mark-triangle.test.ts src/lib/footer-player.test.ts src/lib/nc-pad.test.ts src/lib/mobile-layout.test.ts"
+    "test": "node --experimental-strip-types --test src/lib/hero-copy.test.ts src/lib/nocturna-home.test.ts src/lib/damped-scroll.test.ts src/lib/brand-assets.test.ts src/lib/mark-triangle.test.ts src/lib/footer-player.test.ts src/lib/nc-pad.test.ts src/lib/mobile-layout.test.ts src/lib/sets-order.test.ts"
   },
   "overrides": {
     "rolldown": "1.2.1"

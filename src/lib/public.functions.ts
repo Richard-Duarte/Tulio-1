@@ -122,6 +122,13 @@ const emptyMusic = () => ({
 });
 
 export const getPublicMusic = createServerFn({ method: "GET" }).handler(async () => {
+  // A newly uploaded set must show (and play first) on the very next visit: never cache this.
+  try {
+    const { setResponseHeader } = await import("@tanstack/react-start/server");
+    setResponseHeader("Cache-Control", "no-store");
+  } catch {
+    /* not in a request context */
+  }
   try {
     const { publicSupabase } = await import("@/lib/supabase-public.server");
     const db = publicSupabase();

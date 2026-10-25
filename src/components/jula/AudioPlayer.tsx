@@ -4,14 +4,14 @@ import { SetsPlayer } from "@/components/sets/SetsPlayer";
 import { SetsPlayerProvider } from "@/components/sets/SetsPlayerProvider";
 import type { PlayerTrack } from "@/components/sets/player-store";
 import { formatSetDate } from "@/lib/format";
+import { latestUploadFirst } from "@/lib/sets-order";
 import { getPublicMusic, getSiteSettings } from "@/lib/public.functions";
 
 type SetRow = Awaited<ReturnType<typeof getPublicMusic>>["sets"][number];
 
-/** The sets queue (one playlist for the whole site). */
+/** The sets queue (one playlist for the whole site): the latest upload first, then the rest. */
 export function setsToTracks(sets: SetRow[]): PlayerTrack[] {
-  return sets
-    .filter((set) => set.soundcloud_url)
+  return latestUploadFirst(sets.filter((set) => set.soundcloud_url))
     .map((set) => ({
       id: set.id,
       title: set.title,
