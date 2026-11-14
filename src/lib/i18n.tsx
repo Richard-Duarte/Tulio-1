@@ -15,6 +15,7 @@ const languageNames: Record<Locale, string> = {
 const messages = {
   pt: {
     otherPhotos: "Outros registros",
+    studio: "Estúdio",
     language: "Idioma",
     gallery: "Galeria",
     sets: "Sets",
@@ -131,6 +132,7 @@ const messages = {
   },
   es: {
     otherPhotos: "Otros registros",
+    studio: "Estudio",
     language: "Idioma",
     gallery: "Galería",
     sets: "Sets",
@@ -248,6 +250,7 @@ const messages = {
   },
   en: {
     otherPhotos: "Other shots",
+    studio: "Studio",
     language: "Language",
     gallery: "Gallery",
     sets: "Sets",
@@ -365,6 +368,7 @@ const messages = {
   },
   fr: {
     otherPhotos: "Autres images",
+    studio: "Studio",
     language: "Langue",
     gallery: "Galerie",
     sets: "Sets",
@@ -482,6 +486,7 @@ const messages = {
   },
   de: {
     otherPhotos: "Weitere Aufnahmen",
+    studio: "Studio",
     language: "Sprache",
     gallery: "Galerie",
     sets: "Sets",
@@ -599,6 +604,7 @@ const messages = {
   },
   nl: {
     otherPhotos: "Overige beelden",
+    studio: "Studio",
     language: "Taal",
     gallery: "Galerij",
     sets: "Sets",

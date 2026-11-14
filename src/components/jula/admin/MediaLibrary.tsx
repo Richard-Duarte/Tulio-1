@@ -16,7 +16,7 @@ import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { supabase } from "@/integrations/supabase/client";
 import { deleteAdminItem, saveAdminItem } from "@/lib/admin.functions";
-import { isSavedPartyId, linkParties } from "@/lib/gallery-groups";
+import { isSavedPartyId, linkParties, partiesListedInAdmin } from "@/lib/gallery-groups";
 import { transcodeSiteMediaVideo } from "@/lib/media-video.functions";
 import { uploadFailureHint } from "@/lib/media-budget";
 import { embedSrc, isEmbedVideo, resolveExternalMediaUrl } from "@/lib/media-external";
@@ -41,6 +41,7 @@ type MediaItem = {
   homepage_enabled: boolean;
   visible: boolean;
   presskit_enabled: boolean;
+  presskit_studio_enabled: boolean;
   downloadable: boolean;
   captured_at: string | null;
   sort_order: number;
@@ -78,6 +79,17 @@ export function MediaLibrary({
   const table = library === "tulio" ? "tulio_media" : "media";
   const placeLabel = library === "tulio" ? "Carrossel" : "Sessão 1";
   const { parties: partyList, partyIdOf } = linkParties(parties, media);
+  const savedPartyIds = new Set(parties.filter((party) => isSavedPartyId(party.id)).map((party) => party.id));
+  const photoCount = (partyId: string) =>
+    media.filter((item) => partyIdOf(item.party_id) === partyId).length;
+  const partyOptions = partiesListedInAdmin(partyList, savedPartyIds, photoCount);
+
+  function festaSelectOptions(itemPartyId: string | null | undefined) {
+    const linked = partyIdOf(itemPartyId);
+    if (!linked || partyOptions.some((party) => party.id === linked)) return partyOptions;
+    const orphan = partyList.find((party) => party.id === linked);
+    return orphan ? [...partyOptions, orphan] : partyOptions;
+  }
   const save = useServerFn(saveAdminItem);
   const remove = useServerFn(deleteAdminItem);
   const transcodeOnServer = useServerFn(transcodeSiteMediaVideo);
@@ -90,6 +102,7 @@ export function MediaLibrary({
   const [home, setHome] = useState(false);
   const [gallery, setGallery] = useState(true);
   const [presskit, setPresskit] = useState(false);
+  const [presskitStudio, setPresskitStudio] = useState(false);
   const [busy, setBusy] = useState(false);
   const [uploadProgress, setUploadProgress] = useState<{
     name: string;
@@ -126,6 +139,7 @@ export function MediaLibrary({
     setHome(false);
     setGallery(true);
     setPresskit(false);
+    setPresskitStudio(false);
   }
 
   async function confirmUpload() {
@@ -142,7 +156,7 @@ export function MediaLibrary({
     setBusy(true);
     try {
       let linkedParty = partyId;
-      const current = partyList.find((party) => party.id === partyId);
+      const current = partyOptions.find((party) => party.id === partyId);
       if (partyName) {
         const created = (await save({
           data: {
@@ -234,6 +248,7 @@ export function MediaLibrary({
               visible: gallery,
               homepage_enabled: home,
               presskit_enabled: presskit,
+              presskit_studio_enabled: presskit && presskitStudio,
               downloadable: presskit || gallery,
               party_id: linkedParty || null,
               captured_at: date || current?.happened_at || null,
@@ -268,7 +283,7 @@ export function MediaLibrary({
     setBusy(true);
     try {
       let linkedParty = partyId;
-      const current = partyList.find((party) => party.id === partyId);
+      const current = partyOptions.find((party) => party.id === partyId);
       if (partyName) {
         const created = (await save({
           data: {
@@ -306,6 +321,7 @@ export function MediaLibrary({
             visible: gallery,
             homepage_enabled: home,
             presskit_enabled: presskit,
+            presskit_studio_enabled: presskit && presskitStudio,
             downloadable: presskit || gallery,
             party_id: linkedParty || null,
             captured_at: date || current?.happened_at || null,
@@ -439,7 +455,7 @@ export function MediaLibrary({
                   className="mt-1 w-full border border-border bg-background px-2 py-1 text-xs text-foreground"
                 >
                   <option value="">Sem festa</option>
-                  {partyList.map((party) => (
+                  {festaSelectOptions(item.party_id).map((party) => (
                     <option key={party.id} value={party.id}>
                       {party.name}
                     </option>
@@ -464,9 +480,24 @@ export function MediaLibrary({
                 Presskit{" "}
                 <Switch
                   checked={item.presskit_enabled}
-                  onCheckedChange={(v) => void patch(item, { presskit_enabled: v })}
+                  onCheckedChange={(v) =>
+                    void patch(item, {
+                      presskit_enabled: v,
+                      presskit_studio_enabled: v ? item.presskit_studio_enabled : false,
+                      downloadable: v || item.visible,
+                    })
+                  }
                 />
               </label>
+              {item.presskit_enabled ? (
+                <label className="mt-2 flex items-center justify-between text-xs text-muted-foreground">
+                  Estúdio{" "}
+                  <Switch
+                    checked={item.presskit_studio_enabled}
+                    onCheckedChange={(v) => void patch(item, { presskit_studio_enabled: v })}
+                  />
+                </label>
+              ) : null}
             </div>
           </article>
         ))}
@@ -491,7 +522,7 @@ export function MediaLibrary({
                 className="mt-1 w-full border border-border bg-background px-2 py-2 text-sm text-foreground"
               >
                 <option value="">Nova festa</option>
-                {partyList.map((party) => (
+                {partyOptions.map((party) => (
                   <option key={party.id} value={party.id}>
                     {party.name}
                   </option>
@@ -521,8 +552,20 @@ export function MediaLibrary({
               Galeria <Switch checked={gallery} onCheckedChange={setGallery} />
             </label>
             <label className="flex items-center justify-between text-sm">
-              Presskit <Switch checked={presskit} onCheckedChange={setPresskit} />
+              Presskit{" "}
+              <Switch
+                checked={presskit}
+                onCheckedChange={(v) => {
+                  setPresskit(v);
+                  if (!v) setPresskitStudio(false);
+                }}
+              />
             </label>
+            {presskit ? (
+              <label className="flex items-center justify-between text-sm">
+                Estúdio <Switch checked={presskitStudio} onCheckedChange={setPresskitStudio} />
+              </label>
+            ) : null}
           </div>
           <DialogFooter className="flex-col items-stretch gap-3 sm:flex-col sm:items-stretch">
             {uploadProgress && (
@@ -579,7 +622,7 @@ export function MediaLibrary({
                 className="mt-1 w-full border border-border bg-background px-2 py-2 text-sm text-foreground"
               >
                 <option value="">Nova festa</option>
-                {partyList.map((party) => (
+                {partyOptions.map((party) => (
                   <option key={party.id} value={party.id}>
                     {party.name}
                   </option>
@@ -604,8 +647,20 @@ export function MediaLibrary({
               Galeria <Switch checked={gallery} onCheckedChange={setGallery} />
             </label>
             <label className="flex items-center justify-between text-sm">
-              Presskit <Switch checked={presskit} onCheckedChange={setPresskit} />
+              Presskit{" "}
+              <Switch
+                checked={presskit}
+                onCheckedChange={(v) => {
+                  setPresskit(v);
+                  if (!v) setPresskitStudio(false);
+                }}
+              />
             </label>
+            {presskit ? (
+              <label className="flex items-center justify-between text-sm">
+                Estúdio <Switch checked={presskitStudio} onCheckedChange={setPresskitStudio} />
+              </label>
+            ) : null}
           </div>
           <DialogFooter>
             <Button onClick={() => void confirmExternalLink()} disabled={busy || !externalUrl.trim()}>

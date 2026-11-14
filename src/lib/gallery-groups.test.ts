@@ -126,6 +126,26 @@ test("admin Festas lists saved parties and slug groups with photos together", ()
   assert.doesNotMatch(admin, /id \{p\.id\}/);
 });
 
+test("presskit page groups with Estúdio first", () => {
+  const grid = read("components/jula/MediaGrid.tsx");
+  assert.match(grid, /groupPresskitByParty/);
+  const page = read("routes/presskit.tsx");
+  assert.match(page, /grouping="presskit"/);
+});
+
+test("gallery videos tab groups by party like photos", () => {
+  const grid = read("components/jula/MediaGrid.tsx");
+  assert.match(grid, /const videoGroups = groupFor\(videos\)/);
+  assert.match(grid, /<VideoWall groups=\{videoGroups\}/);
+  assert.doesNotMatch(grid, /<VideoWall videos=/);
+});
+
+test("media Festa select lists the same parties as the Festas tab", () => {
+  const library = read("components/jula/admin/MediaLibrary.tsx");
+  assert.match(library, /partiesListedInAdmin/);
+  assert.match(library, /partyOptions\.map/);
+});
+
 test("the Tulio panel saves a new party instead of only slugging the name", () => {
   const library = read("components/jula/admin/MediaLibrary.tsx");
   assert.doesNotMatch(library, /partyName\.toLowerCase\(\)\.replace/);
