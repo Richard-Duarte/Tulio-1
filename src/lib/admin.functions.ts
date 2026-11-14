@@ -292,6 +292,7 @@ export const saveAdminItem = createServerFn({ method: "POST" })
         "homepage_order",
         "visible",
         "presskit_enabled",
+        "presskit_studio_enabled",
         "downloadable",
         "homepage_enabled",
         "party_id",

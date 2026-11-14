@@ -436,6 +436,7 @@ export type Database = {
           party_id: string | null;
           poster_url: string | null;
           presskit_enabled: boolean;
+          presskit_studio_enabled: boolean;
           public_url: string | null;
           sort_order: number;
           source_type: string;
@@ -460,6 +461,7 @@ export type Database = {
           party_id?: string | null;
           poster_url?: string | null;
           presskit_enabled?: boolean;
+          presskit_studio_enabled?: boolean;
           public_url?: string | null;
           sort_order?: number;
           source_type?: string;
@@ -484,6 +486,7 @@ export type Database = {
           party_id?: string | null;
           poster_url?: string | null;
           presskit_enabled?: boolean;
+          presskit_studio_enabled?: boolean;
           public_url?: string | null;
           sort_order?: number;
           source_type?: string;

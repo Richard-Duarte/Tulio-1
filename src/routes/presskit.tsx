@@ -187,8 +187,10 @@ function Presskit() {
         {content ? (
           <MediaGrid
             items={content.media}
-            parties={[{ id: "studio", name: "Estúdio", happened_at: null }]}
+            parties={content.parties}
             downloads
+            grouping="presskit"
+            allowVideos
           />
         ) : contentError ? (
           <div className="mx-5 border border-border bg-card p-7 md:mx-10">

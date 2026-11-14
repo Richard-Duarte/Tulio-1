@@ -6,7 +6,12 @@ import { Button } from "@/components/ui/button";
 import { CornerButton } from "@/components/nocturna/CornerButton";
 import { PhotoLightbox } from "@/components/jula/PhotoLightbox";
 import { GlyphHover, TITLE_STEP_MS } from "@/components/tulio/GlyphHover";
-import { groupPhotosByParty, OTHER_PARTY_ID, type GalleryParty } from "@/lib/gallery-groups";
+import {
+  groupPhotosByParty,
+  groupPresskitByParty,
+  OTHER_PARTY_ID,
+  type GalleryParty,
+} from "@/lib/gallery-groups";
 import { useI18n, type Locale } from "@/lib/i18n";
 import { downloadMedia, downloadMediaZip, type ZipProgress } from "@/lib/media-download";
 import { embedSrc, isEmbedVideo } from "@/lib/media-external";
@@ -21,8 +26,10 @@ type MediaItem = {
   alt_text: string;
   downloadable: boolean;
   presskit_enabled: boolean;
+  presskit_studio_enabled?: boolean;
   party_id?: string | null;
   captured_at?: string | null;
+  sort_order?: number;
   source_type?: string | null;
   external_provider?: string | null;
   external_id?: string | null;
@@ -40,61 +47,79 @@ const localeTags: Record<Locale, string> = {
   de: "de-DE",
   nl: "nl-NL",
 };
-function VideoWall({ videos, downloads }: { videos: MediaItem[]; downloads: boolean }) {
+function VideoTile({ item, downloads }: { item: MediaItem; downloads: boolean }) {
   const { t } = useI18n();
-  if (videos.length === 0) return null;
+  const iframe = isEmbedVideo(item) ? embedSrc(item) : null;
   return (
-    <section id="galeria-videos">
-      <header className="flex items-baseline justify-between border-b border-border/60 px-5 pb-3 md:px-10">
-        <h2 className="text-2xl uppercase md:text-4xl">
-          <GlyphHover text={t("videos")} stepMs={TITLE_STEP_MS} />
-        </h2>
-        <p className="font-mono text-[10px] uppercase tracking-[.18em] text-muted-foreground">
-          {String(videos.length).padStart(2, "0")}
-        </p>
-      </header>
-      <div className="mt-5 grid gap-3 px-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-        {videos.map((v) => {
-          const iframe = isEmbedVideo(v) ? embedSrc(v) : null;
-          return (
-            <div key={v.id}>
-              {iframe ? (
-                <iframe
-                  src={iframe}
-                  title={v.title}
-                  className="aspect-[9/16] w-full bg-card"
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                  allowFullScreen
-                />
-              ) : (
-                <video
-                  src={v.public_url ?? ""}
-                  poster={v.poster_url ?? undefined}
-                  controls
-                  playsInline
-                  preload="metadata"
-                  className="aspect-[9/16] w-full bg-card object-cover"
-                  aria-label={v.title}
-                />
-              )}
-              {downloads && v.downloadable && v.public_url && !iframe ? (
-                <Button asChild variant="outline" className="mt-2 w-full">
-                  <a href={v.public_url} download>
-                    {t("downloadVideo")}
-                  </a>
-                </Button>
-              ) : v.public_url && iframe ? (
-                <Button asChild variant="outline" className="mt-2 w-full">
-                  <a href={v.public_url} target="_blank" rel="noreferrer">
-                    {t("downloadVideo")}
-                  </a>
-                </Button>
-              ) : null}
-            </div>
-          );
-        })}
-      </div>
-    </section>
+    <div>
+      {iframe ? (
+        <iframe
+          src={iframe}
+          title={item.title}
+          className="aspect-[9/16] w-full bg-card"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+          allowFullScreen
+        />
+      ) : (
+        <video
+          src={item.public_url ?? ""}
+          poster={item.poster_url ?? undefined}
+          controls
+          playsInline
+          preload="metadata"
+          className="aspect-[9/16] w-full bg-card object-cover"
+          aria-label={item.title}
+        />
+      )}
+      {downloads && item.downloadable && item.public_url && !iframe ? (
+        <Button asChild variant="outline" className="mt-2 w-full">
+          <a href={item.public_url} download>
+            {t("downloadVideo")}
+          </a>
+        </Button>
+      ) : item.public_url && iframe ? (
+        <Button asChild variant="outline" className="mt-2 w-full">
+          <a href={item.public_url} target="_blank" rel="noreferrer">
+            {t("downloadVideo")}
+          </a>
+        </Button>
+      ) : null}
+    </div>
+  );
+}
+
+function VideoWall({
+  groups,
+  downloads,
+  locale,
+}: {
+  groups: ReturnType<typeof groupPhotosByParty<MediaItem>>;
+  downloads: boolean;
+  locale: Locale;
+}) {
+  if (groups.length === 0) return null;
+  return (
+    <div id="galeria-videos" className="space-y-16">
+      {groups.map((group) => (
+        <section key={group.party.id}>
+          <header className="flex items-baseline justify-between border-b border-border/60 px-5 pb-3 md:px-10">
+            <h2 className="text-2xl uppercase md:text-4xl">
+              <GlyphHover text={group.party.name} stepMs={TITLE_STEP_MS} />
+            </h2>
+            <p className="font-mono text-[10px] uppercase tracking-[.18em] text-muted-foreground">
+              {group.party.happened_at
+                ? formatDate(group.party.happened_at, locale)
+                : String(group.photos.length).padStart(2, "0")}
+            </p>
+          </header>
+          <div className="mt-5 grid gap-3 px-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+            {group.photos.map((item) => (
+              <VideoTile key={item.id} item={item} downloads={downloads} />
+            ))}
+          </div>
+        </section>
+      ))}
+    </div>
   );
 }
 
@@ -115,6 +140,7 @@ export function MediaGrid({
   allowVideos = true,
   downloads = false,
   phoneGrid = false,
+  grouping = "gallery",
 }: {
   items: MediaItem[];
   parties?: Party[];
@@ -122,6 +148,8 @@ export function MediaGrid({
   downloads?: boolean;
   /** Mobile gallery: iPhone-style tiles, two across, with a one-up option. */
   phoneGrid?: boolean;
+  /** Presskit puts Estúdio first, then festas; gallery groups by festa only. */
+  grouping?: "gallery" | "presskit";
 }) {
   const { t, locale } = useI18n();
   const [tab, setTab] = useState<"photos" | "videos">("photos");
@@ -133,8 +161,15 @@ export function MediaGrid({
   const [zipProgress, setZipProgress] = useState<ZipProgress | null>(null);
 
   const photos = items.filter((x) => x.kind === "image" && x.public_url);
-  const videos = items.filter((x) => x.kind === "video" && x.public_url);
-  const groups = groupPhotosByParty(parties, photos, t("otherPhotos"));
+  const videos = items.filter(
+    (x) => x.kind === "video" && (Boolean(x.public_url) || isEmbedVideo(x)),
+  );
+  const groupFor = (list: MediaItem[]) =>
+    grouping === "presskit"
+      ? groupPresskitByParty(parties, list, t("studio"), t("otherPhotos"))
+      : groupPhotosByParty(parties, list, t("otherPhotos"));
+  const photoGroups = groupFor(photos);
+  const videoGroups = groupFor(videos);
 
   // Only photos flagged as downloadable can be downloaded or selected.
   const downloadablePhotos = downloads ? photos.filter((p) => p.downloadable) : [];
@@ -378,7 +413,7 @@ export function MediaGrid({
       </div>
       {tab === "photos" ? (
         <div className="space-y-16">
-          {groups.map((group) => (
+          {photoGroups.map((group) => (
             <section key={group.party.id}>
               <header className="flex items-baseline justify-between border-b border-border/60 px-5 pb-3 md:px-10">
                 <h2 className="text-2xl uppercase md:text-4xl">
@@ -403,10 +438,9 @@ export function MediaGrid({
               </div>
             </section>
           ))}
-          {videos.length > 0 && <VideoWall videos={videos} downloads={downloads} />}
         </div>
       ) : (
-        <VideoWall videos={videos} downloads={downloads} />
+        <VideoWall groups={videoGroups} downloads={downloads} locale={locale} />
       )}
       {selected && (
         <PhotoLightbox
