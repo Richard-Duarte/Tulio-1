@@ -1,5 +1,5 @@
 import { useServerFn } from "@tanstack/react-start";
-import { GripVertical, LoaderCircle, Pencil, Plus, Save, Trash2, Wand2, X } from "lucide-react";
+import { ArrowDownWideNarrow, GripVertical, LoaderCircle, Pencil, Plus, Save, Trash2, Wand2, X } from "lucide-react";
 import { useRef, useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -11,6 +11,7 @@ import { formatDuration, formatSetDate } from "@/lib/format";
 import { getSoundcloudMetadata, getYoutubeMetadata } from "@/lib/link-metadata.functions";
 import type { DateSource, LinkMetadata } from "@/lib/link-metadata";
 import { normalizeSoundcloudUrl, parseYoutubeId } from "@/lib/link-metadata";
+import { sortOrderForNewSet, sortSetsNewestFirst } from "@/lib/sets-cadastro-order";
 
 type Kind = "sets" | "live_sets";
 type Form = {
@@ -38,6 +39,7 @@ type Item = {
   youtube_id?: string;
   set_date?: string | null;
   sort_order?: number;
+  created_at?: string;
 };
 
 const blank: Form = {
@@ -199,7 +201,11 @@ export function LinkSetEditor({
       published: form.published,
       [cfg.dateKey]: form.date || null,
       ...(manualOrder
-        ? { sort_order: previous?.sort_order ?? items.length }
+        ? {
+            sort_order:
+              previous?.sort_order ??
+              sortOrderForNewSet(items, form.date || null, cfg.dateKey as "played_at"),
+          }
         : {}),
     };
     const item =
@@ -229,6 +235,22 @@ export function LinkSetEditor({
     if (form.id === item.id) reset();
     await onChanged();
     toast.success("Item removido.");
+  }
+
+  async function reorganizeByDate() {
+    if (!manualOrder || items.length === 0) return;
+    const next = sortSetsNewestFirst(items, cfg.dateKey as "played_at");
+    try {
+      await Promise.all(
+        next.map((item, sort_order) =>
+          save({ data: { table: kind, item: { ...item, sort_order } } }),
+        ),
+      );
+      await onChanged();
+      toast.success("Sets reorganizados do mais novo ao mais antigo.");
+    } catch {
+      toast.error("Não foi possível reorganizar.");
+    }
   }
 
   async function reorder(targetId: string) {
@@ -387,15 +409,30 @@ export function LinkSetEditor({
             <h2 className="text-2xl uppercase">Cadastrados</h2>
             <p className="mt-1 text-sm text-muted-foreground">
               {manualOrder
-                ? "Clique e arraste pelo ícone para mudar a sequência no site e no player."
+                ? "Padrão: do mais novo ao mais antigo (data do set). Arraste para mudar a sequência no site; o player começa no mais recente."
                 : "Ordem no site: do mais antigo para o mais novo (pela data do set)."}
             </p>
           </div>
-          {manualOrder && onShuffle != null && shuffle != null && (
-            <label className="flex items-center gap-3 text-sm">
-              <Switch checked={shuffle} onCheckedChange={(value) => void onShuffle(value)} />
-              Modo aleatório
-            </label>
+          {manualOrder && (
+            <div className="flex flex-wrap items-center gap-3">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="text-xs uppercase tracking-[.12em]"
+                disabled={items.length < 2}
+                onClick={() => void reorganizeByDate()}
+              >
+                <ArrowDownWideNarrow className="mr-2 size-4" />
+                Reorganizar por data
+              </Button>
+              {onShuffle != null && shuffle != null && (
+                <label className="flex items-center gap-3 text-sm">
+                  <Switch checked={shuffle} onCheckedChange={(value) => void onShuffle(value)} />
+                  Modo aleatório
+                </label>
+              )}
+            </div>
           )}
         </div>
         {items.length === 0 ? (

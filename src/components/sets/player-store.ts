@@ -9,6 +9,8 @@ export type PlayerTrack = {
   cover: string | null;
   /** "18.07.2026" */
   date: string | null;
+  /** ISO date from CMS for autoplay (newest set first). */
+  playedAt: string | null;
   /** Known length from the database (ms), used until the widget reports the real one. */
   durationMs: number;
 };

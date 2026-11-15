@@ -15,6 +15,7 @@ import {
   type SCProgress,
   type SCWidget,
 } from "@/lib/soundcloud-widget";
+import { indexOfNewestPlayerTrack } from "@/lib/sets-cadastro-order";
 import { nextIndex } from "@/lib/sets-order";
 import { defaultSetsPlayerMinimized } from "@/lib/sets-player-minimized";
 import { useRouterState } from "@tanstack/react-router";
@@ -359,15 +360,15 @@ export function SetsPlayerProvider({
 }) {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const [iframeSrc, setIframeSrc] = useState<string | null>(null);
+  const startIndex = useMemo(() => indexOfNewestPlayerTrack(tracks), [tracks]);
   const store = useMemo(
     () =>
       createPlayerStore({
         tracks,
-        // track 0 = first in the admin sequence (see setsToTracks)
-        index: 0,
+        index: startIndex,
         status: "idle",
         position: 0,
-        duration: tracks[0]?.durationMs ?? 0,
+        duration: tracks[startIndex]?.durationMs ?? 0,
         volume: 90,
         muted: false,
         peaks: null,
@@ -404,11 +405,11 @@ export function SetsPlayerProvider({
     store.set({ minimized });
   }, [store, pathname, storageKey]);
 
-  // Always opens on the latest upload (track 0), shuffle or not; shuffle only picks what follows.
+  // Autoplay starts on the newest set date (manual list order is untouched).
   useEffect(() => {
     if (!canStart) return;
     const { tracks: list } = store.get();
-    if (list.length > 0) controller.autoplay(0);
+    if (list.length > 0) controller.autoplay(indexOfNewestPlayerTrack(list));
   }, [store, controller, canStart]);
 
   useEffect(() => () => controller.dispose(), [controller]);

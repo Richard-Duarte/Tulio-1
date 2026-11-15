@@ -20,6 +20,7 @@ export function setsToTracks(sets: SetRow[]): PlayerTrack[] {
       url: set.soundcloud_url as string,
       cover: set.cover_url,
       date: formatSetDate(set.played_at),
+      playedAt: set.played_at,
       durationMs: (set.duration_seconds ?? 0) * 1000,
     }));
 }
