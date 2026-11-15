@@ -392,7 +392,7 @@ export function SetsPlayerProvider({
   }, [controller, shuffle]);
   const canStart = ready && tracks.length > 0;
 
-  // Session choice wins; otherwise mobile stays minimized, desktop expands on /sets only.
+  // Session choice wins; otherwise the player starts minimized (still autoplays).
   useEffect(() => {
     let saved: string | null = null;
     try {

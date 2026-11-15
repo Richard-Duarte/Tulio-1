@@ -8,7 +8,7 @@ import { defaultSetsPlayerMinimized } from "./sets-player-minimized.ts";
 const src = join(dirname(fileURLToPath(import.meta.url)), "..");
 const read = (path: string) => readFileSync(join(src, path), "utf8");
 
-test("defaultSetsPlayerMinimized expands /sets on desktop only", () => {
+test("defaultSetsPlayerMinimized is true on every route (mobile and desktop)", () => {
   const savedMobile = globalThis.window;
   // @ts-expect-error test shim
   globalThis.window = {
@@ -21,7 +21,7 @@ test("defaultSetsPlayerMinimized expands /sets on desktop only", () => {
   globalThis.window = {
     matchMedia: () => ({ matches: false }),
   };
-  assert.equal(defaultSetsPlayerMinimized("/sets"), false);
+  assert.equal(defaultSetsPlayerMinimized("/sets"), true);
   assert.equal(defaultSetsPlayerMinimized("/galeria"), true);
   globalThis.window = savedMobile;
 });

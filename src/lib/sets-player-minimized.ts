@@ -7,9 +7,8 @@ export function isSetsPlayerMobileViewport(): boolean {
 
 /**
  * Default minimized state when the user has not chosen minimize/expand this session.
- * Mobile: minimized everywhere. Desktop: expanded on /sets only.
+ * Minimized on every page (mobile and desktop); autoplay still runs in the background.
  */
-export function defaultSetsPlayerMinimized(pathname: string): boolean {
-  if (isSetsPlayerMobileViewport()) return true;
-  return pathname !== "/sets";
+export function defaultSetsPlayerMinimized(_pathname: string): boolean {
+  return true;
 }
