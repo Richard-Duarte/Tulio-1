@@ -63,7 +63,7 @@ export function resolveExternalMediaUrl(input: string, title?: string): Resolved
       external_id: vimeoId,
       kind: "video",
       public_url: page,
-      poster_url: null,
+      poster_url: `https://vumbnail.com/${vimeoId}.jpg`,
       embed_url: `https://player.vimeo.com/video/${vimeoId}`,
       title: title?.trim() || `Vimeo ${vimeoId}`,
       storage_bucket: "site-media",

@@ -21,6 +21,7 @@ import { transcodeSiteMediaVideo } from "@/lib/media-video.functions";
 import { uploadFailureHint } from "@/lib/media-budget";
 import { embedSrc, isEmbedVideo, resolveExternalMediaUrl } from "@/lib/media-external";
 import { mediaFormatLabel } from "@/lib/media-format";
+import { resolveVideoPosterUrl } from "@/lib/video-poster";
 import { uploadPreparedSiteFile } from "@/lib/upload-prepared";
 import {
   BROWSER_TRANSCODE_MAX_BYTES,
@@ -181,8 +182,11 @@ export function MediaLibrary({
       for (const [index, file] of pending.entries()) {
         const mediaId = crypto.randomUUID();
         let path: string;
+        let posterPublicUrl: string | null = null;
+        let posterCaptureFile: File | null = null;
         if (isVideoFile(file)) {
           path = `library/${mediaId}.mp4`;
+          posterCaptureFile = file;
           if (file.size > BROWSER_TRANSCODE_MAX_BYTES) {
             const ext = fileExtension(file.name) || "bin";
             const stagingPath = `staging/${mediaId}/source.${ext}`;
@@ -198,7 +202,7 @@ export function MediaLibrary({
             await transcodeOnServer({ data: { sourcePath: stagingPath, destPath: path } });
             setUploadProgress({ name: file.name, phase: "convert", ratio: 1 });
           } else {
-            let uploadFile = file;
+            let uploadFile: File = file;
             if (needsVideoTranscode(file)) {
               setUploadProgress({ name: file.name, phase: "convert", ratio: 0 });
               const { transcodeVideoInBrowser } = await import("@/lib/video-transcode-browser");
@@ -206,6 +210,7 @@ export function MediaLibrary({
                 setUploadProgress({ name: file.name, phase: "convert", ratio: ratio * 0.55 }),
               );
             }
+            posterCaptureFile = uploadFile;
             setUploadProgress({ name: file.name, phase: "upload", ratio: needsVideoTranscode(file) ? 0.55 : 0 });
             await uploadPreparedSiteFile(uploadFile, path, (phase, ratio) =>
               setUploadProgress({
@@ -230,6 +235,22 @@ export function MediaLibrary({
           );
         }
         const publicUrl = supabase.storage.from(BUCKET).getPublicUrl(path).data.publicUrl;
+        if (isVideoFile(file) && posterCaptureFile) {
+          try {
+            const { captureVideoPosterFromFile } = await import("@/lib/video-poster");
+            const posterBlob = await captureVideoPosterFromFile(posterCaptureFile);
+            const posterPath = `library/${mediaId}-poster.webp`;
+            const { error: posterError } = await supabase.storage.from(BUCKET).upload(posterPath, posterBlob, {
+              contentType: "image/webp",
+              upsert: true,
+            });
+            if (!posterError) {
+              posterPublicUrl = supabase.storage.from(BUCKET).getPublicUrl(posterPath).data.publicUrl;
+            }
+          } catch {
+            // Poster is optional; playback still works without it.
+          }
+        }
         const title = file.name.replace(/\.[^.]+$/, "");
         await save({
           data: {
@@ -245,6 +266,7 @@ export function MediaLibrary({
               storage_bucket: BUCKET,
               storage_path: path,
               public_url: publicUrl,
+              poster_url: isVideoFile(file) ? posterPublicUrl : null,
               sort_order: base + index + 1,
               visible: gallery,
               homepage_enabled: home,
@@ -429,7 +451,7 @@ export function MediaLibrary({
               ) : (
                 <video
                   src={item.public_url ?? ""}
-                  poster={item.poster_url ?? undefined}
+                  poster={resolveVideoPosterUrl(item) ?? undefined}
                   className="h-24 w-20 bg-muted object-cover"
                   controls
                   playsInline

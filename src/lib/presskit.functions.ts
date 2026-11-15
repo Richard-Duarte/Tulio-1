@@ -4,6 +4,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { setResponseHeader, useSession as getSession } from "@tanstack/react-start/server";
 import { z } from "zod";
 import { isPresskitCatalogItem, type GalleryParty } from "@/lib/gallery-groups";
+import { resolveVideoPosterUrl } from "@/lib/video-poster";
 import { isEmbedVideo } from "@/lib/media-external";
 import { siteParties } from "@/lib/site-photos";
 
@@ -116,7 +117,7 @@ function mapPresskitRow(row: {
     kind,
     title: row.title,
     public_url: row.public_url,
-    poster_url: row.poster_url,
+    poster_url: resolveVideoPosterUrl(row) ?? row.poster_url,
     alt_text: row.alt_text,
     downloadable: row.downloadable,
     presskit_enabled: row.presskit_enabled,

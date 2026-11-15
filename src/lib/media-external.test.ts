@@ -9,6 +9,13 @@ test("resolveExternalMediaUrl parses YouTube watch URLs", () => {
   assert.equal(row.external_id, "dQw4w9WgXcQ");
   assert.equal(row.kind, "video");
   assert.match(row.embed_url ?? "", /youtube-nocookie/);
+  assert.match(row.poster_url ?? "", /ytimg/);
+});
+
+test("resolveExternalMediaUrl sets Vimeo poster", () => {
+  const row = resolveExternalMediaUrl("https://vimeo.com/123456789");
+  assert.ok(row);
+  assert.match(row.poster_url ?? "", /vumbnail/);
 });
 
 test("resolveExternalMediaUrl accepts direct image URLs", () => {
