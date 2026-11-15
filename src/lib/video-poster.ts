@@ -1,21 +1,48 @@
+import { parseYoutubeId } from "./link-metadata.ts";
+
 export type VideoPosterSource = {
   kind?: string;
   poster_url?: string | null;
   public_url?: string | null;
+  embed_url?: string | null;
   source_type?: string | null;
   external_provider?: string | null;
   external_id?: string | null;
 };
 
+function vimeoIdFromUrl(input: string): string | null {
+  const raw = input.trim();
+  if (!raw) return null;
+  try {
+    const url = new URL(raw);
+    if (!url.hostname.replace(/^www\./, "").includes("vimeo.com")) return null;
+    const id = url.pathname.split("/").filter(Boolean).pop();
+    return id && /^\d+$/.test(id) ? id : null;
+  } catch {
+    return null;
+  }
+}
+
+function youtubeThumbnail(id: string) {
+  return `https://i.ytimg.com/vi/${id}/hqdefault.jpg`;
+}
+
 /** Best-effort poster URL for gallery/presskit tiles (DB value or platform default). */
 export function resolveVideoPosterUrl(row: VideoPosterSource): string | null {
   if (row.poster_url) return row.poster_url;
-  if (row.external_provider === "youtube" && row.external_id) {
-    return `https://i.ytimg.com/vi/${row.external_id}/hqdefault.jpg`;
-  }
-  if (row.external_provider === "vimeo" && row.external_id) {
-    return `https://vumbnail.com/${row.external_id}.jpg`;
-  }
+
+  const youtubeId =
+    (row.external_provider === "youtube" ? row.external_id : null) ??
+    parseYoutubeId(row.public_url ?? "") ??
+    parseYoutubeId(row.embed_url ?? "");
+  if (youtubeId) return youtubeThumbnail(youtubeId);
+
+  const vimeoId =
+    (row.external_provider === "vimeo" ? row.external_id : null) ??
+    vimeoIdFromUrl(row.public_url ?? "") ??
+    vimeoIdFromUrl(row.embed_url ?? "");
+  if (vimeoId) return `https://vumbnail.com/${vimeoId}.jpg`;
+
   return null;
 }
 

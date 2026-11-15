@@ -23,6 +23,12 @@ test("resolveVideoPosterUrl falls back to YouTube thumbnail", () => {
     }),
     "https://i.ytimg.com/vi/abc123XYZ/hqdefault.jpg",
   );
+  assert.equal(
+    resolveVideoPosterUrl({
+      public_url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+    }),
+    "https://i.ytimg.com/vi/dQw4w9WgXcQ/hqdefault.jpg",
+  );
 });
 
 test("resolveVideoPosterUrl falls back to Vimeo thumbnail", () => {
@@ -36,4 +42,10 @@ test("gallery videos show poster cover before play", () => {
   const grid = read("components/jula/MediaGrid.tsx");
   assert.match(grid, /resolveVideoPosterUrl/);
   assert.match(grid, /VideoPosterCover/);
+});
+
+test("storage MP4 cover uses inline video frame without canvas", () => {
+  const cover = read("components/jula/VideoPosterCover.tsx");
+  assert.doesNotMatch(cover, /createElement\("canvas"\)/);
+  assert.match(cover, /preload="auto"/);
 });
