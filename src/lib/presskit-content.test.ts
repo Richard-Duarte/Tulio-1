@@ -95,7 +95,22 @@ test("presskit page release title matches rider size", () => {
   const page = read("routes/presskit.tsx");
   assert.match(page, /t\("release"\)/);
   assert.match(page, /downloadLogo/);
-  assert.match(page, /resolveSiteLogoUrl/);
+  assert.match(page, /downloadPresskitLogosZip/);
+  assert.match(page, /Bookings ·/);
+  const releaseIdx = page.indexOf("release_body");
+  const bookingsIdx = page.indexOf("Bookings ·");
+  const riderIdx = page.indexOf('t("technicalRider")');
+  assert.ok(releaseIdx >= 0 && bookingsIdx > releaseIdx && riderIdx > bookingsIdx);
+});
+
+test("presskit admin edits booking email above rider", () => {
+  const panel = read("components/jula/admin/PresskitAdminPanel.tsx");
+  assert.match(panel, /Bookings/);
+  assert.match(panel, /booking_email/);
+  const bookingsIdx = panel.indexOf("Bookings");
+  const riderIdx = panel.indexOf("Rider técnico");
+  assert.ok(bookingsIdx >= 0 && riderIdx > bookingsIdx);
+  assert.match(panel, /multiple/);
 });
 
 test("MediaGrid filters to presskit-flagged items when grouping is presskit", () => {

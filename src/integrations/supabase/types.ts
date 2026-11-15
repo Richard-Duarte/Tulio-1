@@ -370,6 +370,7 @@ export type Database = {
           id: string;
           instagram_url: string | null;
           logo_url: string | null;
+          presskit_logo_urls: unknown | null;
           presskit_rider: unknown | null;
           player_enabled: boolean;
           player_shuffle: boolean;
@@ -389,6 +390,8 @@ export type Database = {
           id?: string;
           instagram_url?: string | null;
           logo_url?: string | null;
+          presskit_logo_urls?: unknown | null;
+          presskit_rider?: unknown | null;
           player_enabled?: boolean;
           player_shuffle?: boolean;
           sets_shuffle?: boolean;
@@ -407,6 +410,8 @@ export type Database = {
           id?: string;
           instagram_url?: string | null;
           logo_url?: string | null;
+          presskit_logo_urls?: unknown | null;
+          presskit_rider?: unknown | null;
           player_enabled?: boolean;
           player_shuffle?: boolean;
           sets_shuffle?: boolean;

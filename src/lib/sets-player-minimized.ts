@@ -1,0 +1,15 @@
+/** Same breakpoint as ScenePreview: narrow viewports and coarse pointers start minimized. */
+export function isSetsPlayerMobileViewport(): boolean {
+  if (typeof window === "undefined") return true;
+  const mm = (q: string) => window.matchMedia(q).matches;
+  return mm("(max-width: 767px)") || mm("(pointer: coarse)");
+}
+
+/**
+ * Default minimized state when the user has not chosen minimize/expand this session.
+ * Mobile: minimized everywhere. Desktop: expanded on /sets only.
+ */
+export function defaultSetsPlayerMinimized(pathname: string): boolean {
+  if (isSetsPlayerMobileViewport()) return true;
+  return pathname !== "/sets";
+}

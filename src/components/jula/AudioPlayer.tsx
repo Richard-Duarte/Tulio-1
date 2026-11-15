@@ -33,7 +33,6 @@ export function GlobalPlayerProvider({ children }: { children: ReactNode }) {
   return (
     <SetsPlayerProvider
       tracks={tracks}
-      initialMinimized
       shuffle={settings.data?.sets_shuffle ?? false}
       storageKey="tulio-player-min"
       ready={music.isSuccess && !settings.isPending}

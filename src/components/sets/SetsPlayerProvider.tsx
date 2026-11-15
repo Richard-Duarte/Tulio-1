@@ -16,6 +16,8 @@ import {
   type SCWidget,
 } from "@/lib/soundcloud-widget";
 import { nextIndex } from "@/lib/sets-order";
+import { defaultSetsPlayerMinimized } from "@/lib/sets-player-minimized";
+import { useRouterState } from "@tanstack/react-router";
 import {
   createPlayerStore,
   type PlayerState,
@@ -344,19 +346,18 @@ class SoundCloudController {
 export function SetsPlayerProvider({
   tracks,
   children,
-  initialMinimized = false,
   shuffle = false,
   storageKey = MIN_KEY,
   ready = true,
 }: {
   tracks: PlayerTrack[];
   children: ReactNode;
-  initialMinimized?: boolean;
   shuffle?: boolean;
   storageKey?: string;
   /** false while the queue/settings are still loading (no autoplay yet) */
   ready?: boolean;
 }) {
+  const pathname = useRouterState({ select: (s) => s.location.pathname });
   const [iframeSrc, setIframeSrc] = useState<string | null>(null);
   const store = useMemo(
     () =>
@@ -370,7 +371,7 @@ export function SetsPlayerProvider({
         volume: 90,
         muted: false,
         peaks: null,
-        minimized: initialMinimized,
+        minimized: true,
         artist: null,
       }),
     // tracks come from the route loader; a new list means a new page visit
@@ -390,8 +391,7 @@ export function SetsPlayerProvider({
   }, [controller, shuffle]);
   const canStart = ready && tracks.length > 0;
 
-  // Initial minimized state: remembered for the session, otherwise expanded — the player and its
-  // queue are the whole /sets page, on phones too.
+  // Session choice wins; otherwise mobile stays minimized, desktop expands on /sets only.
   useEffect(() => {
     let saved: string | null = null;
     try {
@@ -399,8 +399,10 @@ export function SetsPlayerProvider({
     } catch {
       /* private mode */
     }
-    store.set({ minimized: saved ? saved === "1" : initialMinimized });
-  }, [store, initialMinimized, storageKey]);
+    const minimized =
+      saved !== null ? saved === "1" : defaultSetsPlayerMinimized(pathname);
+    store.set({ minimized });
+  }, [store, pathname, storageKey]);
 
   // Always opens on the latest upload (track 0), shuffle or not; shuffle only picks what follows.
   useEffect(() => {

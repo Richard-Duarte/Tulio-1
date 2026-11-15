@@ -8,9 +8,14 @@ import { GlyphHover, TITLE_STEP_MS } from "@/components/tulio/GlyphHover";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { getPresskitContent, unlockPresskit, type PresskitContent } from "@/lib/presskit.functions";
+import {
+  downloadPresskitLogosZip,
+  parsePresskitLogoUrls,
+  presskitDisplayLogoUrl,
+} from "@/lib/presskit-logos";
 import { getSiteSettings, getTulioHome } from "@/lib/public.functions";
-import { resolveSiteLogoUrl } from "@/lib/site-logo";
 import { useI18n } from "@/lib/i18n";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/presskit")({
   // Protected content (media URLs, rider) comes only from getPresskitContent,
@@ -99,7 +104,13 @@ function Presskit() {
   // without waiting on (or depending on) the loader revalidation.
   const [fetched, setFetched] = useState<UnlockedContent | null>(null);
   const [contentError, setContentError] = useState(false);
+  const [logoDownloading, setLogoDownloading] = useState(false);
   const content = data.content.unlocked ? data.content : fetched;
+  const logoUrls = parsePresskitLogoUrls(
+    data.settings.presskit_logo_urls,
+    data.settings.logo_url,
+  );
+  const displayLogo = presskitDisplayLogoUrl(data.settings.presskit_logo_urls, data.settings.logo_url);
 
   async function fetchContent() {
     setContentError(false);
@@ -151,19 +162,19 @@ function Presskit() {
                 <p key={i}>{p}</p>
               ))}
             </div>
+            {data.settings.booking_email && (
+              <a
+                href={`mailto:${data.settings.booking_email}`}
+                className="mt-10 block font-mono text-[11px] uppercase tracking-[.16em] text-muted-foreground hover:text-foreground"
+              >
+                Bookings · {data.settings.booking_email}
+              </a>
+            )}
           </div>
           <div>
             <h2 className="font-mono text-xl uppercase tracking-[.16em] text-primary md:text-2xl">
               <GlyphHover text={t("technicalRider")} stepMs={TITLE_STEP_MS} />
             </h2>
-            {data.settings.booking_email && (
-              <a
-                href={`mailto:${data.settings.booking_email}`}
-                className="mt-3 block font-mono text-[11px] uppercase tracking-[.16em] text-muted-foreground hover:text-foreground"
-              >
-                Bookings · {data.settings.booking_email}
-              </a>
-            )}
             {content ? (
               <ol className="mt-6 space-y-4 text-sm uppercase leading-6 md:text-base">
                 {content.rider.map((options, i) => (
@@ -184,16 +195,21 @@ function Presskit() {
             <h2 className="mt-12 font-mono text-xl uppercase tracking-[.16em] text-primary md:text-2xl">
               <GlyphHover text={t("logo")} stepMs={TITLE_STEP_MS} />
             </h2>
-            <img
-              src={resolveSiteLogoUrl(data.settings.logo_url)}
-              alt=""
-              className="mt-6 h-24 w-auto max-w-full object-contain"
-            />
-            <Button asChild variant="outline" className="mt-6 w-full sm:w-auto">
-              <a href={resolveSiteLogoUrl(data.settings.logo_url)} download>
-                <Download className="mr-2 size-4" />
-                {t("downloadLogo")}
-              </a>
+            <img src={displayLogo} alt="" className="mt-6 h-24 w-auto max-w-full object-contain" />
+            <Button
+              type="button"
+              variant="outline"
+              className="mt-6 w-full sm:w-auto"
+              disabled={logoDownloading}
+              onClick={() => {
+                setLogoDownloading(true);
+                void downloadPresskitLogosZip(logoUrls)
+                  .catch(() => toast.error(t("unavailable")))
+                  .finally(() => setLogoDownloading(false));
+              }}
+            >
+              <Download className="mr-2 size-4" />
+              {logoDownloading ? t("checking") : t("downloadLogo")}
             </Button>
           </div>
         </section>

@@ -106,7 +106,9 @@ export const savePresskitContent = createServerFn({ method: "POST" })
     z
       .object({
         release_body: z.string().min(1).max(10000),
+        booking_email: z.string().trim().min(3).max(180).email(),
         logo_url: z.string().trim().max(800).nullable(),
+        presskit_logo_urls: z.array(z.string().trim().max(800)).max(12),
         presskit_rider: z.array(z.array(z.string().trim().min(1).max(200)).min(1)).min(1).max(40),
       })
       .parse(input),
@@ -118,11 +120,17 @@ export const savePresskitContent = createServerFn({ method: "POST" })
       .update({
         release_body: data.release_body,
         logo_url: data.logo_url,
+        presskit_logo_urls: data.presskit_logo_urls.length > 0 ? data.presskit_logo_urls : null,
         presskit_rider: data.presskit_rider,
         updated_at: new Date().toISOString(),
       } as never)
       .eq("singleton_key", "main");
     if (error) throw error;
+    const { error: homeError } = await context.supabase
+      .from("tulio_home")
+      .update({ booking_email: data.booking_email, updated_at: new Date().toISOString() })
+      .eq("singleton_key", "main");
+    if (homeError) throw homeError;
     return { ok: true };
   });
 

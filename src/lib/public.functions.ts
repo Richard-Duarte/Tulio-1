@@ -103,14 +103,17 @@ export const getSiteSettings = createServerFn({ method: "GET" }).handler(async (
     const sets_description =
       ((extra.data as unknown as { sets_description?: string | null } | null)?.sets_description ??
         null) as string | null;
-    const riderRow = await publicSupabase()
+    const extraRow = await publicSupabase()
       .from("site_settings")
-      .select("presskit_rider")
+      .select("presskit_rider, presskit_logo_urls")
       .eq("singleton_key", "main")
       .maybeSingle();
-    const presskit_rider = riderRow.error
+    const presskit_rider = extraRow.error
       ? null
-      : ((riderRow.data as { presskit_rider?: unknown } | null)?.presskit_rider ?? null);
+      : ((extraRow.data as { presskit_rider?: unknown } | null)?.presskit_rider ?? null);
+    const presskit_logo_urls = extraRow.error
+      ? null
+      : ((extraRow.data as { presskit_logo_urls?: unknown } | null)?.presskit_logo_urls ?? null);
 
     // The shared settings row still belongs to another artist. Keep Tulio's
     // public links on this site; release and logo come from the CMS when set.
@@ -121,6 +124,7 @@ export const getSiteSettings = createServerFn({ method: "GET" }).handler(async (
       release_title: data.release_title?.trim() ? data.release_title : tulioSettings.release_title,
       release_body: data.release_body?.trim() ? data.release_body : tulioSettings.release_body,
       logo_url: data.logo_url ?? tulioSettings.logo_url,
+      presskit_logo_urls,
       presskit_rider,
       instagram_url: tulioSettings.instagram_url,
       soundcloud_url: tulioSettings.soundcloud_url,

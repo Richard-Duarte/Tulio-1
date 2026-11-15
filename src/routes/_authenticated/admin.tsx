@@ -388,7 +388,11 @@ function Admin() {
           <ReleaseEditor items={data.releases} links={data.release_links} onChanged={refresh} />
         </TabsContent>
         <TabsContent value="presskit">
-          <PresskitAdminPanel settings={data.settings} onSaved={refresh} />
+          <PresskitAdminPanel
+            settings={data.settings}
+            bookingEmail={data.home?.booking_email ?? ""}
+            onSaved={refresh}
+          />
         </TabsContent>
         <TabsContent value="media">
           <MediaLibrary
