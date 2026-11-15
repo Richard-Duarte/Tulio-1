@@ -2,25 +2,10 @@ import { useQuery } from "@tanstack/react-query";
 import { useMemo, type ReactNode } from "react";
 import { SetsPlayer } from "@/components/sets/SetsPlayer";
 import { SetsPlayerProvider } from "@/components/sets/SetsPlayerProvider";
-import type { PlayerTrack } from "@/components/sets/player-store";
-import { formatSetDate } from "@/lib/format";
-import { latestUploadFirst } from "@/lib/sets-order";
+import { setsToTracks } from "@/lib/sets-to-tracks";
 import { getPublicMusic, getSiteSettings } from "@/lib/public.functions";
 
-type SetRow = Awaited<ReturnType<typeof getPublicMusic>>["sets"][number];
-
-/** The sets queue (one playlist for the whole site): the latest upload first, then the rest. */
-export function setsToTracks(sets: SetRow[]): PlayerTrack[] {
-  return latestUploadFirst(sets.filter((set) => set.soundcloud_url))
-    .map((set) => ({
-      id: set.id,
-      title: set.title,
-      url: set.soundcloud_url as string,
-      cover: set.cover_url,
-      date: formatSetDate(set.played_at),
-      durationMs: (set.duration_seconds ?? 0) * 1000,
-    }));
-}
+export { setsToTracks } from "@/lib/sets-to-tracks";
 
 /**
  * ONE player for the whole site, mounted in the root layout so client-side navigation never

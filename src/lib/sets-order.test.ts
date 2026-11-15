@@ -39,11 +39,18 @@ test("shuffle never repeats the current track and covers the others", () => {
   assert.equal(nextIndex(0, 1, true), 0);
 });
 
-test("player always starts on track 0 (the latest upload), even with shuffle", () => {
+test("player always starts on track 0 (first in admin order), even with shuffle", () => {
   const provider = read("components/sets/SetsPlayerProvider.tsx");
   assert.match(provider, /controller\.autoplay\(0\)/);
   assert.doesNotMatch(provider, /autoplay\([^)]*Math\.random/);
-  assert.match(read("components/jula/AudioPlayer.tsx"), /latestUploadFirst\(/);
+  assert.doesNotMatch(read("lib/sets-to-tracks.ts"), /latestUploadFirst\(/);
+});
+
+test("public sets follow admin sort_order (not played_at reorder)", () => {
+  const fns = read("lib/public.functions.ts");
+  const music = fns.slice(fns.indexOf("export const getPublicMusic"));
+  assert.match(music.slice(0, 900), /order\("sort_order", \{ ascending: true \}\)/);
+  assert.doesNotMatch(music.slice(0, 900), /order\("played_at"/);
 });
 
 test("public sets are never cached so a new upload shows on the next visit", () => {

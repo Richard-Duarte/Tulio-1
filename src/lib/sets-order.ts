@@ -1,8 +1,4 @@
-/**
- * The player always opens on the most recently uploaded set: the row with the newest
- * `created_at` (set by the database when the set is added in the admin; editing a set never
- * changes it). That set goes first and the rest keep the order they came in.
- */
+/** Moves the newest `created_at` row to the front; used only in unit tests / legacy helpers. */
 export function latestUploadFirst<T extends { id: string; created_at: string }>(rows: T[]): T[] {
   if (rows.length < 2) return rows.slice();
   let latest = 0;
@@ -16,7 +12,7 @@ export function latestUploadFirst<T extends { id: string; created_at: string }>(
 
 /**
  * Next track after `index`. With shuffle on, a random OTHER track; the first track is still
- * the latest upload (shuffle only applies to what follows it).
+ * index 0 from the admin sequence (shuffle only applies to what follows it).
  */
 export function nextIndex(index: number, length: number, shuffle: boolean, random = Math.random) {
   if (length <= 1) return 0;

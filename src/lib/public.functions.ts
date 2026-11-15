@@ -157,7 +157,12 @@ export const getPublicMusic = createServerFn({ method: "GET" }).handler(async ()
     const { publicSupabase } = await import("@/lib/supabase-public.server");
     const db = publicSupabase();
     const [sets, releases, links, tracks] = await Promise.all([
-      db.from("sets").select("*").eq("published", true).order("played_at", { ascending: true, nullsFirst: false }),
+      db
+        .from("sets")
+        .select("*")
+        .eq("published", true)
+        .order("sort_order", { ascending: true })
+        .order("created_at", { ascending: false }),
       db.from("releases").select("*").eq("published", true).order("sort_order", { ascending: true }),
       db.from("release_links").select("*").order("sort_order", { ascending: true }),
       db.from("tracks").select("*").eq("active", true).order("sort_order", { ascending: true }),

@@ -363,7 +363,7 @@ export function SetsPlayerProvider({
     () =>
       createPlayerStore({
         tracks,
-        // track 0 = the latest upload (see setsToTracks)
+        // track 0 = first in the admin sequence (see setsToTracks)
         index: 0,
         status: "idle",
         position: 0,
