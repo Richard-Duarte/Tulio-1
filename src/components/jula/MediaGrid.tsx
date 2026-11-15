@@ -9,6 +9,7 @@ import { GlyphHover, TITLE_STEP_MS } from "@/components/tulio/GlyphHover";
 import {
   groupPhotosByParty,
   groupPresskitByParty,
+  isPresskitCatalogItem,
   OTHER_PARTY_ID,
   type GalleryParty,
 } from "@/lib/gallery-groups";
@@ -160,8 +161,10 @@ export function MediaGrid({
   const [downloading, setDownloading] = useState<Set<string>>(() => new Set());
   const [zipProgress, setZipProgress] = useState<ZipProgress | null>(null);
 
-  const photos = items.filter((x) => x.kind === "image" && x.public_url);
-  const videos = items.filter(
+  const catalog =
+    grouping === "presskit" ? items.filter(isPresskitCatalogItem) : items;
+  const photos = catalog.filter((x) => x.kind === "image" && x.public_url);
+  const videos = catalog.filter(
     (x) => x.kind === "video" && (Boolean(x.public_url) || isEmbedVideo(x)),
   );
   const groupFor = (list: MediaItem[]) =>

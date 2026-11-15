@@ -3,7 +3,7 @@ import { createServerFn } from "@tanstack/react-start";
 // `useSession` is an h3 server utility, not a React hook; alias it to avoid confusion.
 import { setResponseHeader, useSession as getSession } from "@tanstack/react-start/server";
 import { z } from "zod";
-import type { GalleryParty } from "@/lib/gallery-groups";
+import { isPresskitCatalogItem, type GalleryParty } from "@/lib/gallery-groups";
 import { isEmbedVideo } from "@/lib/media-external";
 import { siteParties } from "@/lib/site-photos";
 
@@ -98,6 +98,7 @@ function mapPresskitRow(row: {
   external_id?: string | null;
   embed_url?: string | null;
 }): PresskitMedia | null {
+  if (!row.presskit_enabled) return null;
   const kind = row.kind === "video" ? "video" : row.kind === "image" ? "image" : null;
   if (!kind) return null;
   const external = {
@@ -119,7 +120,7 @@ function mapPresskitRow(row: {
     alt_text: row.alt_text,
     downloadable: row.downloadable,
     presskit_enabled: row.presskit_enabled,
-    presskit_studio_enabled: row.presskit_studio_enabled,
+    presskit_studio_enabled: row.presskit_enabled && row.presskit_studio_enabled,
     party_id: row.party_id,
     captured_at: row.captured_at,
     sort_order: row.sort_order,
@@ -159,7 +160,7 @@ export const getPresskitContent = createServerFn({ method: "GET" }).handler(
       ]);
       const media = (mediaRes.data ?? [])
         .map(mapPresskitRow)
-        .filter((row): row is PresskitMedia => row !== null);
+        .filter((row): row is PresskitMedia => row !== null && isPresskitCatalogItem(row));
       return { unlocked: true, media, parties, rider: TECHNICAL_RIDER };
     } catch {
       return { unlocked: true, media: [], parties: siteParties, rider: TECHNICAL_RIDER };
