@@ -4,6 +4,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { setResponseHeader, useSession as getSession } from "@tanstack/react-start/server";
 import { z } from "zod";
 import { isPresskitCatalogItem, type GalleryParty } from "@/lib/gallery-groups";
+import { parsePresskitRider } from "@/lib/presskit-rider";
 import { resolveVideoPosterUrl } from "@/lib/video-poster";
 import { isEmbedVideo } from "@/lib/media-external";
 import { siteParties } from "@/lib/site-photos";
@@ -76,10 +77,14 @@ export type PresskitContent =
       rider: string[][];
     };
 
-const TECHNICAL_RIDER: string[][] = [
-  ["03 CDJ 3000", "CDJ 2000 NEXUS 2"],
-  ["01 XONE 92", "DJ MIXER DJM V10", "DJM A9", "DJM 900 NEXUS 2"],
-];
+async function loadPresskitRider(supabase: { from: (t: string) => any }) {
+  const { data } = await supabase
+    .from("site_settings")
+    .select("presskit_rider")
+    .eq("singleton_key", "main")
+    .maybeSingle();
+  return parsePresskitRider((data as { presskit_rider?: unknown } | null)?.presskit_rider);
+}
 
 function mapPresskitRow(row: {
   id: string;
@@ -148,7 +153,7 @@ export const getPresskitContent = createServerFn({ method: "GET" }).handler(
     if (!(await hasPresskitAccess())) return { unlocked: false };
     try {
       const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-      const [mediaRes, parties] = await Promise.all([
+      const [mediaRes, parties, rider] = await Promise.all([
         supabaseAdmin
           .from("tulio_media")
           .select(
@@ -158,13 +163,14 @@ export const getPresskitContent = createServerFn({ method: "GET" }).handler(
           .order("captured_at", { ascending: false, nullsFirst: false })
           .order("sort_order", { ascending: false }),
         loadPresskitParties(supabaseAdmin),
+        loadPresskitRider(supabaseAdmin),
       ]);
       const media = (mediaRes.data ?? [])
         .map(mapPresskitRow)
         .filter((row): row is PresskitMedia => row !== null && isPresskitCatalogItem(row));
-      return { unlocked: true, media, parties, rider: TECHNICAL_RIDER };
+      return { unlocked: true, media, parties, rider };
     } catch {
-      return { unlocked: true, media: [], parties: siteParties, rider: TECHNICAL_RIDER };
+      return { unlocked: true, media: [], parties: siteParties, rider: parsePresskitRider(null) };
     }
   },
 );

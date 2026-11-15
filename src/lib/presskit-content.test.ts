@@ -84,6 +84,20 @@ test("admin always shows Presskit and Estúdio toggles on media cards", () => {
   assert.doesNotMatch(library, /item\.presskit_enabled \? \(/);
 });
 
+test("admin has dedicated Presskit tab", () => {
+  const admin = read("routes/_authenticated/admin.tsx");
+  assert.match(admin, /TabsTrigger value="presskit"/);
+  assert.match(admin, /PresskitAdminPanel/);
+  assert.doesNotMatch(admin, /TabsTrigger value="tracks"/);
+});
+
+test("presskit page release title matches rider size", () => {
+  const page = read("routes/presskit.tsx");
+  assert.match(page, /t\("release"\)/);
+  assert.match(page, /downloadLogo/);
+  assert.match(page, /resolveSiteLogoUrl/);
+});
+
 test("MediaGrid filters to presskit-flagged items when grouping is presskit", () => {
   const grid = read("components/jula/MediaGrid.tsx");
   assert.match(grid, /isPresskitCatalogItem/);

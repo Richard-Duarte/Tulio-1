@@ -8,7 +8,8 @@ import { GlyphHover, TITLE_STEP_MS } from "@/components/tulio/GlyphHover";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { getPresskitContent, unlockPresskit, type PresskitContent } from "@/lib/presskit.functions";
-import { getSiteSettings } from "@/lib/public.functions";
+import { getSiteSettings, getTulioHome } from "@/lib/public.functions";
+import { resolveSiteLogoUrl } from "@/lib/site-logo";
 import { useI18n } from "@/lib/i18n";
 
 export const Route = createFileRoute("/presskit")({
@@ -16,8 +17,15 @@ export const Route = createFileRoute("/presskit")({
   // which verifies the signed session cookie server-side. While locked (incl.
   // link preloads) it returns `{ unlocked: false }` and nothing else.
   loader: async () => {
-    const [settings, content] = await Promise.all([getSiteSettings(), getPresskitContent()]);
-    return { settings, content };
+    const [settings, content, home] = await Promise.all([
+      getSiteSettings(),
+      getPresskitContent(),
+      getTulioHome(),
+    ]);
+    return {
+      settings: { ...settings, booking_email: home.booking_email || settings.booking_email },
+      content,
+    };
   },
   head: () => ({
     meta: [
@@ -135,7 +143,9 @@ function Presskit() {
       <div className="px-5 md:px-10">
         <section className="grid gap-12 border-y border-border py-16 md:grid-cols-2">
           <div>
-            <p className="font-mono text-[10px] uppercase tracking-[.2em] text-primary">Release</p>
+            <h2 className="font-mono text-xl uppercase tracking-[.16em] text-primary md:text-2xl">
+              <GlyphHover text={t("release")} stepMs={TITLE_STEP_MS} />
+            </h2>
             <div className="mt-6 space-y-5 text-base leading-7 text-muted-foreground">
               {data.settings.release_body.split("\n\n").map((p, i) => (
                 <p key={i}>{p}</p>
@@ -143,9 +153,9 @@ function Presskit() {
             </div>
           </div>
           <div>
-            <p className="font-mono text-xl uppercase tracking-[.16em] text-primary md:text-2xl">
+            <h2 className="font-mono text-xl uppercase tracking-[.16em] text-primary md:text-2xl">
               <GlyphHover text={t("technicalRider")} stepMs={TITLE_STEP_MS} />
-            </p>
+            </h2>
             {data.settings.booking_email && (
               <a
                 href={`mailto:${data.settings.booking_email}`}
@@ -171,6 +181,20 @@ function Presskit() {
                 <div className="h-8 w-3/5 animate-pulse bg-card" />
               </div>
             )}
+            <h2 className="mt-12 font-mono text-xl uppercase tracking-[.16em] text-primary md:text-2xl">
+              <GlyphHover text={t("logo")} stepMs={TITLE_STEP_MS} />
+            </h2>
+            <img
+              src={resolveSiteLogoUrl(data.settings.logo_url)}
+              alt=""
+              className="mt-6 h-24 w-auto max-w-full object-contain"
+            />
+            <Button asChild variant="outline" className="mt-6 w-full sm:w-auto">
+              <a href={resolveSiteLogoUrl(data.settings.logo_url)} download>
+                <Download className="mr-2 size-4" />
+                {t("downloadLogo")}
+              </a>
+            </Button>
           </div>
         </section>
       </div>

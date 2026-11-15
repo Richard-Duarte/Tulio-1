@@ -37,7 +37,6 @@ export const getAdminData = createServerFn({ method: "GET" })
       liveSets,
       releases,
       releaseLinks,
-      tracks,
       media,
       parties,
       releaseSections,
@@ -52,7 +51,6 @@ export const getAdminData = createServerFn({ method: "GET" })
         .order("created_at"),
       context.supabase.from("releases").select("*").order("sort_order"),
       context.supabase.from("release_links").select("*").order("sort_order"),
-      context.supabase.from("tracks").select("*").order("sort_order"),
       context.supabase.from("tulio_media").select("*").order("sort_order"),
       context.supabase.from("parties").select("*").order("sort_order"),
       context.supabase.from("release_sections").select("*").order("sort_order"),
@@ -64,7 +62,6 @@ export const getAdminData = createServerFn({ method: "GET" })
       liveSets.error ??
       releases.error ??
       releaseLinks.error ??
-      tracks.error ??
       media.error ??
       parties.error ??
       releaseSections.error;
@@ -76,7 +73,6 @@ export const getAdminData = createServerFn({ method: "GET" })
       live_sets: liveSets.data ?? [],
       releases: releases.data ?? [],
       release_links: releaseLinks.data ?? [],
-      tracks: tracks.data ?? [],
       media: media.data ?? [],
       parties: parties.data ?? [],
       release_sections: releaseSections.data ?? [],
@@ -104,6 +100,45 @@ export const saveSettings = createServerFn({ method: "POST" })
     if (error) throw error;
     return { ok: true };
   });
+export const savePresskitContent = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input) =>
+    z
+      .object({
+        release_body: z.string().min(1).max(10000),
+        logo_url: z.string().trim().max(800).nullable(),
+        presskit_rider: z.array(z.array(z.string().trim().min(1).max(200)).min(1)).min(1).max(40),
+      })
+      .parse(input),
+  )
+  .handler(async ({ data, context }) => {
+    await assertAdmin(context);
+    const { error } = await context.supabase
+      .from("site_settings")
+      .update({
+        release_body: data.release_body,
+        logo_url: data.logo_url,
+        presskit_rider: data.presskit_rider,
+        updated_at: new Date().toISOString(),
+      } as never)
+      .eq("singleton_key", "main");
+    if (error) throw error;
+    return { ok: true };
+  });
+
+export const saveSetsShuffle = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input) => z.object({ sets_shuffle: z.boolean() }).parse(input))
+  .handler(async ({ data, context }) => {
+    await assertAdmin(context);
+    const { error } = await context.supabase
+      .from("site_settings")
+      .update({ sets_shuffle: data.sets_shuffle, updated_at: new Date().toISOString() })
+      .eq("singleton_key", "main");
+    if (error) throw error;
+    return { ok: true };
+  });
+
 export const saveSetsDescription = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input) => z.object({ sets_description: z.string().trim().max(1000) }).parse(input))

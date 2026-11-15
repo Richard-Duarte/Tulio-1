@@ -103,15 +103,25 @@ export const getSiteSettings = createServerFn({ method: "GET" }).handler(async (
     const sets_description =
       ((extra.data as unknown as { sets_description?: string | null } | null)?.sets_description ??
         null) as string | null;
+    const riderRow = await publicSupabase()
+      .from("site_settings")
+      .select("presskit_rider")
+      .eq("singleton_key", "main")
+      .maybeSingle();
+    const presskit_rider = riderRow.error
+      ? null
+      : ((riderRow.data as { presskit_rider?: unknown } | null)?.presskit_rider ?? null);
 
     // The shared settings row still belongs to another artist. Keep Tulio's
-    // public links and booking address on this site.
+    // public links on this site; release and logo come from the CMS when set.
     return {
       ...tulioSettings,
       ...data,
       artist_name: tulioSettings.artist_name,
-      release_title: tulioSettings.release_title,
-      release_body: tulioSettings.release_body,
+      release_title: data.release_title?.trim() ? data.release_title : tulioSettings.release_title,
+      release_body: data.release_body?.trim() ? data.release_body : tulioSettings.release_body,
+      logo_url: data.logo_url ?? tulioSettings.logo_url,
+      presskit_rider,
       instagram_url: tulioSettings.instagram_url,
       soundcloud_url: tulioSettings.soundcloud_url,
       spotify_url: tulioSettings.spotify_url,
