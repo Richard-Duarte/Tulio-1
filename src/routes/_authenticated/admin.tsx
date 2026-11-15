@@ -14,12 +14,11 @@ import {
   dissolvePartyGroup,
   getAdminData,
   saveAdminItem,
-  saveSettings,
+  saveSetsShuffle,
   saveSocialLinks,
   saveSetsDescription,
   saveTulioHome,
   setPanelPassword,
-  setPresskitPassword,
 } from "@/lib/admin.functions";
 import { supabase } from "@/integrations/supabase/client";
 import { uploadFailureHint } from "@/lib/media-budget";
@@ -28,7 +27,7 @@ import { LinkSetEditor } from "@/components/jula/admin/LinkSetEditor";
 import { UpcomingDatesAdmin } from "@/components/jula/admin/UpcomingDatesAdmin";
 import { MediaLibrary } from "@/components/jula/admin/MediaLibrary";
 import { ReleaseEditor } from "@/components/jula/admin/ReleaseEditor";
-import { TrackEditor } from "@/components/jula/admin/TrackEditor";
+import { PresskitAdminPanel } from "@/components/jula/admin/PresskitAdminPanel";
 import { siteParties } from "@/lib/site-photos";
 import {
   isSavedPartyId,
@@ -65,7 +64,6 @@ function Admin() {
   const fn = useServerFn(getAdminData);
   const save = useServerFn(saveAdminItem);
   const remove = useServerFn(deleteAdminItem);
-  const saveSite = useServerFn(saveSettings);
   const saveSocial = useServerFn(saveSocialLinks);
   const saveSetsDesc = useServerFn(saveSetsDescription);
   const [setsDescription, setSetsDescription] = useState("");
@@ -73,11 +71,8 @@ function Admin() {
   const query = useQueryClient();
   const nav = useNavigate();
   const { data, isLoading, error } = useQuery({ queryKey: ["admin-content"], queryFn: fn });
-  const [releaseTitle, setReleaseTitle] = useState("");
-  const [releaseBody, setReleaseBody] = useState("");
-  const [playerEnabled, setPlayerEnabled] = useState(true);
-  const [playerShuffle, setPlayerShuffle] = useState(false);
   const [setsShuffle, setSetsShuffle] = useState(false);
+  const saveSetsShuffleFn = useServerFn(saveSetsShuffle);
   const [party, setParty] = useState({ name: "", happened_at: "" });
   const [editingPartyId, setEditingPartyId] = useState<string | null>(null);
   const [partyEdit, setPartyEdit] = useState({ name: "", happened_at: "" });
@@ -104,18 +99,11 @@ function Admin() {
   const [heroBody, setHeroBody] = useState("");
   const [heroImage, setHeroImage] = useState("/brand/tulio-n26.jpg");
   const [heroUploading, setHeroUploading] = useState(false);
-  const savePass = useServerFn(setPresskitPassword);
   const savePanel = useServerFn(setPanelPassword);
-  const [presskitPass, setPresskitPass] = useState("");
-  const [presskitPass2, setPresskitPass2] = useState("");
   const [panelPass, setPanelPass] = useState("");
   const [panelPass2, setPanelPass2] = useState("");
   useEffect(() => {
     if (data?.settings) {
-      setReleaseTitle(data.settings.release_title);
-      setReleaseBody(data.settings.release_body);
-      setPlayerEnabled(data.settings.player_enabled);
-      setPlayerShuffle(data.settings.player_shuffle);
       setSetsShuffle(data.settings.sets_shuffle ?? false);
       setSetsDescription(
         (data.settings as { sets_description?: string | null }).sets_description ?? "",
@@ -229,20 +217,6 @@ function Admin() {
     await refresh();
     toast.success("Nome atualizado.");
   }
-  async function changePresskitPassword() {
-    if (presskitPass.length < 4 || presskitPass !== presskitPass2) {
-      toast.error("As senhas precisam ter 4+ caracteres e ser iguais.");
-      return;
-    }
-    try {
-      await savePass({ data: { password: presskitPass } });
-      setPresskitPass("");
-      setPresskitPass2("");
-      toast.success("Senha do presskit atualizada.");
-    } catch {
-      toast.error("Não foi possível atualizar a senha.");
-    }
-  }
   async function changePanelPassword() {
     if (panelPass.length < 4 || panelPass !== panelPass2) {
       toast.error("As senhas precisam ter 4+ caracteres e ser iguais.");
@@ -293,7 +267,7 @@ function Admin() {
           <TabsTrigger value="sets">Sets</TabsTrigger>
           <TabsTrigger value="live_sets">Live Sets</TabsTrigger>
           <TabsTrigger value="releases">Releases</TabsTrigger>
-          <TabsTrigger value="tracks">Player</TabsTrigger>
+          <TabsTrigger value="presskit">Presskit</TabsTrigger>
           <TabsTrigger value="media">Mídia</TabsTrigger>
           <TabsTrigger value="redes">Sessão 1</TabsTrigger>
           <TabsTrigger value="acesso">Acesso</TabsTrigger>
@@ -401,15 +375,7 @@ function Admin() {
             shuffle={setsShuffle}
             onShuffle={async (enabled) => {
               setSetsShuffle(enabled);
-              await saveSite({
-                data: {
-                  release_title: releaseTitle,
-                  release_body: releaseBody,
-                  player_enabled: playerEnabled,
-                  player_shuffle: playerShuffle,
-                  sets_shuffle: enabled,
-                },
-              });
+              await saveSetsShuffleFn({ data: { sets_shuffle: enabled } });
               await refresh();
               toast.success(enabled ? "Modo aleatório ativado." : "Sequência ativada.");
             }}
@@ -421,26 +387,8 @@ function Admin() {
         <TabsContent value="releases">
           <ReleaseEditor items={data.releases} links={data.release_links} onChanged={refresh} />
         </TabsContent>
-        <TabsContent value="tracks">
-          <TrackEditor
-            items={data.tracks}
-            shuffle={playerShuffle}
-            onChanged={refresh}
-            onShuffle={async (enabled) => {
-              setPlayerShuffle(enabled);
-              await saveSite({
-                data: {
-                  release_title: releaseTitle,
-                  release_body: releaseBody,
-                  player_enabled: playerEnabled,
-                  player_shuffle: enabled,
-                  sets_shuffle: setsShuffle,
-                },
-              });
-              await refresh();
-              toast.success(enabled ? "Modo aleatório ativado." : "Sequência ativada.");
-            }}
-          />
+        <TabsContent value="presskit">
+          <PresskitAdminPanel settings={data.settings} onSaved={refresh} />
         </TabsContent>
         <TabsContent value="media">
           <MediaLibrary
@@ -685,28 +633,6 @@ function Admin() {
                 />
                 <Button onClick={changePanelPassword} disabled={!panelPass}>
                   <Save /> Atualizar senha do painel
-                </Button>
-              </div>
-            </Panel>
-            <Panel title="Senha do presskit">
-              <p className="text-sm text-muted-foreground">
-                Defina a senha que os contratantes usam para abrir o presskit.
-              </p>
-              <div className="mt-5 max-w-sm space-y-3">
-                <Input
-                  type="password"
-                  placeholder="Nova senha"
-                  value={presskitPass}
-                  onChange={(e) => setPresskitPass(e.target.value)}
-                />
-                <Input
-                  type="password"
-                  placeholder="Repita a nova senha"
-                  value={presskitPass2}
-                  onChange={(e) => setPresskitPass2(e.target.value)}
-                />
-                <Button onClick={changePresskitPassword} disabled={!presskitPass}>
-                  <Save /> Atualizar senha
                 </Button>
               </div>
             </Panel>

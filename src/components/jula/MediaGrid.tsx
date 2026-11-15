@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { createPortal } from "react-dom";
-import { Check, CheckSquare, Download, LoaderCircle, X } from "lucide-react";
+import { Check, CheckSquare, Download, LoaderCircle, Play, X } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { CornerButton } from "@/components/nocturna/CornerButton";
@@ -9,12 +9,15 @@ import { GlyphHover, TITLE_STEP_MS } from "@/components/tulio/GlyphHover";
 import {
   groupPhotosByParty,
   groupPresskitByParty,
+  isPresskitCatalogItem,
   OTHER_PARTY_ID,
   type GalleryParty,
 } from "@/lib/gallery-groups";
 import { useI18n, type Locale } from "@/lib/i18n";
 import { downloadMedia, downloadMediaZip, type ZipProgress } from "@/lib/media-download";
+import { VideoPosterCover } from "@/components/jula/VideoPosterCover";
 import { embedSrc, isEmbedVideo } from "@/lib/media-external";
+import { resolveVideoPosterUrl } from "@/lib/video-poster";
 import { cn } from "@/lib/utils";
 
 type MediaItem = {
@@ -50,11 +53,48 @@ const localeTags: Record<Locale, string> = {
 function VideoTile({ item, downloads }: { item: MediaItem; downloads: boolean }) {
   const { t } = useI18n();
   const iframe = isEmbedVideo(item) ? embedSrc(item) : null;
+  const poster = resolveVideoPosterUrl(item);
+  const [playing, setPlaying] = useState(false);
+
+  const cover = (
+    <div className="relative aspect-[9/16] w-full overflow-hidden bg-card">
+      {poster ? (
+        <img
+          src={poster}
+          alt=""
+          className="size-full object-cover"
+          loading="lazy"
+          aria-hidden
+        />
+      ) : item.public_url && !iframe ? (
+        <VideoPosterCover
+          src={item.public_url}
+          alt={item.alt_text || item.title}
+          className="size-full object-cover"
+        />
+      ) : (
+        <div className="size-full bg-card" aria-hidden />
+      )}
+      <button
+        type="button"
+        onClick={() => setPlaying(true)}
+        className="absolute inset-0 grid place-items-center bg-black/25 transition-colors hover:bg-black/35"
+        aria-label={item.title}
+      >
+        <span className="grid size-14 place-items-center rounded-full border border-border/70 bg-background/80 text-foreground shadow-lg backdrop-blur-md">
+          <Play className="ml-0.5 size-6 fill-current" />
+        </span>
+      </button>
+    </div>
+  );
+
   return (
     <div>
-      {iframe ? (
+      {!playing ? (
+        cover
+      ) : iframe ? (
         <iframe
-          src={iframe}
+          src={`${iframe}${iframe.includes("?") ? "&" : "?"}autoplay=1`}
           title={item.title}
           className="aspect-[9/16] w-full bg-card"
           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
@@ -63,8 +103,9 @@ function VideoTile({ item, downloads }: { item: MediaItem; downloads: boolean })
       ) : (
         <video
           src={item.public_url ?? ""}
-          poster={item.poster_url ?? undefined}
+          poster={poster ?? undefined}
           controls
+          autoPlay
           playsInline
           preload="metadata"
           className="aspect-[9/16] w-full bg-card object-cover"
@@ -160,8 +201,10 @@ export function MediaGrid({
   const [downloading, setDownloading] = useState<Set<string>>(() => new Set());
   const [zipProgress, setZipProgress] = useState<ZipProgress | null>(null);
 
-  const photos = items.filter((x) => x.kind === "image" && x.public_url);
-  const videos = items.filter(
+  const catalog =
+    grouping === "presskit" ? items.filter(isPresskitCatalogItem) : items;
+  const photos = catalog.filter((x) => x.kind === "image" && x.public_url);
+  const videos = catalog.filter(
     (x) => x.kind === "video" && (Boolean(x.public_url) || isEmbedVideo(x)),
   );
   const groupFor = (list: MediaItem[]) =>

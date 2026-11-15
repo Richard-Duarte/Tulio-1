@@ -7,16 +7,62 @@ export const PRESSKIT_STUDIO_PARTY_ID = "__presskit_studio__";
 
 type DatedMedia = { captured_at?: string | null; sort_order?: number };
 
+export type PresskitFlags = {
+  presskit_enabled?: boolean | null;
+  presskit_studio_enabled?: boolean | null;
+};
+
+/** Public presskit and admin: only rows explicitly flagged for presskit. */
+export function isPresskitCatalogItem(item: PresskitFlags): boolean {
+  return item.presskit_enabled === true;
+}
+
+/** Estúdio block: presskit on and studio flag on (stale studio flags without presskit are ignored). */
+export function isPresskitStudioItem(item: PresskitFlags): boolean {
+  return isPresskitCatalogItem(item) && item.presskit_studio_enabled === true;
+}
+
+function compareDateDesc(da: string, db: string) {
+  if (da !== db) {
+    if (!da) return 1;
+    if (!db) return -1;
+    return da < db ? 1 : -1;
+  }
+  return 0;
+}
+
 /** Newest capture date first; ties break on sort_order. */
 export function sortMediaNewest<P extends DatedMedia>(items: P[]): P[] {
   return [...items].sort((a, b) => {
-    const da = a.captured_at ?? "";
-    const db = b.captured_at ?? "";
-    if (da !== db) {
-      if (!da) return 1;
-      if (!db) return -1;
-      return da < db ? 1 : -1;
+    const byDate = compareDateDesc(a.captured_at ?? "", b.captured_at ?? "");
+    if (byDate !== 0) return byDate;
+    return (b.sort_order ?? 0) - (a.sort_order ?? 0);
+  });
+}
+
+/**
+ * Presskit ordering: when the item has a festa, use that party's date (saved `happened_at` or newest
+ * capture in the group); otherwise use `captured_at`.
+ */
+export function sortPresskitMediaNewest<P extends PartyPhoto & DatedMedia>(
+  parties: GalleryParty[],
+  items: P[],
+): P[] {
+  const { parties: linked, partyIdOf } = linkParties(parties, items);
+  const happenedAt = new Map(linked.map((party) => [party.id, party.happened_at]));
+  const sortKey = (item: P) => {
+    const partyId = partyIdOf(item.party_id);
+    if (partyId) {
+      const festaDate = happenedAt.get(partyId);
+      if (festaDate) return festaDate;
     }
+    return item.captured_at ?? "";
+  };
+  return [...items].sort((a, b) => {
+    const byDate = compareDateDesc(sortKey(a), sortKey(b));
+    if (byDate !== 0) return byDate;
+    const byCapture = compareDateDesc(a.captured_at ?? "", b.captured_at ?? "");
+    if (byCapture !== 0) return byCapture;
     return (b.sort_order ?? 0) - (a.sort_order ?? 0);
   });
 }
@@ -133,10 +179,14 @@ export function groupPhotosByParty<P extends PartyPhoto>(
 
 /** Presskit: Estúdio block first, then festa groups (newest first). Studio items never duplicate under a festa. */
 export function groupPresskitByParty<
-  P extends PartyPhoto & { presskit_studio_enabled?: boolean; sort_order?: number },
+  P extends PartyPhoto & PresskitFlags & { sort_order?: number },
 >(parties: GalleryParty[], items: P[], studioTitle: string, otherName: string) {
-  const studioItems = sortMediaNewest(items.filter((i) => i.presskit_studio_enabled));
-  const rest = items.filter((i) => !i.presskit_studio_enabled);
+  const catalog = items.filter(isPresskitCatalogItem);
+  const studioItems = sortPresskitMediaNewest(
+    parties,
+    catalog.filter(isPresskitStudioItem),
+  );
+  const rest = catalog.filter((i) => !isPresskitStudioItem(i));
   const groups: { party: GalleryParty; photos: P[] }[] = [];
   if (studioItems.length > 0) {
     groups.push({
@@ -145,7 +195,7 @@ export function groupPresskitByParty<
     });
   }
   for (const group of groupPhotosByParty(parties, rest, otherName)) {
-    groups.push({ party: group.party, photos: sortMediaNewest(group.photos) });
+    groups.push({ party: group.party, photos: sortPresskitMediaNewest(parties, group.photos) });
   }
   return groups;
 }

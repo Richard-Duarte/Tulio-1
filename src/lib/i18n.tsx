@@ -55,6 +55,9 @@ const messages = {
     presskitDescription: "Material oficial para imprensa, curadoria e contratação.",
     unavailable: "Presskit indisponível.",
     technicalRider: "Rider técnico",
+    release: "Release",
+    logo: "Logo",
+    downloadLogo: "Download logo",
     or: "ou",
     photosVideos: "Fotos e vídeos",
     highQualityHint:
@@ -173,6 +176,9 @@ const messages = {
     presskitDescription: "Material oficial para prensa, curaduría y contratación.",
     unavailable: "Presskit no disponible.",
     technicalRider: "Rider técnico",
+    release: "Release",
+    logo: "Logo",
+    downloadLogo: "Descargar logo",
     or: "o",
     photosVideos: "Fotos y vídeos",
     highQualityHint:
@@ -291,6 +297,9 @@ const messages = {
     presskitDescription: "Official material for press, curators and bookings.",
     unavailable: "Presskit unavailable.",
     technicalRider: "Technical rider",
+    release: "Release",
+    logo: "Logo",
+    downloadLogo: "Download logo",
     or: "or",
     photosVideos: "Photos and videos",
     highQualityHint:
@@ -409,6 +418,9 @@ const messages = {
     presskitDescription: "Matériel officiel pour la presse, les programmateurs et les bookings.",
     unavailable: "Presskit indisponible.",
     technicalRider: "Fiche technique",
+    release: "Release",
+    logo: "Logo",
+    downloadLogo: "Télécharger le logo",
     or: "ou",
     photosVideos: "Photos et vidéos",
     highQualityHint:
@@ -527,6 +539,9 @@ const messages = {
     presskitDescription: "Offizielles Material für Presse, Kuratoren und Bookings.",
     unavailable: "Presskit nicht verfügbar.",
     technicalRider: "Technical Rider",
+    release: "Release",
+    logo: "Logo",
+    downloadLogo: "Logo herunterladen",
     or: "oder",
     photosVideos: "Fotos und Videos",
     highQualityHint:
@@ -644,6 +659,9 @@ const messages = {
     presskitDescription: "Officieel materiaal voor pers, curatoren en boekingen.",
     unavailable: "Presskit niet beschikbaar.",
     technicalRider: "Technische rider",
+    release: "Release",
+    logo: "Logo",
+    downloadLogo: "Logo downloaden",
     or: "of",
     photosVideos: "Foto's en video's",
     highQualityHint:

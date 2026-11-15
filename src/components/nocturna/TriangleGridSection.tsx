@@ -1,4 +1,5 @@
 import { SocialBar, type SocialUrls } from "@/components/jula/SocialBar";
+import { resolveSiteLogoUrl } from "@/lib/site-logo";
 import { GlitchingTechEye } from "./GlitchingTechEye";
 import { ImageGlitch } from "./ImageGlitch";
 
@@ -10,11 +11,13 @@ export function TriangleGridSection({
   imageUrl: imageUrlProp,
   imageAlt: imageAltProp,
   rightImageUrl = BOOTH_PHOTO,
+  logoUrl,
 }: {
   links: SocialUrls;
   imageUrl?: string | null;
   imageAlt?: string | null;
   rightImageUrl?: string | null;
+  logoUrl?: string | null;
 }) {
   // DB columns can be null; defaults only cover undefined.
   const imageUrl = imageUrlProp || "/brand/tulio-session.jpg";
@@ -31,7 +34,10 @@ export function TriangleGridSection({
         <ImageGlitch src={rightImageUrl || BOOTH_PHOTO} alt="Tulio na cabine" edge="right" />
       </div>
       <div className="pointer-events-none absolute top-0 left-1/2 z-20 size-[34vw] max-w-[220px] -translate-x-1/2 -translate-y-8 md:size-[240px]">
-        <GlitchingTechEye logoSrc="/brand/tulio-mark.png" className="absolute inset-0 h-full w-full" />
+        <GlitchingTechEye
+          logoSrc={resolveSiteLogoUrl(logoUrl)}
+          className="absolute inset-0 h-full w-full"
+        />
       </div>
       <div className="pointer-events-none absolute inset-x-0 bottom-6 z-30 flex justify-center px-6 md:bottom-8">
         <div className="pointer-events-auto w-full max-w-3xl">

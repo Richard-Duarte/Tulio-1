@@ -3,7 +3,9 @@ import { createServerFn } from "@tanstack/react-start";
 // `useSession` is an h3 server utility, not a React hook; alias it to avoid confusion.
 import { setResponseHeader, useSession as getSession } from "@tanstack/react-start/server";
 import { z } from "zod";
-import type { GalleryParty } from "@/lib/gallery-groups";
+import { isPresskitCatalogItem, type GalleryParty } from "@/lib/gallery-groups";
+import { parsePresskitRider } from "@/lib/presskit-rider";
+import { resolveVideoPosterUrl } from "@/lib/video-poster";
 import { isEmbedVideo } from "@/lib/media-external";
 import { siteParties } from "@/lib/site-photos";
 
@@ -75,10 +77,14 @@ export type PresskitContent =
       rider: string[][];
     };
 
-const TECHNICAL_RIDER: string[][] = [
-  ["03 CDJ 3000", "CDJ 2000 NEXUS 2"],
-  ["01 XONE 92", "DJ MIXER DJM V10", "DJM A9", "DJM 900 NEXUS 2"],
-];
+async function loadPresskitRider(supabase: { from: (t: string) => any }) {
+  const { data } = await supabase
+    .from("site_settings")
+    .select("presskit_rider")
+    .eq("singleton_key", "main")
+    .maybeSingle();
+  return parsePresskitRider((data as { presskit_rider?: unknown } | null)?.presskit_rider);
+}
 
 function mapPresskitRow(row: {
   id: string;
@@ -98,6 +104,7 @@ function mapPresskitRow(row: {
   external_id?: string | null;
   embed_url?: string | null;
 }): PresskitMedia | null {
+  if (!row.presskit_enabled) return null;
   const kind = row.kind === "video" ? "video" : row.kind === "image" ? "image" : null;
   if (!kind) return null;
   const external = {
@@ -115,11 +122,11 @@ function mapPresskitRow(row: {
     kind,
     title: row.title,
     public_url: row.public_url,
-    poster_url: row.poster_url,
+    poster_url: resolveVideoPosterUrl(row) ?? row.poster_url,
     alt_text: row.alt_text,
     downloadable: row.downloadable,
     presskit_enabled: row.presskit_enabled,
-    presskit_studio_enabled: row.presskit_studio_enabled,
+    presskit_studio_enabled: row.presskit_enabled && row.presskit_studio_enabled,
     party_id: row.party_id,
     captured_at: row.captured_at,
     sort_order: row.sort_order,
@@ -146,7 +153,7 @@ export const getPresskitContent = createServerFn({ method: "GET" }).handler(
     if (!(await hasPresskitAccess())) return { unlocked: false };
     try {
       const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-      const [mediaRes, parties] = await Promise.all([
+      const [mediaRes, parties, rider] = await Promise.all([
         supabaseAdmin
           .from("tulio_media")
           .select(
@@ -156,13 +163,14 @@ export const getPresskitContent = createServerFn({ method: "GET" }).handler(
           .order("captured_at", { ascending: false, nullsFirst: false })
           .order("sort_order", { ascending: false }),
         loadPresskitParties(supabaseAdmin),
+        loadPresskitRider(supabaseAdmin),
       ]);
       const media = (mediaRes.data ?? [])
         .map(mapPresskitRow)
-        .filter((row): row is PresskitMedia => row !== null);
-      return { unlocked: true, media, parties, rider: TECHNICAL_RIDER };
+        .filter((row): row is PresskitMedia => row !== null && isPresskitCatalogItem(row));
+      return { unlocked: true, media, parties, rider };
     } catch {
-      return { unlocked: true, media: [], parties: siteParties, rider: TECHNICAL_RIDER };
+      return { unlocked: true, media: [], parties: siteParties, rider: parsePresskitRider(null) };
     }
   },
 );
