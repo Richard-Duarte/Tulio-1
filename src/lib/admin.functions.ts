@@ -108,7 +108,12 @@ export const savePresskitContent = createServerFn({ method: "POST" })
         release_body: z.string().min(1).max(10000),
         booking_email: z.string().trim().min(3).max(180).email(),
         logo_url: z.string().trim().max(800).nullable(),
-        presskit_logo_urls: z.array(z.string().trim().max(800)).max(12),
+        presskit_logo_urls: z.object({
+          icon_clara: z.string().trim().max(800).nullable(),
+          icon_escura: z.string().trim().max(800).nullable(),
+          escrita_clara: z.string().trim().max(800).nullable(),
+          escrita_escura: z.string().trim().max(800).nullable(),
+        }),
         presskit_rider: z.array(z.array(z.string().trim().min(1).max(200)).min(1)).min(1).max(40),
       })
       .parse(input),
@@ -120,7 +125,11 @@ export const savePresskitContent = createServerFn({ method: "POST" })
       .update({
         release_body: data.release_body,
         logo_url: data.logo_url,
-        presskit_logo_urls: data.presskit_logo_urls.length > 0 ? data.presskit_logo_urls : null,
+        presskit_logo_urls: (() => {
+          const v = data.presskit_logo_urls;
+          const any = Object.values(v).some((u) => u && u.trim());
+          return any ? v : null;
+        })(),
         presskit_rider: data.presskit_rider,
         updated_at: new Date().toISOString(),
       } as never)

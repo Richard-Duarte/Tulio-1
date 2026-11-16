@@ -111,7 +111,19 @@ test("presskit admin edits booking email above rider", () => {
   const bookingsIdx = panel.indexOf("Bookings");
   const riderIdx = panel.indexOf("Rider técnico");
   assert.ok(bookingsIdx >= 0 && riderIdx > bookingsIdx);
-  assert.match(panel, /multiple/);
+  assert.doesNotMatch(panel, /multiple/);
+  assert.match(panel, /PRESSKIT_LOGO_GROUPS/);
+  const variants = read("lib/presskit-logo-variants.ts");
+  assert.match(variants, /Escrita Tulio/);
+  assert.match(variants, /title: "Ícone"/);
+});
+
+test("TulioWordmark loads logo escrita from site brand hook", () => {
+  const mark = read("components/tulio/TulioWordmark.tsx");
+  assert.match(mark, /useSiteBrand/);
+  const hook = read("lib/use-site-brand.ts");
+  assert.match(hook, /siteWordmarkUrl/);
+  assert.match(hook, /site-settings/);
 });
 
 test("presskit admin rider state uses riderTextFromLines on parsed rows (not riderLinesFromText)", () => {

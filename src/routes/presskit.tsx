@@ -8,11 +8,8 @@ import { GlyphHover, TITLE_STEP_MS } from "@/components/tulio/GlyphHover";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { getPresskitContent, unlockPresskit, type PresskitContent } from "@/lib/presskit.functions";
-import {
-  downloadPresskitLogosZip,
-  parsePresskitLogoUrls,
-  presskitDisplayLogoUrl,
-} from "@/lib/presskit-logos";
+import { downloadPresskitLogosZip, parsePresskitLogoUrls } from "@/lib/presskit-logos";
+import { PRESSKIT_LOGO_GROUPS, parsePresskitLogoVariants } from "@/lib/presskit-logo-variants";
 import { getSiteSettings, getTulioHome } from "@/lib/public.functions";
 import { useI18n } from "@/lib/i18n";
 import { toast } from "sonner";
@@ -106,11 +103,14 @@ function Presskit() {
   const [contentError, setContentError] = useState(false);
   const [logoDownloading, setLogoDownloading] = useState(false);
   const content = data.content.unlocked ? data.content : fetched;
+  const logoVariants = parsePresskitLogoVariants(
+    data.settings.presskit_logo_urls,
+    data.settings.logo_url,
+  );
   const logoUrls = parsePresskitLogoUrls(
     data.settings.presskit_logo_urls,
     data.settings.logo_url,
   );
-  const displayLogo = presskitDisplayLogoUrl(data.settings.presskit_logo_urls, data.settings.logo_url);
 
   async function fetchContent() {
     setContentError(false);
@@ -192,10 +192,42 @@ function Presskit() {
                 <div className="h-8 w-3/5 animate-pulse bg-card" />
               </div>
             )}
-            <h2 className="mt-12 font-mono text-xl uppercase tracking-[.16em] text-primary md:text-2xl">
-              <GlyphHover text={t("logo")} stepMs={TITLE_STEP_MS} />
-            </h2>
-            <img src={displayLogo} alt="" className="mt-6 h-24 w-auto max-w-full object-contain" />
+            <div className="mt-12 space-y-10">
+              {PRESSKIT_LOGO_GROUPS.map((group) => {
+                const filled = group.slots.filter((s) => logoVariants[s.key]);
+                if (filled.length === 0) return null;
+                return (
+                  <div key={group.id}>
+                    <h2 className="font-mono text-xl uppercase tracking-[.16em] text-primary md:text-2xl">
+                      <GlyphHover text={group.title} stepMs={TITLE_STEP_MS} />
+                    </h2>
+                    <div className="mt-6 grid gap-4 sm:grid-cols-2">
+                      {filled.map((slot) => {
+                        const url = logoVariants[slot.key]!;
+                        const isIcon = group.id === "icon";
+                        return (
+                          <div
+                            key={slot.key}
+                            className={`flex flex-col items-center justify-center p-4 ${slot.previewBg === "bg-white" ? "bg-white" : "bg-black"}`}
+                          >
+                            <p
+                              className={`mb-3 font-mono text-[9px] uppercase tracking-widest ${slot.previewBg === "bg-white" ? "text-black/60" : "text-white/60"}`}
+                            >
+                              {slot.label}
+                            </p>
+                            <img
+                              src={url}
+                              alt=""
+                              className={`object-contain ${isIcon ? "h-16 w-auto" : "h-20 w-auto max-w-full"}`}
+                            />
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
             <Button
               type="button"
               variant="outline"

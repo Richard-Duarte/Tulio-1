@@ -20,4 +20,8 @@ test("presskitDisplayLogoUrl uses first variant", () => {
     presskitDisplayLogoUrl(["https://white.png", "https://black.png"], null),
     "https://white.png",
   );
+  assert.equal(
+    presskitDisplayLogoUrl({ escrita_clara: "https://w.png", icon_clara: "https://i.png" }, null),
+    "https://w.png",
+  );
 });

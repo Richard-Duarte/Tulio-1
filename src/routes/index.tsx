@@ -11,6 +11,7 @@ import { resolveHeroTitle } from "@/lib/hero-copy";
 import { getNocturnaHomeCopy } from "@/lib/nocturna-home";
 import { useI18n } from "@/lib/i18n";
 import { signalIntroReady } from "@/lib/intro";
+import { siteIconUrl } from "@/lib/presskit-logo-variants";
 
 export const Route = createFileRoute("/")({
   loader: async () => {
@@ -107,7 +108,7 @@ function Home() {
         imageUrl={home.section1_image_url}
         rightImageUrl={home.section1_right_image_url}
         imageAlt={home.section1_image_alt}
-        logoUrl={settings.logo_url}
+        logoUrl={siteIconUrl(settings.presskit_logo_urls, settings.logo_url)}
       />
       </SectionBoundary>
 
