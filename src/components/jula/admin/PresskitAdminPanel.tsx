@@ -12,6 +12,7 @@ import { savePresskitContent, setPresskitPassword } from "@/lib/admin.functions"
 import { uploadFailureHint } from "@/lib/media-budget";
 import {
   PRESSKIT_LOGO_GROUPS,
+  normalizePresskitLogoVariants,
   parsePresskitLogoVariants,
   PRESSKIT_LOGO_CANVAS_CLASS,
   presskitSlotPreviewFallback,
@@ -69,14 +70,16 @@ export function PresskitAdminPanel({
   async function saveAll() {
     setBusy(true);
     try {
-      const primary = primaryPresskitLogoUrl(logos, settings.logo_url);
+      const variants = normalizePresskitLogoVariants(logos);
+      setLogos(variants);
+      const primary = primaryPresskitLogoUrl(variants, settings.logo_url);
       const logo_url = primary.startsWith("/brand/") ? null : primary;
       await savePresskit({
         data: {
           release_body: releaseBody,
           booking_email: booking.trim(),
           logo_url,
-          presskit_logo_urls: logos,
+          presskit_logo_urls: variants,
           presskit_rider: riderLinesFromText(riderText),
         },
       });

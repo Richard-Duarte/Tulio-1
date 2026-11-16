@@ -38,6 +38,49 @@ const emptyVariants = (): PresskitLogoVariants => ({
   escrita_escura: null,
 });
 
+/** Triangle / símbolo — paths do upload `logo-icon_*` ou marca padrão. */
+export function isPresskitIconUrl(url: string): boolean {
+  const u = url.trim().toLowerCase();
+  if (!u) return false;
+  if (u.includes("logo-icon_")) return true;
+  if (u.includes("tulio-mark")) return true;
+  if (u.endsWith("/brand/tulio-mark.png")) return true;
+  return false;
+}
+
+/** Escrita TULIO do menu — upload `logo-escrita_*` ou wordmark padrão. */
+export function isPresskitWordmarkUrl(url: string): boolean {
+  const u = url.trim().toLowerCase();
+  if (!u) return false;
+  if (u.includes("logo-escrita_")) return true;
+  if (u.includes("tulio-wordmark")) return true;
+  if (u.endsWith("/brand/tulio-wordmark.png")) return true;
+  return false;
+}
+
+/** Corrige ícone salvo no slot Logo (e vice-versa) após migração ou `logo_url` antigo. */
+export function normalizePresskitLogoVariants(v: PresskitLogoVariants): PresskitLogoVariants {
+  const next: PresskitLogoVariants = { ...v };
+  const pairs = [
+    ["escrita_clara", "icon_clara"],
+    ["escrita_escura", "icon_escura"],
+  ] as const satisfies ReadonlyArray<readonly [PresskitLogoSlotKey, PresskitLogoSlotKey]>;
+
+  for (const [escritaKey, iconKey] of pairs) {
+    const escritaUrl = next[escritaKey]?.trim();
+    if (escritaUrl && isPresskitIconUrl(escritaUrl) && !isPresskitWordmarkUrl(escritaUrl)) {
+      if (!next[iconKey]?.trim()) next[iconKey] = escritaUrl;
+      next[escritaKey] = null;
+    }
+    const iconUrl = next[iconKey]?.trim();
+    if (iconUrl && isPresskitWordmarkUrl(iconUrl) && !isPresskitIconUrl(iconUrl)) {
+      if (!next[escritaKey]?.trim()) next[escritaKey] = iconUrl;
+      next[iconKey] = null;
+    }
+  }
+  return next;
+}
+
 /** Coerces DB json (structured object or legacy string[]) into four slots. */
 export function parsePresskitLogoVariants(
   presskitLogoUrls: unknown,
@@ -50,7 +93,7 @@ export function parsePresskitLogoVariants(
       const v = row[slot.key];
       base[slot.key] = typeof v === "string" && v.trim() ? v.trim() : null;
     }
-    if (Object.values(base).some(Boolean)) return base;
+    if (Object.values(base).some(Boolean)) return normalizePresskitLogoVariants(base);
   }
   if (Array.isArray(presskitLogoUrls)) {
     const list = presskitLogoUrls
@@ -61,13 +104,17 @@ export function parsePresskitLogoVariants(
     if (list[1]) base.escrita_escura = list[1];
     if (list[2]) base.icon_clara = list[2];
     if (list[3]) base.icon_escura = list[3];
-    if (Object.values(base).some(Boolean)) return base;
+    if (Object.values(base).some(Boolean)) return normalizePresskitLogoVariants(base);
   }
   const single = logoUrl?.trim();
   if (single) {
-    base.escrita_clara = single;
+    if (isPresskitIconUrl(single) && !isPresskitWordmarkUrl(single)) {
+      base.icon_clara = single;
+    } else {
+      base.escrita_clara = single;
+    }
   }
-  return base;
+  return normalizePresskitLogoVariants(base);
 }
 
 export function presskitLogoUrlsForDownload(variants: PresskitLogoVariants): string[] {
@@ -88,12 +135,9 @@ export function siteWordmarkUrl(
   logoUrl?: string | null,
 ): string {
   const v = parsePresskitLogoVariants(presskitLogoUrls, logoUrl);
-  return (
-    v.escrita_clara?.trim() ||
-    v.escrita_escura?.trim() ||
-    logoUrl?.trim() ||
-    DEFAULT_SITE_WORDMARK
-  );
+  const legacy =
+    logoUrl?.trim() && !isPresskitIconUrl(logoUrl) ? logoUrl.trim() : null;
+  return v.escrita_clara?.trim() || v.escrita_escura?.trim() || legacy || DEFAULT_SITE_WORDMARK;
 }
 
 /** Home eye / triangle mark — never fall back to wordmark (`logo_url` / escrita). */
@@ -111,13 +155,7 @@ export function primaryPresskitLogoUrl(
   presskitLogoUrls: unknown,
   logoUrl?: string | null,
 ): string {
-  const v = parsePresskitLogoVariants(presskitLogoUrls, logoUrl);
-  return (
-    v.escrita_clara?.trim() ||
-    v.escrita_escura?.trim() ||
-    logoUrl?.trim() ||
-    DEFAULT_SITE_WORDMARK
-  );
+  return siteWordmarkUrl(presskitLogoUrls, logoUrl);
 }
 
 export const PRESSKIT_LOGO_CANVAS_CLASS = "presskit-logo-canvas";

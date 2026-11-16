@@ -2,6 +2,8 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import {
   DEFAULT_SITE_LOGO,
+  isPresskitIconUrl,
+  normalizePresskitLogoVariants,
   parsePresskitLogoVariants,
   presskitLogoUrlsForDownload,
   presskitSlotPreviewFallback,
@@ -9,6 +11,20 @@ import {
   siteIconUrl,
   siteWordmarkUrl,
 } from "./presskit-logo-variants.ts";
+
+test("normalizePresskitLogoVariants moves ícone out of Logo slot", () => {
+  const mark = "https://x.supabase.co/storage/v1/object/public/site-media/brand/logo-icon_clara-1.png";
+  const v = parsePresskitLogoVariants({ escrita_clara: mark });
+  assert.equal(v.escrita_clara, null);
+  assert.equal(v.icon_clara, mark);
+  assert.ok(isPresskitIconUrl(mark));
+});
+
+test("parsePresskitLogoVariants maps legacy logo_url ícone to icon_clara", () => {
+  const v = parsePresskitLogoVariants(null, "/brand/tulio-mark.png");
+  assert.equal(v.icon_clara, "/brand/tulio-mark.png");
+  assert.equal(v.escrita_clara, null);
+});
 
 test("parsePresskitLogoVariants reads structured object", () => {
   const v = parsePresskitLogoVariants({
