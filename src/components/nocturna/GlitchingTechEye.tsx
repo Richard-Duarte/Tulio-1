@@ -119,22 +119,50 @@ export function GlitchingTechEye({
   blurRef.current = logoBlur;
 
   useEffect(() => {
-    const image = new Image();
-    image.src = logoSrc;
-    image.onload = () => {
-      const mark = prepareMark(image);
+    let cancelled = false;
+    const FALLBACK = "/brand/tulio-mark.png";
+    const apply = (image: HTMLImageElement) => {
+      let mark: PreparedMark;
+      try {
+        mark = prepareMark(image);
+      } catch {
+        // Tainted canvas (CORS) or decode error: draw the raw image instead of losing the mark.
+        const canvas = document.createElement("canvas");
+        canvas.width = image.naturalWidth || 1;
+        canvas.height = image.naturalHeight || 1;
+        canvas.getContext("2d")?.drawImage(image, 0, 0);
+        mark = {
+          canvas,
+          triangle: insetMarkTriangle({ left: 0.08, right: 0.92, top: 0.08, bottom: 0.92, apexX: 0.5 }),
+        };
+      }
       logoRef.current = mark.canvas;
       triangleRef.current = mark.triangle;
-      tintsRef.current = {
-        red: tintLogo(mark.canvas, RGB.red, mark.canvas.width, mark.canvas.height),
-        green: tintLogo(mark.canvas, RGB.green, mark.canvas.width, mark.canvas.height),
-        blue: tintLogo(mark.canvas, RGB.blue, mark.canvas.width, mark.canvas.height),
-      };
+      try {
+        tintsRef.current = {
+          red: tintLogo(mark.canvas, RGB.red, mark.canvas.width, mark.canvas.height),
+          green: tintLogo(mark.canvas, RGB.green, mark.canvas.width, mark.canvas.height),
+          blue: tintLogo(mark.canvas, RGB.blue, mark.canvas.width, mark.canvas.height),
+        };
+      } catch {
+        tintsRef.current = null;
+      }
     };
+    const load = (src: string, isFallback: boolean) => {
+      const image = new Image();
+      // Uploaded icons live on another origin; without CORS the canvas is tainted and the mark vanishes.
+      if (/^https?:\/\//i.test(src)) image.crossOrigin = "anonymous";
+      image.onload = () => {
+        if (!cancelled) apply(image);
+      };
+      image.onerror = () => {
+        if (!cancelled && !isFallback) load(FALLBACK, true);
+      };
+      image.src = src;
+    };
+    load(logoSrc, false);
     return () => {
-      logoRef.current = null;
-      triangleRef.current = null;
-      tintsRef.current = null;
+      cancelled = true;
     };
   }, [logoSrc]);
 
