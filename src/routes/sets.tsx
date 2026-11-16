@@ -6,6 +6,7 @@ import { TitleMetal } from "@/components/tulio/TitleMetal";
 import { setsToTracks } from "@/components/jula/AudioPlayer";
 import { UndergroundScene } from "@/components/sets/UndergroundScene";
 import { getPublicMusic, getSiteSettings } from "@/lib/public.functions";
+import { formatSetsLead } from "@/lib/sets-lead";
 import { useI18n } from "@/lib/i18n";
 
 export const Route = createFileRoute("/sets")({
@@ -82,8 +83,12 @@ function SetsStage({ empty }: { empty: boolean }) {
         <TitleMetal className="mt-5 max-w-4xl text-[clamp(2rem,5.5vw,3.65rem)]">
           {t("sets")}
         </TitleMetal>
-        <p className={`nc-lead mt-6 max-w-2xl ${empty ? "" : "max-md:hidden"}`}>
-          {empty ? t("setsSoon") : setsDescription?.trim() || t("setsDescription")}
+        <p
+          className={`nc-lead mt-6 max-w-2xl whitespace-pre-line ${empty ? "" : "max-md:hidden"}`}
+        >
+          {empty
+            ? t("setsSoon")
+            : formatSetsLead(setsDescription?.trim() || t("setsDescription"))}
         </p>
       </section>
     </main>

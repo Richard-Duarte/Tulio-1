@@ -96,12 +96,13 @@ export function siteWordmarkUrl(
   );
 }
 
+/** Home eye / triangle mark — never fall back to wordmark (`logo_url` / escrita). */
 export function siteIconUrl(presskitLogoUrls: unknown, logoUrl?: string | null): string {
   const v = parsePresskitLogoVariants(presskitLogoUrls, logoUrl);
   return (
     v.icon_clara?.trim() ||
     v.icon_escura?.trim() ||
-    resolveSiteLogoUrl(logoUrl)
+    DEFAULT_SITE_LOGO
   );
 }
 

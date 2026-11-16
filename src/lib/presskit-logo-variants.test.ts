@@ -1,8 +1,10 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import {
+  DEFAULT_SITE_LOGO,
   parsePresskitLogoVariants,
   presskitLogoUrlsForDownload,
+  siteIconUrl,
   siteWordmarkUrl,
 } from "./presskit-logo-variants.ts";
 
@@ -25,6 +27,14 @@ test("parsePresskitLogoVariants maps legacy string array to slots", () => {
   assert.equal(v.escrita_clara, "https://w1.png");
   assert.equal(v.escrita_escura, "https://w2.png");
   assert.equal(v.icon_clara, "https://i1.png");
+});
+
+test("siteIconUrl uses ícone slots or default mark, not wordmark", () => {
+  assert.equal(
+    siteIconUrl({ escrita_clara: "https://word.png" }, "https://word.png"),
+    DEFAULT_SITE_LOGO,
+  );
+  assert.equal(siteIconUrl({ icon_clara: "https://eye.png" }), "https://eye.png");
 });
 
 test("siteWordmarkUrl uses escrita clara on dark chrome", () => {
