@@ -148,10 +148,16 @@ export function parsePresskitLogoVariants(
   return normalizePresskitLogoVariants(base);
 }
 
-export function presskitLogoUrlsForDownload(variants: PresskitLogoVariants): string[] {
+export function presskitLogoUrlsForDownload(
+  variants: PresskitLogoVariants,
+  groupId?: (typeof PRESSKIT_LOGO_GROUPS)[number]["id"],
+): string[] {
   const seen = new Set<string>();
   const out: string[] = [];
-  for (const slot of PRESSKIT_LOGO_SLOTS) {
+  const slots = groupId
+    ? PRESSKIT_LOGO_GROUPS.filter((g) => g.id === groupId).flatMap((g) => g.slots)
+    : PRESSKIT_LOGO_SLOTS;
+  for (const slot of slots) {
     const url = variants[slot.key]?.trim();
     if (!url || seen.has(url)) continue;
     seen.add(url);

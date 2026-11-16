@@ -58,6 +58,7 @@ const messages = {
     release: "Release",
     logo: "Logo",
     downloadLogo: "Download logo",
+    downloadIcon: "Download ícone",
     or: "ou",
     photosVideos: "Fotos e vídeos",
     highQualityHint:
@@ -179,6 +180,7 @@ const messages = {
     release: "Release",
     logo: "Logo",
     downloadLogo: "Descargar logo",
+    downloadIcon: "Descargar ícono",
     or: "o",
     photosVideos: "Fotos y vídeos",
     highQualityHint:
@@ -300,6 +302,7 @@ const messages = {
     release: "Release",
     logo: "Logo",
     downloadLogo: "Download logo",
+    downloadIcon: "Download icon",
     or: "or",
     photosVideos: "Photos and videos",
     highQualityHint:
@@ -421,6 +424,7 @@ const messages = {
     release: "Release",
     logo: "Logo",
     downloadLogo: "Télécharger le logo",
+    downloadIcon: "Télécharger l'icône",
     or: "ou",
     photosVideos: "Photos et vidéos",
     highQualityHint:
@@ -542,6 +546,7 @@ const messages = {
     release: "Release",
     logo: "Logo",
     downloadLogo: "Logo herunterladen",
+    downloadIcon: "Icon herunterladen",
     or: "oder",
     photosVideos: "Fotos und Videos",
     highQualityHint:
@@ -662,6 +667,7 @@ const messages = {
     release: "Release",
     logo: "Logo",
     downloadLogo: "Logo downloaden",
+    downloadIcon: "Icoon downloaden",
     or: "of",
     photosVideos: "Foto's en video's",
     highQualityHint:

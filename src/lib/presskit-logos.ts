@@ -17,13 +17,18 @@ export async function downloadPresskitLogosZip(urls: string[], zipName = "tulio-
   const list = urls.map((u) => u.trim()).filter(Boolean);
   if (list.length === 0) throw new Error("No logos");
   if (list.length === 1) {
+    // Fetch as blob: the `download` attribute is ignored for cross-origin URLs.
+    const res = await fetch(list[0]!);
+    if (!res.ok) throw new Error(`Failed to fetch ${list[0]}`);
+    const objectUrl = URL.createObjectURL(await res.blob());
     const a = document.createElement("a");
-    a.href = list[0]!;
+    a.href = objectUrl;
     a.download = filenameFromUrl(list[0]!, 0);
     a.rel = "noopener";
     document.body.append(a);
     a.click();
     a.remove();
+    URL.revokeObjectURL(objectUrl);
     return;
   }
   const { zipSync } = await import("fflate");

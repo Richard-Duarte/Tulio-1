@@ -8,11 +8,11 @@ import { GlyphHover, TITLE_STEP_MS } from "@/components/tulio/GlyphHover";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { getPresskitContent, unlockPresskit, type PresskitContent } from "@/lib/presskit.functions";
-import { downloadPresskitLogosZip, parsePresskitLogoUrls } from "@/lib/presskit-logos";
+import { downloadPresskitLogosZip } from "@/lib/presskit-logos";
 import {
-  PRESSKIT_LOGO_CANVAS_CLASS,
   PRESSKIT_LOGO_GROUPS,
   parsePresskitLogoVariants,
+  presskitLogoUrlsForDownload,
 } from "@/lib/presskit-logo-variants";
 import { getSiteSettings, getTulioHome } from "@/lib/public.functions";
 import { useI18n } from "@/lib/i18n";
@@ -105,13 +105,9 @@ function Presskit() {
   // without waiting on (or depending on) the loader revalidation.
   const [fetched, setFetched] = useState<UnlockedContent | null>(null);
   const [contentError, setContentError] = useState(false);
-  const [logoDownloading, setLogoDownloading] = useState(false);
+  const [downloadingGroup, setDownloadingGroup] = useState<string | null>(null);
   const content = data.content.unlocked ? data.content : fetched;
   const logoVariants = parsePresskitLogoVariants(
-    data.settings.presskit_logo_urls,
-    data.settings.logo_url,
-  );
-  const logoUrls = parsePresskitLogoUrls(
     data.settings.presskit_logo_urls,
     data.settings.logo_url,
   );
@@ -212,7 +208,9 @@ function Presskit() {
                         return (
                           <div
                             key={slot.key}
-                            className={`flex flex-col items-center justify-center p-4 ${PRESSKIT_LOGO_CANVAS_CLASS}`}
+                            className={`flex flex-col items-center justify-center p-4 ${
+                              slot.key.endsWith("_escura") ? "bg-white" : "bg-black"
+                            }`}
                           >
                             <p className="mb-3 font-mono text-[9px] uppercase tracking-widest text-muted-foreground">
                               {slot.label}
@@ -226,25 +224,30 @@ function Presskit() {
                         );
                       })}
                     </div>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="mt-6 w-full sm:w-auto"
+                      disabled={downloadingGroup !== null}
+                      onClick={() => {
+                        setDownloadingGroup(group.id);
+                        void downloadPresskitLogosZip(
+                          presskitLogoUrlsForDownload(logoVariants, group.id),
+                          group.id === "icon" ? "tulio-icone.zip" : "tulio-logos.zip",
+                        )
+                          .catch(() => toast.error(t("unavailable")))
+                          .finally(() => setDownloadingGroup(null));
+                      }}
+                    >
+                      <Download className="mr-2 size-4" />
+                      {downloadingGroup === group.id
+                        ? t("checking")
+                        : t(group.id === "icon" ? "downloadIcon" : "downloadLogo")}
+                    </Button>
                   </div>
                 );
               })}
             </div>
-            <Button
-              type="button"
-              variant="outline"
-              className="mt-6 w-full sm:w-auto"
-              disabled={logoDownloading}
-              onClick={() => {
-                setLogoDownloading(true);
-                void downloadPresskitLogosZip(logoUrls)
-                  .catch(() => toast.error(t("unavailable")))
-                  .finally(() => setLogoDownloading(false));
-              }}
-            >
-              <Download className="mr-2 size-4" />
-              {logoDownloading ? t("checking") : t("downloadLogo")}
-            </Button>
           </div>
         </section>
       </div>
