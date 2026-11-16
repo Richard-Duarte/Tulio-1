@@ -114,7 +114,9 @@ test("presskit admin edits booking email above rider", () => {
   assert.doesNotMatch(panel, /multiple/);
   assert.match(panel, /PRESSKIT_LOGO_GROUPS/);
   const variants = read("lib/presskit-logo-variants.ts");
-  assert.match(variants, /Escrita Tulio/);
+  assert.match(variants, /barra de menu/);
+  assert.match(panel, /PRESSKIT_LOGO_CANVAS_CLASS/);
+  assert.match(read("styles.css"), /\.presskit-logo-canvas/);
   assert.match(variants, /title: "Ícone"/);
 });
 

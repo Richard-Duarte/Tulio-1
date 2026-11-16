@@ -4,6 +4,8 @@ import {
   DEFAULT_SITE_LOGO,
   parsePresskitLogoVariants,
   presskitLogoUrlsForDownload,
+  presskitSlotPreviewFallback,
+  primaryPresskitLogoUrl,
   siteIconUrl,
   siteWordmarkUrl,
 } from "./presskit-logo-variants.ts";
@@ -42,6 +44,18 @@ test("siteWordmarkUrl uses escrita clara on dark chrome", () => {
     siteWordmarkUrl({ escrita_clara: "https://custom-word.png" }),
     "https://custom-word.png",
   );
+});
+
+test("primaryPresskitLogoUrl ignores ícone (só escrita)", () => {
+  assert.equal(
+    primaryPresskitLogoUrl({ icon_clara: "https://triangle.png", escrita_clara: null }, null),
+    "/brand/tulio-wordmark.png",
+  );
+});
+
+test("presskitSlotPreviewFallback leaves escura empty until upload", () => {
+  assert.equal(presskitSlotPreviewFallback("escrita_escura"), null);
+  assert.equal(presskitSlotPreviewFallback("escrita_clara"), "/brand/tulio-wordmark.png");
 });
 
 test("presskitLogoUrlsForDownload dedupes slots", () => {

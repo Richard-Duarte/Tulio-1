@@ -9,7 +9,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { getPresskitContent, unlockPresskit, type PresskitContent } from "@/lib/presskit.functions";
 import { downloadPresskitLogosZip, parsePresskitLogoUrls } from "@/lib/presskit-logos";
-import { PRESSKIT_LOGO_GROUPS, parsePresskitLogoVariants } from "@/lib/presskit-logo-variants";
+import {
+  PRESSKIT_LOGO_CANVAS_CLASS,
+  PRESSKIT_LOGO_GROUPS,
+  parsePresskitLogoVariants,
+} from "@/lib/presskit-logo-variants";
 import { getSiteSettings, getTulioHome } from "@/lib/public.functions";
 import { useI18n } from "@/lib/i18n";
 import { toast } from "sonner";
@@ -208,11 +212,9 @@ function Presskit() {
                         return (
                           <div
                             key={slot.key}
-                            className={`flex flex-col items-center justify-center p-4 ${slot.previewBg === "bg-white" ? "bg-white" : "bg-black"}`}
+                            className={`flex flex-col items-center justify-center p-4 ${PRESSKIT_LOGO_CANVAS_CLASS}`}
                           >
-                            <p
-                              className={`mb-3 font-mono text-[9px] uppercase tracking-widest ${slot.previewBg === "bg-white" ? "text-black/60" : "text-white/60"}`}
-                            >
+                            <p className="mb-3 font-mono text-[9px] uppercase tracking-widest text-muted-foreground">
                               {slot.label}
                             </p>
                             <img

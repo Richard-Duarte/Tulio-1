@@ -11,16 +11,16 @@ import { supabase } from "@/integrations/supabase/client";
 import { savePresskitContent, setPresskitPassword } from "@/lib/admin.functions";
 import { uploadFailureHint } from "@/lib/media-budget";
 import {
-  DEFAULT_SITE_WORDMARK,
   PRESSKIT_LOGO_GROUPS,
   parsePresskitLogoVariants,
+  PRESSKIT_LOGO_CANVAS_CLASS,
+  presskitSlotPreviewFallback,
   primaryPresskitLogoUrl,
   type PresskitLogoSlotKey,
   type PresskitLogoVariants,
 } from "@/lib/presskit-logo-variants";
 import { parsePresskitRider, riderLinesFromText, riderTextFromLines } from "@/lib/presskit-rider";
 import { coercePresskitAdminSettings, type PresskitAdminSettings } from "@/lib/presskit-admin-settings";
-import { resolveSiteLogoUrl } from "@/lib/site-logo";
 import { uploadPreparedSiteFile } from "@/lib/upload-prepared";
 
 export function PresskitAdminPanel({
@@ -149,21 +149,29 @@ export function PresskitAdminPanel({
               {group.slots.map((slot) => {
                 const url = logos[slot.key];
                 const isIcon = group.id === "icon";
-                const fallback = isIcon ? resolveSiteLogoUrl(null) : DEFAULT_SITE_WORDMARK;
-                const src = url || fallback;
+                const src = url ?? presskitSlotPreviewFallback(slot.key);
                 return (
                   <div key={slot.key} className="border border-border bg-background/50 p-4">
                     <Label className="text-xs uppercase tracking-wide text-muted-foreground">
                       {slot.label}
                     </Label>
+                    <p className="mt-1 text-[11px] text-muted-foreground">
+                      PNG/WebP/SVG com fundo transparente (sem quadrado preto ou branco).
+                    </p>
                     <div
-                      className={`relative mt-3 flex min-h-[7rem] items-center justify-center p-4 ${slot.previewBg}`}
+                      className={`relative mt-3 flex min-h-[7rem] items-center justify-center p-4 ${PRESSKIT_LOGO_CANVAS_CLASS}`}
                     >
-                      <img
-                        src={src}
-                        alt=""
-                        className={`max-h-24 w-auto object-contain ${isIcon ? "max-w-[4.5rem]" : "max-w-[200px]"}`}
-                      />
+                      {src ? (
+                        <img
+                          src={src}
+                          alt=""
+                          className={`max-h-24 w-auto object-contain ${isIcon ? "max-w-[4.5rem]" : "max-w-[200px]"}`}
+                        />
+                      ) : (
+                        <p className="px-2 text-center text-xs text-muted-foreground">
+                          Nenhum arquivo — envie a versão {slot.key.includes("escura") ? "escura" : "clara"}.
+                        </p>
+                      )}
                       {url && (
                         <Button
                           type="button"

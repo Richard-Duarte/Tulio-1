@@ -1,4 +1,4 @@
-import { DEFAULT_SITE_LOGO, resolveSiteLogoUrl } from "./site-logo.ts";
+import { DEFAULT_SITE_LOGO } from "./site-logo.ts";
 
 export const DEFAULT_SITE_WORDMARK = "/brand/tulio-wordmark.png";
 
@@ -7,10 +7,10 @@ export const PRESSKIT_LOGO_GROUPS = [
     id: "logo",
     title: "Logo",
     description:
-      "Escrita Tulio. Ao salvar, atualiza menu, pre-loader, rodapé, auth e demais pontos com o nome.",
+      "Escrita TULIO da barra de menu (não é o triângulo). Ao salvar, atualiza menu, pre-loader, rodapé e auth.",
     slots: [
-      { key: "escrita_clara", label: "Clara (fundo escuro)", previewBg: "bg-black" as const },
-      { key: "escrita_escura", label: "Escura (fundo claro)", previewBg: "bg-white" as const },
+      { key: "escrita_clara", label: "Clara (fundo escuro)" },
+      { key: "escrita_escura", label: "Escura / preta (fundo claro)" },
     ],
   },
   {
@@ -18,8 +18,8 @@ export const PRESSKIT_LOGO_GROUPS = [
     title: "Ícone",
     description: "Símbolo / marca gráfica (ex.: olho na home). Versão clara e escura para o presskit.",
     slots: [
-      { key: "icon_clara", label: "Clara (fundo escuro)", previewBg: "bg-black" as const },
-      { key: "icon_escura", label: "Escura (fundo claro)", previewBg: "bg-white" as const },
+      { key: "icon_clara", label: "Clara (fundo escuro)" },
+      { key: "icon_escura", label: "Escura / preta (fundo claro)" },
     ],
   },
 ] as const;
@@ -106,6 +106,7 @@ export function siteIconUrl(presskitLogoUrls: unknown, logoUrl?: string | null):
   );
 }
 
+/** Legacy `logo_url` column — escrita only (nunca o ícone triângulo). */
 export function primaryPresskitLogoUrl(
   presskitLogoUrls: unknown,
   logoUrl?: string | null,
@@ -114,9 +115,28 @@ export function primaryPresskitLogoUrl(
   return (
     v.escrita_clara?.trim() ||
     v.escrita_escura?.trim() ||
-    v.icon_clara?.trim() ||
-    resolveSiteLogoUrl(logoUrl)
+    logoUrl?.trim() ||
+    DEFAULT_SITE_WORDMARK
   );
+}
+
+export const PRESSKIT_LOGO_CANVAS_CLASS = "presskit-logo-canvas";
+
+/** Admin preview only — escuras sem fallback (evita wordmark branca “invisível”). */
+export function presskitSlotPreviewFallback(key: PresskitLogoSlotKey): string | null {
+  switch (key) {
+    case "escrita_clara":
+      return DEFAULT_SITE_WORDMARK;
+    case "icon_clara":
+      return DEFAULT_SITE_LOGO;
+    case "escrita_escura":
+    case "icon_escura":
+      return null;
+    default: {
+      const _never: never = key;
+      return _never;
+    }
+  }
 }
 
 export { DEFAULT_SITE_LOGO };

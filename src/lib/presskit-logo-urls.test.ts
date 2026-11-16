@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { DEFAULT_SITE_LOGO } from "./site-logo.ts";
+import { DEFAULT_SITE_WORDMARK } from "./presskit-logo-variants.ts";
 import { parsePresskitLogoUrls, presskitDisplayLogoUrl } from "./presskit-logo-urls.ts";
 
 test("parsePresskitLogoUrls prefers json array over single logo_url", () => {
@@ -12,7 +13,7 @@ test("parsePresskitLogoUrls prefers json array over single logo_url", () => {
 
 test("parsePresskitLogoUrls falls back to logo_url then default", () => {
   assert.deepEqual(parsePresskitLogoUrls(null, "https://one/logo.png"), ["https://one/logo.png"]);
-  assert.deepEqual(parsePresskitLogoUrls([], null), [DEFAULT_SITE_LOGO]);
+  assert.deepEqual(parsePresskitLogoUrls([], null), [DEFAULT_SITE_WORDMARK, DEFAULT_SITE_LOGO]);
 });
 
 test("presskitDisplayLogoUrl uses first variant", () => {
