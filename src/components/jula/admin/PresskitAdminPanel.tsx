@@ -1,6 +1,6 @@
 import { useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { Save, Trash2 } from "lucide-react";
+import { Save, Trash2, Upload } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -190,17 +190,29 @@ export function PresskitAdminPanel({
                         </Button>
                       )}
                     </div>
-                    <Input
-                      className="mt-3"
-                      type="file"
-                      accept="image/png,image/webp,image/jpeg,image/svg+xml"
-                      disabled={logoUploading !== null}
-                      onChange={(e) => {
-                        const file = e.target.files?.[0];
-                        e.target.value = "";
-                        if (file) void uploadLogoSlot(slot.key, file);
-                      }}
-                    />
+                    <label
+                      className={`mt-3 flex h-10 cursor-pointer items-center rounded-md border border-input bg-background px-3 text-sm ${
+                        logoUploading !== null ? "pointer-events-none opacity-50" : ""
+                      }`}
+                    >
+                      <Upload className="mr-2 size-4" />
+                      {logoUploading === slot.key
+                        ? "Enviando…"
+                        : logos[slot.key]
+                          ? "Trocar arquivo"
+                          : "Escolher arquivo"}
+                      <input
+                        className="sr-only"
+                        type="file"
+                        accept="image/png,image/webp,image/jpeg,image/svg+xml"
+                        disabled={logoUploading !== null}
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          e.target.value = "";
+                          if (file) void uploadLogoSlot(slot.key, file);
+                        }}
+                      />
+                    </label>
                   </div>
                 );
               })}
