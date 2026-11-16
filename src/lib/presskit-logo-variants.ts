@@ -137,7 +137,8 @@ export function siteWordmarkUrl(
   const v = parsePresskitLogoVariants(presskitLogoUrls, logoUrl);
   const legacy =
     logoUrl?.trim() && !isPresskitIconUrl(logoUrl) ? logoUrl.trim() : null;
-  return v.escrita_clara?.trim() || v.escrita_escura?.trim() || legacy || DEFAULT_SITE_WORDMARK;
+  // Menu / pre-loader = fundo escuro — só escrita clara (escura é para presskit em fundo claro).
+  return v.escrita_clara?.trim() || legacy || DEFAULT_SITE_WORDMARK;
 }
 
 /** Home eye / triangle mark — never fall back to wordmark (`logo_url` / escrita). */
