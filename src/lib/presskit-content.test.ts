@@ -88,6 +88,7 @@ test("admin has dedicated Presskit tab", () => {
   const admin = read("routes/_authenticated/admin.tsx");
   assert.match(admin, /TabsTrigger value="presskit"/);
   assert.match(admin, /PresskitAdminPanel/);
+  assert.match(admin, /coercePresskitAdminSettings/);
   assert.doesNotMatch(admin, /TabsTrigger value="tracks"/);
 });
 

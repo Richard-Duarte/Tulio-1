@@ -3,10 +3,8 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useMemo } from "react";
 import { PageIntro } from "@/components/jula/PageIntro";
 import { TitleMetal } from "@/components/tulio/TitleMetal";
-import { useSetsPlayer } from "@/components/sets/SetsPlayerProvider";
 import { setsToTracks } from "@/components/jula/AudioPlayer";
 import { UndergroundScene } from "@/components/sets/UndergroundScene";
-import { useStoreSelector } from "@/components/sets/player-store";
 import { getPublicMusic, getSiteSettings } from "@/lib/public.functions";
 import { useI18n } from "@/lib/i18n";
 
@@ -70,10 +68,6 @@ function Sets() {
 function SetsStage({ empty }: { empty: boolean }) {
   const { t } = useI18n();
   const { sets_description: setsDescription } = Route.useLoaderData();
-  const { store } = useSetsPlayer();
-  // Minimized player = "just the scene": the heading fades out (kept in the DOM / a11y tree,
-  // and click-through so it never blocks camera drags) and comes back when the player expands.
-  const sceneOnly = useStoreSelector(store, (s) => s.minimized && s.tracks.length > 0);
   return (
     // Fills the first screen so the 3D scene is the backdrop for the player. pointer-events: the
     // page is see-through for drags (they reach the 3D background's camera controls); only the
@@ -83,9 +77,7 @@ function SetsStage({ empty }: { empty: boolean }) {
       data-scene-passthrough=""
     >
       {/* PageIntro's markup, tighter on phones so the expanded player doesn't cover the title */}
-      <section
-        className={`px-5 pb-10 pt-24 transition-[opacity,transform] duration-300 ease-out motion-reduce:transform-none motion-reduce:transition-none max-md:flex max-md:flex-col max-md:items-center max-md:text-center md:px-10 md:py-16 lg:px-14 ${sceneOnly ? "-translate-y-2 opacity-0 [&_*]:!pointer-events-none" : ""}`}
-      >
+      <section className="px-5 pb-10 pt-24 max-md:flex max-md:flex-col max-md:items-center max-md:text-center md:px-10 md:py-16 lg:px-14">
         <NocturnaEyebrow>{t("setsEyebrow")}</NocturnaEyebrow>
         <TitleMetal className="mt-5 max-w-4xl text-[clamp(2rem,5.5vw,3.65rem)]">
           {t("sets")}

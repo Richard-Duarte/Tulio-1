@@ -28,6 +28,7 @@ import { UpcomingDatesAdmin } from "@/components/jula/admin/UpcomingDatesAdmin";
 import { MediaLibrary } from "@/components/jula/admin/MediaLibrary";
 import { ReleaseEditor } from "@/components/jula/admin/ReleaseEditor";
 import { PresskitAdminPanel } from "@/components/jula/admin/PresskitAdminPanel";
+import { coercePresskitAdminSettings } from "@/lib/presskit-admin-settings";
 import { siteParties } from "@/lib/site-photos";
 import {
   isSavedPartyId,
@@ -389,8 +390,8 @@ function Admin() {
         </TabsContent>
         <TabsContent value="presskit">
           <PresskitAdminPanel
-            settings={data.settings}
-            bookingEmail={data.home?.booking_email ?? ""}
+            settings={coercePresskitAdminSettings(data.settings)}
+            bookingEmail={typeof data.home?.booking_email === "string" ? data.home.booking_email : ""}
             onSaved={refresh}
           />
         </TabsContent>

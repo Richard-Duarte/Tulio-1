@@ -17,7 +17,10 @@ import {
 } from "@/lib/soundcloud-widget";
 import { indexOfNewestPlayerTrack } from "@/lib/sets-cadastro-order";
 import { nextIndex } from "@/lib/sets-order";
-import { defaultSetsPlayerMinimized } from "@/lib/sets-player-minimized";
+import {
+  defaultSetsPlayerMinimized,
+  setsPlayerMinimizedSessionKey,
+} from "@/lib/sets-player-minimized";
 import { useRouterState } from "@tanstack/react-router";
 import {
   createPlayerStore,
@@ -81,6 +84,13 @@ class SoundCloudController {
     public shuffle: boolean,
     private storageKey: string,
   ) {}
+
+  /** Route path used for per-page minimize preference in sessionStorage. */
+  pathname = "/";
+
+  private minimizedStorageKey() {
+    return setsPlayerMinimizedSessionKey(this.storageKey, this.pathname);
+  }
 
   private get s() {
     return this.store.get();
@@ -325,7 +335,7 @@ class SoundCloudController {
   setMinimized = (minimized: boolean) => {
     this.store.set({ minimized });
     try {
-      window.sessionStorage.setItem(this.storageKey, minimized ? "1" : "0");
+      window.sessionStorage.setItem(this.minimizedStorageKey(), minimized ? "1" : "0");
     } catch {
       /* private mode */
     }
@@ -392,18 +402,20 @@ export function SetsPlayerProvider({
   }, [controller, shuffle]);
   const canStart = ready && tracks.length > 0;
 
-  // Session choice wins; otherwise the player starts minimized (still autoplays).
+  // Per-route session choice; otherwise route-aware default (expanded on desktop /sets).
   useEffect(() => {
+    controller.pathname = pathname;
+    const sessionKey = setsPlayerMinimizedSessionKey(storageKey, pathname);
     let saved: string | null = null;
     try {
-      saved = window.sessionStorage.getItem(storageKey);
+      saved = window.sessionStorage.getItem(sessionKey);
     } catch {
       /* private mode */
     }
     const minimized =
       saved !== null ? saved === "1" : defaultSetsPlayerMinimized(pathname);
     store.set({ minimized });
-  }, [store, pathname, storageKey]);
+  }, [store, pathname, storageKey, controller]);
 
   // Autoplay starts on the newest set date (manual list order is untouched).
   useEffect(() => {

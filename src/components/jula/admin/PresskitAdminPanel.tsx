@@ -11,26 +11,20 @@ import { savePresskitContent, setPresskitPassword } from "@/lib/admin.functions"
 import { uploadFailureHint } from "@/lib/media-budget";
 import { parsePresskitLogoUrls } from "@/lib/presskit-logos";
 import { parsePresskitRider, riderLinesFromText, riderTextFromLines } from "@/lib/presskit-rider";
+import { coercePresskitAdminSettings, type PresskitAdminSettings } from "@/lib/presskit-admin-settings";
 import { resolveSiteLogoUrl } from "@/lib/site-logo";
 import { uploadPreparedSiteFile } from "@/lib/upload-prepared";
 
-type SettingsRow = {
-  release_title: string;
-  release_body: string;
-  logo_url: string | null;
-  presskit_logo_urls?: unknown;
-  presskit_rider?: unknown;
-};
-
 export function PresskitAdminPanel({
-  settings,
+  settings: settingsRaw,
   bookingEmail,
   onSaved,
 }: {
-  settings: SettingsRow;
+  settings: PresskitAdminSettings | null | undefined;
   bookingEmail: string;
   onSaved: () => Promise<void>;
 }) {
+  const settings = coercePresskitAdminSettings(settingsRaw);
   const savePresskit = useServerFn(savePresskitContent);
   const savePass = useServerFn(setPresskitPassword);
   const [releaseBody, setReleaseBody] = useState(settings.release_body);

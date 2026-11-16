@@ -67,7 +67,7 @@ export const getAdminData = createServerFn({ method: "GET" })
       releaseSections.error;
     if (error) throw error;
     return {
-      settings: settings.data,
+      settings: settings.data ?? {},
       home: home.data,
       sets: sets.data ?? [],
       live_sets: liveSets.data ?? [],
