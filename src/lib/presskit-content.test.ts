@@ -114,6 +114,12 @@ test("presskit admin edits booking email above rider", () => {
   assert.match(panel, /multiple/);
 });
 
+test("presskit admin rider state uses riderTextFromLines on parsed rows (not riderLinesFromText)", () => {
+  const panel = read("components/jula/admin/PresskitAdminPanel.tsx");
+  assert.match(panel, /riderTextFromLines\(parsePresskitRider/);
+  assert.doesNotMatch(panel, /riderLinesFromText\(parsePresskitRider/);
+});
+
 test("MediaGrid filters to presskit-flagged items when grouping is presskit", () => {
   const grid = read("components/jula/MediaGrid.tsx");
   assert.match(grid, /isPresskitCatalogItem/);

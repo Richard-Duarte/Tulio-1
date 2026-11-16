@@ -30,7 +30,7 @@ export function PresskitAdminPanel({
   const [releaseBody, setReleaseBody] = useState(settings.release_body);
   const [booking, setBooking] = useState(bookingEmail);
   const [riderText, setRiderText] = useState(() =>
-    riderLinesFromText(parsePresskitRider(settings.presskit_rider)),
+    riderTextFromLines(parsePresskitRider(settings.presskit_rider)),
   );
   const [logoUrls, setLogoUrls] = useState(() =>
     parsePresskitLogoUrls(settings.presskit_logo_urls, settings.logo_url).filter(
