@@ -8,10 +8,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
-import { savePresskitContent, setPresskitPassword } from "@/lib/admin.functions";
+import { resetPresskitBrandLogos, savePresskitContent, setPresskitPassword } from "@/lib/admin.functions";
 import { uploadFailureHint } from "@/lib/media-budget";
 import {
   PRESSKIT_LOGO_GROUPS,
+  emptyPresskitLogoVariants,
   normalizePresskitLogoVariants,
   parsePresskitLogoVariants,
   PRESSKIT_LOGO_CANVAS_CLASS,
@@ -36,6 +37,7 @@ export function PresskitAdminPanel({
   const settings = coercePresskitAdminSettings(settingsRaw);
   const queryClient = useQueryClient();
   const savePresskit = useServerFn(savePresskitContent);
+  const resetBrandLogos = useServerFn(resetPresskitBrandLogos);
   const savePass = useServerFn(setPresskitPassword);
   const [releaseBody, setReleaseBody] = useState(settings.release_body);
   const [booking, setBooking] = useState(bookingEmail);
@@ -207,6 +209,31 @@ export function PresskitAdminPanel({
         <p className="text-sm text-muted-foreground">
           No presskit público, o download em ZIP inclui todos os arquivos enviados acima.
         </p>
+        <Button
+          type="button"
+          variant="outline"
+          className="mt-4"
+          disabled={busy}
+          onClick={() => {
+            void (async () => {
+              setBusy(true);
+              try {
+                await resetBrandLogos();
+                setLogos(emptyPresskitLogoVariants());
+                await onSaved();
+                await queryClient.invalidateQueries({ queryKey: ["site-settings"] });
+                toast.success("Logos padrão do site restauradas (escrita + ícone).");
+              } catch {
+                toast.error("Não foi possível restaurar as logos.");
+              } finally {
+                setBusy(false);
+              }
+            })();
+          }}
+        >
+          <Trash2 className="mr-2 size-4" />
+          Restaurar logos padrão do site
+        </Button>
       </section>
 
       <div className="max-w-4xl">

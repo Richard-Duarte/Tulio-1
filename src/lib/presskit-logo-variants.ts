@@ -31,7 +31,7 @@ export type PresskitLogoSlotKey = (typeof PRESSKIT_LOGO_SLOTS)[number]["key"];
 
 export type PresskitLogoVariants = Record<PresskitLogoSlotKey, string | null>;
 
-const emptyVariants = (): PresskitLogoVariants => ({
+export const emptyPresskitLogoVariants = (): PresskitLogoVariants => ({
   icon_clara: null,
   icon_escura: null,
   escrita_clara: null,
@@ -86,7 +86,7 @@ export function parsePresskitLogoVariants(
   presskitLogoUrls: unknown,
   logoUrl?: string | null,
 ): PresskitLogoVariants {
-  const base = emptyVariants();
+  const base = emptyPresskitLogoVariants();
   if (presskitLogoUrls && typeof presskitLogoUrls === "object" && !Array.isArray(presskitLogoUrls)) {
     const row = presskitLogoUrls as Record<string, unknown>;
     for (const slot of PRESSKIT_LOGO_SLOTS) {

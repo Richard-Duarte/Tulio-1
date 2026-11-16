@@ -143,6 +143,23 @@ export const savePresskitContent = createServerFn({ method: "POST" })
     return { ok: true };
   });
 
+/** Volta menu, pre-loader e presskit para `/brand/tulio-wordmark.png` e `/brand/tulio-mark.png`. */
+export const resetPresskitBrandLogos = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    await assertAdmin(context);
+    const { error } = await context.supabase
+      .from("site_settings")
+      .update({
+        logo_url: null,
+        presskit_logo_urls: null,
+        updated_at: new Date().toISOString(),
+      } as never)
+      .eq("singleton_key", "main");
+    if (error) throw error;
+    return { ok: true };
+  });
+
 export const saveSetsShuffle = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input) => z.object({ sets_shuffle: z.boolean() }).parse(input))
