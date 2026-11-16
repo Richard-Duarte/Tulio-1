@@ -66,6 +66,11 @@ test("siteWordmarkUrl ignores escrita_escura on dark chrome", () => {
   assert.equal(siteWordmarkUrl({ escrita_escura: "https://black-word.png" }), "/brand/tulio-wordmark.png");
 });
 
+test("siteWordmarkUrl ignores wrong logo_url escura upload", () => {
+  const bad = "https://x.supabase.co/brand/logo-escrita_escura-1.png";
+  assert.equal(siteWordmarkUrl(null, bad), "/brand/tulio-wordmark.png");
+});
+
 test("primaryPresskitLogoUrl ignores ícone (só escrita)", () => {
   assert.equal(
     primaryPresskitLogoUrl({ icon_clara: "https://triangle.png", escrita_clara: null }, null),

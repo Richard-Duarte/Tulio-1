@@ -49,6 +49,25 @@ export function isPresskitIconUrl(url: string): boolean {
 }
 
 /** Escrita TULIO do menu — upload `logo-escrita_*` ou wordmark padrão. */
+/** Não usar no menu (só ícone, versão escura ou vazio). */
+export function isInvalidMenuWordmarkUrl(url: string | null | undefined): boolean {
+  const u = url?.trim();
+  if (!u) return true;
+  if (isPresskitIconUrl(u)) return true;
+  if (u.toLowerCase().includes("logo-escrita_escura")) return true;
+  return false;
+}
+
+export function defaultPresskitLogoVariants(): PresskitLogoVariants {
+  const base = "https://www.tuliomusic.com.br";
+  return {
+    escrita_clara: `${base}/brand/tulio-wordmark.png`,
+    escrita_escura: null,
+    icon_clara: `${base}/brand/tulio-mark.png`,
+    icon_escura: null,
+  };
+}
+
 export function isPresskitWordmarkUrl(url: string): boolean {
   const u = url.trim().toLowerCase();
   if (!u) return false;
@@ -136,9 +155,12 @@ export function siteWordmarkUrl(
 ): string {
   const v = parsePresskitLogoVariants(presskitLogoUrls, logoUrl);
   const legacy =
-    logoUrl?.trim() && !isPresskitIconUrl(logoUrl) ? logoUrl.trim() : null;
+    logoUrl?.trim() && !isInvalidMenuWordmarkUrl(logoUrl) ? logoUrl.trim() : null;
+  const clara = v.escrita_clara?.trim();
   // Menu / pre-loader = fundo escuro — só escrita clara (escura é para presskit em fundo claro).
-  return v.escrita_clara?.trim() || legacy || DEFAULT_SITE_WORDMARK;
+  if (clara && !isInvalidMenuWordmarkUrl(clara)) return clara;
+  if (legacy) return legacy;
+  return DEFAULT_SITE_WORDMARK;
 }
 
 /** Home eye / triangle mark — never fall back to wordmark (`logo_url` / escrita). */

@@ -12,6 +12,7 @@ import { resetPresskitBrandLogos, savePresskitContent, setPresskitPassword } fro
 import { uploadFailureHint } from "@/lib/media-budget";
 import {
   PRESSKIT_LOGO_GROUPS,
+  defaultPresskitLogoVariants,
   emptyPresskitLogoVariants,
   normalizePresskitLogoVariants,
   parsePresskitLogoVariants,
@@ -219,7 +220,7 @@ export function PresskitAdminPanel({
               setBusy(true);
               try {
                 await resetBrandLogos();
-                setLogos(emptyPresskitLogoVariants());
+                setLogos(defaultPresskitLogoVariants());
                 await onSaved();
                 await queryClient.invalidateQueries({ queryKey: ["site-settings"] });
                 toast.success("Logos padrão do site restauradas (escrita + ícone).");

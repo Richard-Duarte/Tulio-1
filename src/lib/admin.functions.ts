@@ -2,6 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { isSavedPartyId } from "@/lib/gallery-groups";
+import { defaultPresskitLogoVariants } from "@/lib/presskit-logo-variants";
 import { DEFAULT_SOCIAL_ORDER, normalizeSocialOrder, type SocialKey } from "@/lib/social-order";
 
 const tables = z.enum([
@@ -143,16 +144,17 @@ export const savePresskitContent = createServerFn({ method: "POST" })
     return { ok: true };
   });
 
-/** Volta menu, pre-loader e presskit para `/brand/tulio-wordmark.png` e `/brand/tulio-mark.png`. */
+/** Volta a escrita TULIO do menu (`tulio-wordmark.png`) e o ícone padrão. */
 export const resetPresskitBrandLogos = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
     await assertAdmin(context);
+    const presskit_logo_urls = defaultPresskitLogoVariants();
     const { error } = await context.supabase
       .from("site_settings")
       .update({
-        logo_url: null,
-        presskit_logo_urls: null,
+        logo_url: presskit_logo_urls.escrita_clara,
+        presskit_logo_urls,
         updated_at: new Date().toISOString(),
       } as never)
       .eq("singleton_key", "main");
