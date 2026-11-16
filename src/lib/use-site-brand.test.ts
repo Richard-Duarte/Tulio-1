@@ -10,4 +10,7 @@ const read = (path: string) => readFileSync(join(src, path), "utf8");
 test("home abertura uses CMS ícone from presskit variants", () => {
   const home = read("routes/index.tsx");
   assert.match(home, /siteIconUrl/);
+  const tri = read("components/nocturna/TriangleGridSection.tsx");
+  assert.match(tri, /resolveHomeEyeMarkSrc/);
+  assert.match(tri, /useSiteBrand/);
 });

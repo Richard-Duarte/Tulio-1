@@ -59,13 +59,25 @@ export function isInvalidMenuWordmarkUrl(url: string | null | undefined): boolea
 }
 
 export function defaultPresskitLogoVariants(): PresskitLogoVariants {
-  const base = "https://www.tuliomusic.com.br";
   return {
-    escrita_clara: `${base}/brand/tulio-wordmark.png`,
+    escrita_clara: DEFAULT_SITE_WORDMARK,
     escrita_escura: null,
-    icon_clara: `${base}/brand/tulio-mark.png`,
+    icon_clara: DEFAULT_SITE_LOGO,
     icon_escura: null,
   };
+}
+
+/** Só triângulo/7 na home — rejeita escrita Tulio no slot ícone. */
+export function isHomeEyeMarkUrl(url: string | null | undefined): boolean {
+  const u = url?.trim();
+  if (!u) return false;
+  if (isPresskitWordmarkUrl(u)) return false;
+  if (u.toLowerCase().includes("logo-escrita_")) return false;
+  return isPresskitIconUrl(u);
+}
+
+export function resolveHomeEyeMarkSrc(url: string | null | undefined): string {
+  return isHomeEyeMarkUrl(url) ? url!.trim() : DEFAULT_SITE_LOGO;
 }
 
 export function isPresskitWordmarkUrl(url: string): boolean {
@@ -166,11 +178,11 @@ export function siteWordmarkUrl(
 /** Home eye / triangle mark — never fall back to wordmark (`logo_url` / escrita). */
 export function siteIconUrl(presskitLogoUrls: unknown, logoUrl?: string | null): string {
   const v = parsePresskitLogoVariants(presskitLogoUrls, logoUrl);
-  return (
-    v.icon_clara?.trim() ||
-    v.icon_escura?.trim() ||
-    DEFAULT_SITE_LOGO
-  );
+  const clara = v.icon_clara?.trim();
+  const escura = v.icon_escura?.trim();
+  if (isHomeEyeMarkUrl(clara)) return clara!;
+  if (isHomeEyeMarkUrl(escura)) return escura!;
+  return DEFAULT_SITE_LOGO;
 }
 
 /** Legacy `logo_url` column — escrita only (nunca o ícone triângulo). */

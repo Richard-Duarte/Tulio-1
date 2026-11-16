@@ -1,4 +1,6 @@
 import { SocialBar, type SocialUrls } from "@/components/jula/SocialBar";
+import { resolveHomeEyeMarkSrc } from "@/lib/presskit-logo-variants";
+import { useSiteBrand } from "@/lib/use-site-brand";
 import { resolveSiteLogoUrl } from "@/lib/site-logo";
 import { GlitchingTechEye } from "./GlitchingTechEye";
 import { ImageGlitch } from "./ImageGlitch";
@@ -19,6 +21,8 @@ export function TriangleGridSection({
   rightImageUrl?: string | null;
   logoUrl?: string | null;
 }) {
+  const { iconUrl } = useSiteBrand();
+  const eyeMarkSrc = resolveHomeEyeMarkSrc(iconUrl || logoUrl);
   // DB columns can be null; defaults only cover undefined.
   const imageUrl = imageUrlProp || "/brand/tulio-session.jpg";
   const imageAlt = imageAltProp || "Tulio no set";
@@ -35,7 +39,7 @@ export function TriangleGridSection({
       </div>
       <div className="pointer-events-none absolute top-0 left-1/2 z-20 size-[34vw] max-w-[220px] -translate-x-1/2 -translate-y-8 md:size-[240px]">
         <GlitchingTechEye
-          logoSrc={resolveSiteLogoUrl(logoUrl)}
+          logoSrc={resolveSiteLogoUrl(eyeMarkSrc)}
           className="absolute inset-0 h-full w-full"
         />
       </div>

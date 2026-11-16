@@ -153,7 +153,7 @@ export const resetPresskitBrandLogos = createServerFn({ method: "POST" })
     const { error } = await context.supabase
       .from("site_settings")
       .update({
-        logo_url: presskit_logo_urls.escrita_clara,
+        logo_url: null,
         presskit_logo_urls,
         updated_at: new Date().toISOString(),
       } as never)

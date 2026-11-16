@@ -52,7 +52,14 @@ test("siteIconUrl uses ícone slots or default mark, not wordmark", () => {
     siteIconUrl({ escrita_clara: "https://word.png" }, "https://word.png"),
     DEFAULT_SITE_LOGO,
   );
-  assert.equal(siteIconUrl({ icon_clara: "https://eye.png" }), "https://eye.png");
+  assert.equal(
+    siteIconUrl({ icon_clara: "https://x/brand/logo-icon_clara-1.png" }),
+    "https://x/brand/logo-icon_clara-1.png",
+  );
+  assert.equal(
+    siteIconUrl({ icon_clara: "https://www.tuliomusic.com.br/brand/tulio-wordmark.png" }),
+    DEFAULT_SITE_LOGO,
+  );
 });
 
 test("siteWordmarkUrl uses escrita clara on dark chrome", () => {
