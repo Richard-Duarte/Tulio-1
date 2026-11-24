@@ -28,15 +28,40 @@ function slugify(value: string) {
     .replace(/^-+|-+$/g, "");
 }
 
-/** Builds a sensible filename such as `jula-gigs-01.webp`. */
+const DOWNLOAD_FILENAME_PREFIX = "tulio";
+
+/** UUID / legado Lovable (`jula-{uuid}`) — prefer título no download. */
+function looksLikeOpaqueStorageStem(stem: string): boolean {
+  const s = stem.toLowerCase();
+  if (/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(s)) return true;
+  if (/^(jula|tulio)-[0-9a-f-]{20,}$/i.test(s)) return true;
+  return false;
+}
+
+function stemForDownload(item: DownloadableMedia, urlBaseName: string): string {
+  const fromUrl = slugify(urlBaseName);
+  const fromTitle = slugify(item.title);
+  const raw =
+    fromTitle ||
+    (fromUrl && !looksLikeOpaqueStorageStem(fromUrl) ? fromUrl : "") ||
+    fromUrl ||
+    slugify(item.id) ||
+    "media";
+  const stripped = raw.replace(/^(jula|tulio)-/i, "");
+  const stem = slugify(stripped) || slugify(raw) || "media";
+  if (stem.startsWith(DOWNLOAD_FILENAME_PREFIX)) return stem;
+  return `${DOWNLOAD_FILENAME_PREFIX}-${stem}`;
+}
+
+/** Builds a sensible filename such as `tulio-gigs-01.webp`. */
 export function mediaFilename(item: DownloadableMedia, mimeType?: string) {
   const path = (item.public_url ?? "").split(/[?#]/)[0] ?? "";
   const base = decodeURIComponent(path.split("/").pop() ?? "");
   const dot = base.lastIndexOf(".");
   const urlExt = dot > 0 ? base.slice(dot + 1).toLowerCase() : "";
   const ext = urlExt || (mimeType ? EXTENSIONS[mimeType.split(";")[0]!.trim()] : "") || "jpg";
-  const stem = slugify(dot > 0 ? base.slice(0, dot) : base) || slugify(item.title) || item.id;
-  return `${stem.startsWith("jula") ? stem : `jula-${stem}`}.${ext}`;
+  const urlStem = dot > 0 ? base.slice(0, dot) : base;
+  return `${stemForDownload(item, urlStem)}.${ext}`;
 }
 
 function saveBlob(blob: Blob, filename: string) {

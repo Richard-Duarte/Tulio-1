@@ -40,7 +40,7 @@ type MediaItem = {
 };
 type Party = GalleryParty;
 
-const ZIP_NAME = "jula-presskit.zip";
+const ZIP_NAME = "tulio-presskit.zip";
 
 const localeTags: Record<Locale, string> = {
   pt: "pt-BR",
