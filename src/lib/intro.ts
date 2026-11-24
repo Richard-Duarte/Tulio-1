@@ -10,7 +10,9 @@
  * "reveal" (curtain lifting, page reveal playing), "done", or "skip" (already seen this session).
  */
 
-export const INTRO_SEEN_KEY = "jula-intro-seen";
+import { INTRO_SEEN_KEY, LEGACY_INTRO_SEEN_KEY } from "@/lib/tulio-storage-keys";
+
+export { INTRO_SEEN_KEY };
 
 export type IntroSignal = "scene";
 
@@ -82,7 +84,7 @@ export function onIntroDone(listener: () => void) {
 }
 
 /** Inline <head> script: runs before first paint so returning visitors never see the overlay. */
-export const introBootScript = `(function(){try{var d=document.documentElement,p=location.pathname,skip=p==="/auth"||p.indexOf("/admin")===0||sessionStorage.getItem("${INTRO_SEEN_KEY}")==="1";d.setAttribute("data-intro",skip?"skip":"active")}catch(e){}})();`;
+export const introBootScript = `(function(){try{var d=document.documentElement,p=location.pathname,k="${INTRO_SEEN_KEY}",lk="${LEGACY_INTRO_SEEN_KEY}",seen=sessionStorage.getItem(k)==="1"||sessionStorage.getItem(lk)==="1",skip=p==="/auth"||p.indexOf("/admin")===0||seen;d.setAttribute("data-intro",skip?"skip":"active")}catch(e){}})();`;
 
 /** Critical CSS inlined in <head> so the very first paint is already dark (no white flash). */
 export const introCriticalCss = `html,body{background:#000106;color-scheme:dark}`;

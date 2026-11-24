@@ -8,13 +8,14 @@ import { parsePresskitRider } from "@/lib/presskit-rider";
 import { resolveVideoPosterUrl } from "@/lib/video-poster";
 import { isEmbedVideo } from "@/lib/media-external";
 import { siteParties } from "@/lib/site-photos";
+import { PRESSKIT_SESSION_COOKIE } from "@/lib/tulio-storage-keys";
 
 const SESSION_MAX_AGE = 60 * 60 * 12;
 
 function sessionConfig() {
   return {
     password: process.env["PRESSKIT_SESSION_SECRET"]!,
-    name: "jula-presskit",
+    name: PRESSKIT_SESSION_COOKIE,
     maxAge: SESSION_MAX_AGE,
     cookie: {
       httpOnly: true,

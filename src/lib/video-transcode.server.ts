@@ -84,7 +84,7 @@ export async function transcodeStorageVideo(
     throw signError ?? new Error("URL assinada indisponível para conversão.");
   }
 
-  const outFile = join(tmpdir(), `jula-video-${randomUUID()}.mp4`);
+  const outFile = join(tmpdir(), `tulio-video-${randomUUID()}.mp4`);
   try {
     const codecs = await probeInput(signed.signedUrl);
     const copy = canStreamCopy(codecs);

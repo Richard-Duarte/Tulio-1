@@ -21,6 +21,11 @@ import {
   defaultSetsPlayerMinimized,
   setsPlayerMinimizedSessionKey,
 } from "@/lib/sets-player-minimized";
+import {
+  LEGACY_SETS_PLAYER_MIN_BASE_KEY,
+  readSessionStorageWithLegacy,
+  SETS_PLAYER_MIN_BASE_KEY,
+} from "@/lib/tulio-storage-keys";
 import { useRouterState } from "@tanstack/react-router";
 import {
   createPlayerStore,
@@ -30,7 +35,7 @@ import {
 } from "./player-store";
 
 export const WAVE_BARS = 64;
-const MIN_KEY = "jula-sets-player-min";
+const MIN_KEY = SETS_PLAYER_MIN_BASE_KEY;
 /** No PLAY event this long after a play request => the browser blocked autoplay in the iframe. */
 const BLOCKED_AFTER_MS = 6000;
 
@@ -406,12 +411,8 @@ export function SetsPlayerProvider({
   useEffect(() => {
     controller.pathname = pathname;
     const sessionKey = setsPlayerMinimizedSessionKey(storageKey, pathname);
-    let saved: string | null = null;
-    try {
-      saved = window.sessionStorage.getItem(sessionKey);
-    } catch {
-      /* private mode */
-    }
+    const legacySessionKey = setsPlayerMinimizedSessionKey(LEGACY_SETS_PLAYER_MIN_BASE_KEY, pathname);
+    const saved = readSessionStorageWithLegacy(sessionKey, legacySessionKey);
     const minimized =
       saved !== null ? saved === "1" : defaultSetsPlayerMinimized(pathname);
     store.set({ minimized });

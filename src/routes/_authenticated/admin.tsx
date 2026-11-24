@@ -47,7 +47,7 @@ export const Route = createFileRoute("/_authenticated/admin")({
     meta: [
       { title: "Painel — TULIO" },
       { name: "description", content: "Gerenciamento de conteúdo do site de Tulio." },
-      { property: "og:title", content: "Painel — JULA" },
+      { property: "og:title", content: "Painel — TULIO" },
       { property: "og:description", content: "Área administrativa." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
